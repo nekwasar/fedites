@@ -92,7 +92,7 @@
 | 6.2 | Full moderation, audit logs, analytics dashboard, data export, integrations |
 | 6.3 | Comms: newsletter builder (storable/uploadable templates), email digests, WhatsApp bridge, SMS fallback |
 | 6.4 | Craft pass: dark mode, low-bandwidth mode, PWA offline, quiet hours, accessibility, then security review + load test + backup drill |
-| 6.5 | Native audio/video calls (1:1 and group) + mentor office hours integration | Members call in-app |
+| 6.5 | **Calls:** external-meeting integration — mentor office hours create/join Google Meet or Zoom links; deep links from the app | One-tap join from mentor booking |
 | 6.6 | **Studio I:** theme & branding editor, color theme presets, terminology glossary, copy tables | Admin changes colors/terms; clients hot-reload |
 | 6.7 | **Studio II:** nav pattern panel, element variant panels, family gallery, draft → preview → publish with versioning, validation gates, export/import | Full re-skin of a fake instance in under 30 minutes |
 
@@ -116,6 +116,7 @@
 
 ## Totals & Risks
 
-- **Rough total: ~33 build sessions + 2 parallel tracks.**
+- **Rough total: ~32 build sessions + 2 parallel tracks.**
 - **Riskiest external dependencies:** payment provider approval and WhatsApp business verification — start both in Phase 0 or Phase 4 slips.
+- **Stack (locked):** React+Vite+Tailwind+Radix (web) · Expo/React Native (mobile) · Node+TypeScript backend · PostgreSQL · Redis · WebSockets · LiveKit→**replaced by external meeting links (Meet/Zoom)** · MinIO media on VPS. Monorepo: Turborepo + pnpm with shared `packages/tokens`, `packages/config`, `packages/ui`.
 - Build order follows spec.md §12: rails → daily loop → belonging → money → memory & school → governance & polish → beta & launch.

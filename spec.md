@@ -6,6 +6,7 @@
 > **v4 changelog:** navigation reworked — Groups is now the home page; Feed is a separate personalized scroll; Chat is its own tab; Menu replaces Explore/Network/Me; every group has Activity | Chat tabs; no global member feed.
 > **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), native in-app calls, admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
 > **v6 changelog:** white-label template architecture — Style Families (structure/style, never color), Color Theme as its own layer with school presets, configurable navigation geometry per device, per-element style variants, the Studio, and the Platform Law vs Family Grammar split. Full catalog in [configuration.md](configuration.md).
+> **v6.1 changelog:** calls redirected to external meeting links (Meet/Zoom) — native WebRTC removed from scope. Tech stack locked: React+Vite web, Expo mobile, Node/TypeScript backend.
 
 ---
 
@@ -61,7 +62,7 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 ### 4.3 Chat
 - **Rows: group chats + private DMs only.** Last-message preview, unread badge, timestamp, pinned chats, new-chat FAB. Pure WhatsApp mental model.
 - **Message rules:** delete own messages anytime; edit within 15 minutes ("edited" shown).
-- **Calls:** native in-app audio/video — including mentor office hours (built deliberately; see [phases.md](phases.md)).
+- **Calls:** external-meeting links (Google Meet / Zoom) generated in-app for mentor office hours and committee meetings; one tap joins. Native WebRTC calls are out of MVP scope.
 - Group chat header tap → jumps into the full group space (Activity | Chat tabs).
 - Unread counts are shared with the Groups home rows — badges never disagree.
 

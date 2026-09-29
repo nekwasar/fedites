@@ -359,6 +359,8 @@ From the clarification sessions. These are **decided** — they override any con
 - **Navigation geometry is configurable per device** (mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first); nav items stay fixed as a set, geometry moves.
 - **Every element has multiple style variants**, grouped into families, with per-element overrides; precedence: element > instance > theme > family > law.
 - **The Studio** ships in Phase 6: live preview, draft → preview → publish with versioning/rollback, validation gates, export/import of instance presets.
+- **Calls:** external meeting links (Google Meet / Zoom) — no native WebRTC calls in MVP.
+- **Stack:** React + Vite + Tailwind + Radix (web) · Expo React Native (mobile) · Node + TypeScript backend · PostgreSQL · Redis · WebSockets · monorepo (Turborepo + pnpm) with shared tokens/config/ui packages.
 
 ---
 
