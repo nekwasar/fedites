@@ -1,6 +1,6 @@
 # Fedites — MVP Scope
 
-The features approved for the first build: **116 features** across sections 1–13 of the [feature catalog](features.md). Everything not listed here is deferred to later phases (see [Deferred beyond MVP](#deferred-beyond-mvp)).
+The features approved for the first build: **112 features** across sections 1–13 of the [feature catalog](features.md). Everything not listed here is deferred to later phases (see [Deferred beyond MVP](#deferred-beyond-mvp)).
 
 **Key scope decisions:**
 - **Legacy family linking** is included but **private** by default.
@@ -112,11 +112,10 @@ The features approved for the first build: **116 features** across sections 1–
 - **Facility booking** — Verified alumni rent school halls and sports fields for their own private events.
 - **Records verification** — Employers can request officially verified enrollment and graduation records through the platform securely.
 
-## 10. Milestones & Recognition (10)
+## 10. Milestones & Recognition (9)
 - **Achievement awards** — An annual awards ceremony honoring members' professional, charitable, community, and lifetime service excellence.
 - **Hall of fame** — A permanent, browsable showcase honoring the association's most distinguished members across all generations.
 - **Badges & streaks** — Collectible earned badges for volunteering, donating, attending events, and other consistently active participation.
-- **Leaderboards** — Friendly season-based rankings of most active, most generous, and top-recruiting members, refreshed monthly.
 - **Birthday reminders** — Never forget any classmate's birthday again; send collective group wishes instantly and automatically.
 - **Founding member status** — A permanent recognition status proudly awarded to early joiners and founding community pioneers.
 - **Memorial pages** — Respectful tribute pages for deceased alumni, with digital condolence books and shared memories.
@@ -124,14 +123,11 @@ The features approved for the first build: **116 features** across sections 1–
 - **Anniversary countdowns** — Live countdown widgets and badges building excitement toward big upcoming reunion milestone celebrations.
 - **Time capsules** — Sealed messages and photos, locked away until the milestone reunion anniversaries finally arrive.
 
-## 12. Fun & Nostalgia (11) — the tender ones
+## 12. Fun & Nostalgia (8) — the tender ones
 - **School bell notifications** — An optional notification chime sampled from the actual old school bell sound recording.
 - **School anthem player** — Stream treasured old recordings of anthems, hymns, and favorite school songs anytime anywhere.
 - **Crest stickers & frames** — Custom school-crest emoji, stickers, and profile frames for all special celebratory occasions year-round.
 - **Confetti moments** — Joyful celebratory confetti animations whenever donations land or milestone goals finally get completed.
-- **Daily trivia** — Play daily trivia quizzes about school history, famous teachers, and beloved campus legends.
-- **Games arcade** — Casual chess, drafts, and scrabble leagues played between members entirely online, all year-round.
-- **Fantasy leagues** — Predict football match results and playfully compete against members from other year sets.
 - **"Remember when" threads** — Weekly nostalgia prompts that spark warm, collective memory storytelling sessions between school generations.
 - **Recipe exchange** — Members recreate and share the famous old tuck-shop and dining-hall recipes together online.
 - **Nostalgia radio** — Collaborative playlists of era-defining old songs from everyone's shared school days, curated together.
@@ -159,5 +155,6 @@ The features approved for the first build: **116 features** across sections 1–
 - **Section 2:** digital business cards, anonymous salary insights, mentorship matching.
 - **Section 7:** merchandise store, auctions & raffles, investment club, group savings circles, welfare fund.
 - **Section 9:** legacy admission registry, retired teachers' welfare.
-- **Section 10:** milestone celebrations.
+- **Section 10:** milestone celebrations, leaderboards (deferred — conflicts with the no-popularity-metrics rule).
+- **Section 12:** daily trivia, games arcade, fantasy leagues (all games removed by decision).
 - **Sections 14–15 (Growth & Platform, Marketplace):** not part of this MVP by default — the full catalog lives in [features.md](features.md) for a later phase.

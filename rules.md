@@ -2,7 +2,7 @@
 
 > Strict rules for building the platform in [spec.md](spec.md). Every rule is enforceable and checked at review.
 > **[LOCKED]** = user-stated, non-negotiable. **[PROPOSED]** = curated starter selection — trim or amend by ID.
-> **DRAFT v1 — for review.**
+> **DRAFT v1.1 — clarification decisions incorporated. Trim by ID to finalize.**
 
 ---
 
@@ -22,6 +22,8 @@ No gradients, no glassmorphism, no blur, no textured depth. Colors are solid fil
 
 **A6. Monochrome base + one accent.** [PROPOSED]
 Ink-on-paper scheme: near-black on near-white (and inverse for dark), plus exactly one school-derived accent. If a second accent is ever needed, it's a mistake.
+
+**DECIDED:** the accent is **wine red** on a **white** base; all neutrals derive from it.
 *Check: palette file contains one accent token.*
 
 **A7. Crest identity.** [PROPOSED]
@@ -40,6 +42,8 @@ Photos appear in galleries, avatars, archives, and event walls only. No hero-ima
 
 **B1. One family + one mono.** [PROPOSED]
 A single type family (plus monospace for code/IDs). Hierarchy via weight, size, and case — never a second family.
+
+**DECIDED:** sans-serif family for UI, **monospace for accents** (IDs, money, set years, timestamps).
 *Check: font imports limited to two files.*
 
 **B2. Uppercase micro-labels.** [PROPOSED]
@@ -62,6 +66,8 @@ Green means success only. Red means destructive/error only. Neither appears deco
 
 **C3. Light and dark designed together.** [PROPOSED]
 Dark mode is not inverted — it's designed simultaneously, both passing contrast. Any new component ships in both.
+
+**DECIDED:** **light-first** at launch; dark available in settings.
 *Check: components reviewed in both themes before merge.*
 
 **C5. Never color-only meaning.** [PROPOSED]
@@ -289,6 +295,50 @@ Groups and member content are archived (read-only, preserved). Twenty years of s
 **N2. Admin actions reversible 30 days.** [PROPOSED]
 Soft-delete window on admin destructive actions, surfaced in audit logs.
 *Check: audit + restore flows tested.*
+
+---
+
+## P. Locked Product Decisions
+
+From the clarification sessions. These are **decided** — they override any conflicting [PROPOSED] rule and bind [spec.md](spec.md).
+
+**Trust & onboarding**
+- Signup requires an **invite code from a verified member**.
+- Accounts are **limited until 3 setmates identify them** (fallback: **admin override**). Limited = read everything + post in groups; **no DMs, no money features, no event RSVP**.
+- Vouching is **invisible after verification** — no names, no counts displayed.
+
+**Privacy**
+- Contact details (phone, email) are **private by default**; revealing another member's contacts is a per-person, **logged** action.
+- Face search is **self-only** — you can only find photos of yourself.
+- Location is **city-level by default**; live location only as a temporary, explicit opt-in at events.
+- The **suggestion box is always anonymous**.
+- The public web is a **minimal static page** (about + request invite) — no member content is ever public.
+
+**Communication**
+- Chat: **delete own messages anytime; edit within 15 minutes** ("edited" shown).
+- **Native in-app audio/video calls**, including mentor office hours.
+- News comments: **admin-toggled per post** (default off); reactions always on; "discuss in your set group" button when comments are off.
+- MVP chat ships with voice notes, photo/video, reply/quote, read receipts, and typing indicators.
+
+**Money & governance**
+- Payments: **online gateway + manual "mark as paid"** (cash/offline), all with receipts.
+- Donor wall is **named by default**; anonymous toggle per payment.
+- **Dues cycle, tiers, and reminders are admin-settable** configuration.
+- **All verified members vote**, regardless of dues status.
+- **Events are created by admins and group admins only.**
+- Emergency broadcast: **any admin, requires second-admin approval**; alternative policies are admin-configurable.
+
+**Content & archives**
+- Memory Lane: **members upload, admins approve** into the official archive.
+- Memorial pages: **member request + admin approval** (family confirmed by admins).
+- Deceased members enter a **memorial state**: content preserved read-only, crest frame, no logins, no birthday pushes.
+
+**Platform**
+- Branding is **Fedites-first**; school name/crest appear on profile and ID, not the masthead.
+- Distribution: **PWA + native apps in Play Store and App Store**.
+- **English only, i18n-ready** strings.
+- Digital alumni ID: **in-app proof card** with QR linking to the public profile.
+- **No games in MVP**; **leaderboards deferred** (see K2, N2).
 
 ---
 

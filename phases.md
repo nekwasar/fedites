@@ -21,7 +21,7 @@
 
 | Session | Deliverable | Demo gate |
 |---|---|---|
-| 0.1 | Stack pick + scaffold: PWA-first codebase, CI, staging deploy, env setup | Empty app deploys itself on every commit |
+| 0.1 | Stack pick + scaffold: PWA + native app shells (Play/App Store), CI, staging deploy, env setup | Empty app deploys itself on every commit |
 | 0.2 | Data model for the rails: members, sets, roles, groups, activity posts, messages, events, ledger + migrations + seed script | Seed script populates a fake school |
 | 0.3 | Design system: tokens, core components, **6-tab shell** (Groups / Feed / Chat / Events / Menu / Manage — all placeholder) | Full nav walkthrough on a phone |
 | ↳ parallel | Kick off payment provider + Meta/WhatsApp business verification; privacy policy draft | Accounts approved (takes weeks — start now) |
@@ -43,7 +43,7 @@
 |---|---|---|
 | 2.1 | Group engine core: one group object, 6 types, membership rules, Groups home rows with unseen-activity tags | All 6 group types exist and joinable per rules |
 | 2.2 | **Activity tab**: posts, photos, reactions, threaded comments, group polls, media upload | Set '98 runs a full Facebook-groups-style day |
-| 2.3 | **Chat**: group chat (realtime), DMs, Chat tab, shared unread counts, pin-to-feed bridge | WhatsApp behavior; badges agree everywhere |
+| 2.3 | **Chat**: group chat (realtime: voice notes, media, reply/quote, read receipts, typing indicators), DMs, Chat tab, shared unread counts, pin-to-feed bridge | WhatsApp behavior; badges agree everywhere |
 | 2.4 | **News bulletin**: admin composer, unread badge, reactions-only, "discuss in your set group," promote-to-News | Admin posts news; member discusses it in set group |
 | 2.5 | **Feed v1**: sources, intent rails v0, melt-into-group with guards, "less from this group" | Scroll slides into Set '98's Activity and back |
 | 2.6 | Lightweight in-group admin panel + reports + moderation v1 | Group admin pins, moderates, escalates with audit trail |
@@ -56,7 +56,7 @@
 |---|---|
 | 3.1 | Events: calendar, create/RSVP, group events badged into Events tab, countdowns |
 | 3.2 | Reunion planning suite + QR door check-in + virtual attendance |
-| 3.3 | Event photo wall + AI photo finder (face pipeline, **with consent policy**) |
+| 3.3 | Event photo wall + AI photo finder (**self-search-only** face pipeline) |
 | 3.4 | Recognition engine + badges, streaks, leaderboards, founding status + personalization (intent capture, suggestions, tune-my-feed) |
 
 **Phase gate:** plan a mini-reunion end-to-end — event, RSVP, check-in by QR, photos findable by face.
@@ -83,7 +83,7 @@
 
 **Phase gate:** Memory Lane has real digitized content a nostalgic member can spend 20 minutes inside.
 
-## Phase 6 — Governance & Polish (4 sessions)
+## Phase 6 — Governance & Polish (5 sessions)
 
 | Session | Deliverable |
 |---|---|
@@ -91,14 +91,16 @@
 | 6.2 | Full moderation, audit logs, analytics dashboard, data export, integrations |
 | 6.3 | Comms: newsletter builder (storable/uploadable templates), email digests, WhatsApp bridge, SMS fallback |
 | 6.4 | Craft pass: dark mode, low-bandwidth mode, PWA offline, quiet hours, accessibility, then security review + load test + backup drill |
+| 6.5 | Native audio/video calls (1:1 and group) + mentor office hours integration | Members call in-app |
 
-## Phase 7 — Beta & Launch (2–3 sessions)
+## Phase 7 — Beta & Launch (3–4 sessions)
 
 | Session | Deliverable |
 |---|---|
 | 7.1 | Private beta with **one set** (20–50 members): feedback loop, fix sprints |
 | 7.2 | Real data seeding: yearbooks, houses, history; admin/treasurer training docs |
 | 7.3 | Launch wave-by-set: oldest set first, referral invitation codes open the next set each week |
+| 7.4 | Play Store + App Store submissions and review cycles; PWA install prompts tuned | Apps live in both stores |
 
 ---
 
@@ -110,6 +112,6 @@
 
 ## Totals & Risks
 
-- **Rough total: ~27 build sessions + 2 parallel tracks.**
+- **Rough total: ~29 build sessions + 2 parallel tracks.**
 - **Riskiest external dependencies:** payment provider approval and WhatsApp business verification — start both in Phase 0 or Phase 4 slips.
 - Build order follows spec.md §12: rails → daily loop → belonging → money → memory & school → governance & polish → beta & launch.

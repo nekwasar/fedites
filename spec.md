@@ -1,9 +1,10 @@
-# Fedites — Platform Specification (v4)
+# Fedites — Platform Specification (v5)
 
 > Single-school alumni community platform. Master architecture spec.
 > Feature scope: the 116 MVP features in [mvp.md](mvp.md). Full catalog (162) in [features.md](features.md).
 >
 > **v4 changelog:** navigation reworked — Groups is now the home page; Feed is a separate personalized scroll; Chat is its own tab; Menu replaces Explore/Network/Me; every group has Activity | Chat tabs; no global member feed.
+> **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), native in-app calls, admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
 
 ---
 
@@ -12,12 +13,13 @@
 - **One school, one community.** Fedites serves a single school and its alumni body. One association container holds every member, set, group, event, and naira. No multi-tenancy complexity.
 - **One identity per person.** A verified member record powers the directory, events, chats, payments, and the digital alumni ID. Honorary accounts for teachers/staff.
 - **No global member feed.** Members never post "school-wide." All member-generated content lives inside groups. The only school-wide channel is **News**, posted by school/alumni admins. This concentrates activity in groups instead of spreading it thin.
+- **Trust-based onboarding.** Signup requires an invite code from a verified member. Accounts stay limited — read + group posts only, no DMs, money, or RSVPs — until 3 setmates identify the member or an admin overrides. Vouching is invisible once verified.
 
 ## 2. Content Model (three layers)
 
 | Layer | Who posts | Nature | Lives in |
 |---|---|---|---|
-| **News bulletin** | School + alumni admins only | Permanent, searchable, high-signal; comments off, reactions only, "discuss this in your set group" button; admins may **promote a standout group post into News** with source attribution | News page (top-bar icon) + cards in Feed |
+| **News bulletin** | School + alumni admins only | Permanent, searchable, high-signal; comments toggled per post by admins (default off), reactions always on, "discuss this in your set group" button when comments are off; admins may **promote a standout group post into News** with source attribution | News page (top-bar icon) + cards in Feed |
 | **Group Activity** | Group members | Permanent, searchable Facebook-groups-style feed: posts, photos, polls, events, files, reactions, threaded comments | Inside each group → **Activity** tab |
 | **Group Chat** | Group members | Ephemeral WhatsApp-style rolling conversation | Inside each group → **Chat** tab; also a row in the Chat tab |
 
@@ -56,6 +58,8 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 
 ### 4.3 Chat
 - **Rows: group chats + private DMs only.** Last-message preview, unread badge, timestamp, pinned chats, new-chat FAB. Pure WhatsApp mental model.
+- **Message rules:** delete own messages anytime; edit within 15 minutes ("edited" shown).
+- **Calls:** native in-app audio/video — including mentor office hours (built deliberately; see [phases.md](phases.md)).
 - Group chat header tap → jumps into the full group space (Activity | Chat tabs).
 - Unread counts are shared with the Groups home rows — badges never disagree.
 
@@ -66,14 +70,15 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 
 ### 4.5 Events
 - Unified calendar, reunion planning suite, anniversary countdowns, my QR ticket, virtual attendance, event photo wall, AI photo finder. Group-owned events appear here badged with their group crest.
+- **Events are created by admins and group admins only.** Live location sharing is a temporary, explicit opt-in at events; everywhere else, location is city-level only.
 
 ### 4.6 Menu
 - **Profile card at top** (photo, name, set, digital ID, roles) — then settings — then the **full feature catalog grid**:
-  - **Memory Lane:** throwback archive, yearbook, history timeline, wiki, slang dictionary, media library, trivia, games arcade, fantasy leagues, remember-when threads, recipe exchange, nostalgia radio, anthem player, crest stickers, hall of fame, memorial pages, condolence coordination
+  - **Memory Lane:** throwback archive, yearbook, history timeline, wiki, slang dictionary, media library, remember-when threads, recipe exchange, nostalgia radio, anthem player, crest stickers, hall of fame, memorial pages, condolence coordination
   - **School Bridge:** wishlist, adopt-a-project, student mentorship, career day, internship pipeline, past questions bank, teacher tributes, facility booking, records verification
-  - **Association:** dues status (private), donate, campaigns, transparent ledger, constitution library, suggestion box
+  - **Association:** dues status (private), donate, campaigns, transparent ledger, constitution library, suggestion box (always anonymous)
   - **People:** member directory, global alumni map, alumni near me, people-you-may-know, connections, business directory, job board, mentor office hours, referrals & endorsements, city ambassadors
-  - **Recognition:** badges & streaks, leaderboards, founding member status, time capsules, letters to future self
+  - **Recognition:** badges & streaks, founding member status, time capsules, letters to future self
   - **Settings:** privacy controls, 2FA, quiet hours, dark mode, low-bandwidth mode, language, PWA install, my payments & receipts, private legacy family linking
 
 ## 5. Personalization Engine ("built for me")
@@ -117,9 +122,10 @@ One gated tab, sections matching duties:
 | **Money** | Dues & reminders, donations, campaigns, P2P approvals, tribute giving, pledge tracking, ledger publishing, scholarships, reimbursements, sponsorships, multi-currency |
 | **Events** | Reunion planning suite (budgets, tasks, RSVPs), QR door mode, live counts, virtual attendance setup |
 | **Speak** | News composer (→ WhatsApp bridge, email digest, SMS fallback), newsletter builder (storable/uploadable templates), promote group post → News |
-| **Govern** | Elections setup, motions & resolutions, AGM toolkit (quorum, agenda, proxies, minutes), constitution library |
+| **Govern** | Elections setup, motions & resolutions, AGM toolkit (quorum, agenda, proxies, minutes), constitution library. **All verified members can vote**, regardless of dues status |
 | **Content** | Spotlight scheduling, yearbook/Memory Lane uploads, wishlist & adopt-a-project management, internship approvals |
 | **Oversight** | Analytics dashboard, audit logs, data export, integrations (Mailchimp, Zapier, accounting) |
+| **Settings** | Dues cycle & tiers config, emergency broadcast policy (any admin + second-admin approval by default, configurable), contact-reveal audit view |
 
 ## 8. Money & Participation Without Pressure
 
@@ -127,6 +133,8 @@ One gated tab, sections matching duties:
 - **Giving is celebrated, opt-in:** confetti + recognition points + donor wall, with an **anonymous-giving toggle** on every payment.
 - **Outcomes loop back into the Feed:** wishlist items fulfilled and adopt-a-project progress posts show members their money becoming a renovated lab — the retention engine.
 - **Transparent ledger** browsable by all members, one tap from every campaign.
+- **Dues cycle, tiers, and reminders are admin-settable** configuration. Payments accept the **online gateway plus manual "mark as paid"** for cash/offline, every payment receipted.
+- **Donor wall is named by default**; the anonymous toggle remains per payment.
 - **Polite multi-channel reminders:** push → WhatsApp bridge → SMS fallback, respecting quiet hours.
 - **Low-friction civic entry:** one-tap polls and suggestion box in Menu; campaign and election cards appear in Feed and News.
 
@@ -156,6 +164,8 @@ One gated tab, sections matching duties:
 ## 11. Onboarding & Progressive Disclosure
 
 - **Day 0:** verify → profile → set assignment → auto-join set group & sports house → join-intent capture → first-run tour (one card per tab) → **land on Groups home** with your set group and house already at the top.
+- **Probation (limited accounts):** read everything, post in groups; DMs, money features, and event RSVP unlock after **3 setmates identify** the member or an **admin override**. Vouching leaves no public trace.
+- **Verification UX:** invite-code entry → profile → set claim → vouching requests go to setmates in-app.
 - **Week 1:** Chat, Feed, suggested-classmates rail, city-chapter suggestion.
 - **Ongoing:** join groups from Discover, RSVP events, pay dues.
 - **Earned/unlocked:** badges, arcade.
@@ -164,7 +174,7 @@ One gated tab, sections matching duties:
 
 ## 12. Build Order (each slice shippable)
 
-1. **Rails:** auth, verification, profiles, sets, roles, notification dispatcher, admin shell.
+1. **Rails:** auth, verification (invite codes + vouching), profiles, sets, roles, notification dispatcher, admin shell.
 2. **Daily loop:** groups engine (all 6 types, Activity + Chat tabs), Chat tab, DMs, News bulletin, Feed v1 (sources + melt), Groups home.
 3. **Belonging:** events core (calendar, reunion suite, QR check-in), badges, personalization (intent rails, suggestions).
 4. **Money:** dues, donations, campaigns, wallet/ledger, multi-currency.
@@ -184,8 +194,12 @@ One gated tab, sections matching duties:
 | 7 Money & Giving (11) | Menu→Association + Feed/News cards + Manage→Money |
 | 8 Governance & Admin (12) | Manage panel (+ member-facing constitution & suggestion box in Menu) |
 | 9 The School Bridge (10) | Menu→School Bridge + Manage→Content |
-| 10 Milestones & Recognition (10) | Menu→Recognition + Feed moments + Events |
-| 12 Fun & Nostalgia (11) | Menu→Memory Lane + system-wide touches |
+| 10 Milestones & Recognition (9) | Menu→Recognition + Feed moments + Events |
+| 12 Fun & Nostalgia (8) | Menu→Memory Lane + system-wide touches |
 | 13 Comfort, Trust & Craft (9) | Menu→Settings + platform defaults |
 
-**Excluded by design:** all of §11 (Care, Welfare & Support), §§14–15 (Growth & Platform, Marketplace), and every struck item from mvp.md — no Telegram bridge, no stories, no podcast & video channel, no merchandise store, no auctions & raffles, no investment club, no group savings circles, no welfare fund, no milestone celebrations, no legacy admission registry, no retired teachers' welfare, no digital business cards, no anonymous salary insights, no mentorship matching, no auto-translation, no public dues badge, **no global member feed**.
+**Excluded by design:** all of §11 (Care, Welfare & Support), §§14–15 (Growth & Platform, Marketplace), and every struck item from mvp.md — no Telegram bridge, no stories, no podcast & video channel, no merchandise store, no auctions & raffles, no investment club, no group savings circles, no welfare fund, no milestone celebrations, no legacy admission registry, no retired teachers' welfare, no digital business cards, no anonymous salary insights, no mentorship matching, no auto-translation, no public dues badge, **no global member feed**, no games (trivia, arcade, fantasy leagues), no leaderboards.
+
+## 14. Locked Decisions Register
+
+All behavioral decisions from the clarification sessions are recorded in [rules.md §P](rules.md) and are **binding** on this spec: invite-code signup with 3-setmate vouching (read + group posts until vouched, invisible after), self-only face search, city-level location with event opt-in, logged contact reveals, admin-toggled news comments, chat delete-anytime/edit-15-minutes, native in-app calls, online + manual payments, named-by-default donor wall, admin-settable dues cycle & emergency policy, all-verified voting, admin/group-admin event creation, always-anonymous suggestion box, member-upload archives with admin approval, memorial state for deceased members, Fedites-first branding, PWA + app-store distribution, English i18n-ready, in-app alumni ID, no games, no leaderboards.
