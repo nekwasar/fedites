@@ -22,8 +22,9 @@
 | Session | Deliverable | Demo gate |
 |---|---|---|
 | 0.1 | Stack pick + scaffold: PWA + native app shells (Play/App Store), CI, staging deploy, env setup | Empty app deploys itself on every commit |
-| 0.2 | Data model for the rails: members, sets, roles, groups, activity posts, messages, events, ledger + migrations + seed script | Seed script populates a fake school |
-| 0.3 | Design system: tokens, core components, **6-tab shell** (Groups / Feed / Chat / Events / Menu / Manage — all placeholder) | Full nav walkthrough on a phone |
+| 0.2 | Data model for the rails: members, sets, roles, groups, activity posts, messages, events, ledger + **config schema and `instance_id` on every table** + migrations + seed script | Seed script populates a fake school |
+| 0.3 | Design system part 1: theme tokens (radius, density), **color theme layer**, variant registry skeleton, family inheritance engine | Theme preset switches live in-app |
+| 0.4 | Design system part 2: **config-driven shell** — nav patterns (mobile + desktop), placeholder tabs rendered from nav schema, Studio preview scaffolding | Full nav walkthrough on a phone; nav pattern swaps via config |
 | ↳ parallel | Kick off payment provider + Meta/WhatsApp business verification; privacy policy draft | Accounts approved (takes weeks — start now) |
 
 ## Phase 1 — Rails (4 sessions)
@@ -83,7 +84,7 @@
 
 **Phase gate:** Memory Lane has real digitized content a nostalgic member can spend 20 minutes inside.
 
-## Phase 6 — Governance & Polish (5 sessions)
+## Phase 6 — Governance & Polish (7 sessions)
 
 | Session | Deliverable |
 |---|---|
@@ -92,13 +93,15 @@
 | 6.3 | Comms: newsletter builder (storable/uploadable templates), email digests, WhatsApp bridge, SMS fallback |
 | 6.4 | Craft pass: dark mode, low-bandwidth mode, PWA offline, quiet hours, accessibility, then security review + load test + backup drill |
 | 6.5 | Native audio/video calls (1:1 and group) + mentor office hours integration | Members call in-app |
+| 6.6 | **Studio I:** theme & branding editor, color theme presets, terminology glossary, copy tables | Admin changes colors/terms; clients hot-reload |
+| 6.7 | **Studio II:** nav pattern panel, element variant panels, family gallery, draft → preview → publish with versioning, validation gates, export/import | Full re-skin of a fake instance in under 30 minutes |
 
 ## Phase 7 — Beta & Launch (3–4 sessions)
 
 | Session | Deliverable |
 |---|---|
 | 7.1 | Private beta with **one set** (20–50 members): feedback loop, fix sprints |
-| 7.2 | Real data seeding: yearbooks, houses, history; admin/treasurer training docs |
+| 7.2 | Real data seeding: yearbooks, houses, history; admin/treasurer training docs; **instance preset library + export/import; "new school in 30 minutes" dress rehearsal** |
 | 7.3 | Launch wave-by-set: oldest set first, referral invitation codes open the next set each week |
 | 7.4 | Play Store + App Store submissions and review cycles; PWA install prompts tuned | Apps live in both stores |
 
@@ -109,9 +112,10 @@
 - Migrations in; feature behind a flag if partial; typecheck + tests green; seed/demo data updated; deployed to staging; 2-minute demo script written; changelog updated.
 - Never two big subsystems in one session; every session touches at most one new rail.
 - Phase gates are UAT checklists run by real humans: an admin, a treasurer, and five members — not just the builder.
+- No element ships with one style: every component lands with its variant set, both themes, and law-gate tests (a11y, performance) — or it doesn't land.
 
 ## Totals & Risks
 
-- **Rough total: ~29 build sessions + 2 parallel tracks.**
+- **Rough total: ~33 build sessions + 2 parallel tracks.**
 - **Riskiest external dependencies:** payment provider approval and WhatsApp business verification — start both in Phase 0 or Phase 4 slips.
 - Build order follows spec.md §12: rails → daily loop → belonging → money → memory & school → governance & polish → beta & launch.

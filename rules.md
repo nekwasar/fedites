@@ -2,29 +2,31 @@
 
 > Strict rules for building the platform in [spec.md](spec.md). Every rule is enforceable and checked at review.
 > **[LOCKED]** = user-stated, non-negotiable. **[PROPOSED]** = curated starter selection — trim or amend by ID.
-> **DRAFT v1.1 — clarification decisions incorporated. Trim by ID to finalize.**
+> **DRAFT v1.2 — two-tier split (Platform Law / Family Grammar, §O) and white-label decisions incorporated.**
 
 ---
 
 ## A. Visual Style & Design Language
 
-**A1. No cards UI.** [LOCKED]
+**A1. No cards UI.** [LOCKED — Family Grammar: defines the Fedites Classic family]
 No rounded boxes, no drop shadows, no elevated surfaces. Content is organized by whitespace, 1px hairlines, and section headers. If a design "needs" a card, it needs a section instead.
-*Check: no `box-shadow` or `border-radius` in any component code; visual review per screen.*
+*Check: no `box-shadow` or `border-radius` in Classic-family component code; visual review per screen.*
+*White-label note: other Style Families (Minimalist, Editorial, later Material/Glassmorphism) may define their own surface treatment — they must pass the Platform Law gates (§O), not this rule.*
 
-**A4. Flat solids only.** [PROPOSED]
+**A4. Flat solids only.** [FAMILY GRAMMAR — Fedites Classic default]
 No gradients, no glassmorphism, no blur, no textured depth. Colors are solid fills; hierarchy comes from weight, size, and position.
-*Check: no `gradient`/`backdrop-filter` in codebase.*
+*Check: no `gradient`/`backdrop-filter` in Classic-family code; other families may use elevation/blur only with performance fallbacks and law-gate passes.*
 
-**A5. Sharp corners everywhere.** [PROPOSED]
-0 border-radius as a signature — buttons, avatars, photos, sheets, everything. The sharp rectangle is the app's visual fingerprint.
-*Check: token `--radius: 0` used globally; no component overrides it.*
+**A5. Radius is a token — 0 is the signature.** [FAMILY GRAMMAR — Fedites Classic default]
+Sharp corners (radius 0) are the Classic visual fingerprint; radius moved from law to a theme token so other families can choose soft corners.
+*Check: all components use the `--radius` scale token; the Classic preset pins it to 0.*
 
 **A6. Monochrome base + one accent.** [PROPOSED]
 Ink-on-paper scheme: near-black on near-white (and inverse for dark), plus exactly one school-derived accent. If a second accent is ever needed, it's a mistake.
 
 **DECIDED:** the accent is **wine red** on a **white** base; all neutrals derive from it.
-*Check: palette file contains one accent token.*
+**White-label note:** color is **not** part of Style Families — it is its own **Color Theme layer** with curated school presets (§O, [configuration.md](configuration.md)); wine red + white is the Fedites default preset.
+*Check: palette file contains one accent token; themes validated for AA contrast on publish.*
 
 **A7. Crest identity.** [PROPOSED]
 All color derives from the school crest; the crest appears only in mastheads, the digital ID, and empty states — never scattered as decoration.
@@ -298,6 +300,18 @@ Soft-delete window on admin destructive actions, surfaced in audit logs.
 
 ---
 
+## O. Platform Law vs Family Grammar
+
+The app is a white-label template — each school configures its own instance. Rules split into two tiers.
+
+**Platform Law — binds every family and every instance; never configurable:**
+Accessibility floors (WCAG AA, 44px targets, keyboard/screen-reader, focus visible) · performance budgets (L1) · press states (F1 — each family implements its own, e.g. ripple counts) · reduced motion (F9) · no emojis (D1) · copy rules (H1–H5) · navigation integrity (I1–I6) · attention rules (J1–J5) · privacy rules (K1–K6) · engineering rules (M1–M6) · product behavior (N1–N2) · API-enforced permissions, audit logs, archive-never-delete. The Studio cannot publish any family, variant, or theme that fails a law gate.
+
+**Family Grammar — per style family, configurable:**
+Surface treatment (hairlines vs cards vs glass), elevation, blur, radius, density, icon set, type pairing, motion personality. A1/A4/A5 define the **Fedites Classic** family — the default and signature look. Families ship as versioned packs; every variant must pass the law gates before release.
+
+---
+
 ## P. Locked Product Decisions
 
 From the clarification sessions. These are **decided** — they override any conflicting [PROPOSED] rule and bind [spec.md](spec.md).
@@ -339,6 +353,12 @@ From the clarification sessions. These are **decided** — they override any con
 - **English only, i18n-ready** strings.
 - Digital alumni ID: **in-app proof card** with QR linking to the public profile.
 - **No games in MVP**; **leaderboards deferred** (see K2, N2).
+- **White-label template product:** one codebase, many instances; `instance_id` on every table; zero instance constants in code (extends M1).
+- **Style Families** define structure and style, **never color**: Fedites Classic (default), Minimalist, Editorial at MVP; Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism post-launch.
+- **Color Theme is its own layer** (independent of family) with curated school color presets; wine red + white is the default preset.
+- **Navigation geometry is configurable per device** (mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first); nav items stay fixed as a set, geometry moves.
+- **Every element has multiple style variants**, grouped into families, with per-element overrides; precedence: element > instance > theme > family > law.
+- **The Studio** ships in Phase 6: live preview, draft → preview → publish with versioning/rollback, validation gates, export/import of instance presets.
 
 ---
 

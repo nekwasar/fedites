@@ -1,10 +1,11 @@
-# Fedites — Platform Specification (v5)
+# Fedites — Platform Specification (v6)
 
 > Single-school alumni community platform. Master architecture spec.
-> Feature scope: the 116 MVP features in [mvp.md](mvp.md). Full catalog (162) in [features.md](features.md).
+> Feature scope: the 112 MVP features in [mvp.md](mvp.md). Full catalog (162) in [features.md](features.md).
 >
 > **v4 changelog:** navigation reworked — Groups is now the home page; Feed is a separate personalized scroll; Chat is its own tab; Menu replaces Explore/Network/Me; every group has Activity | Chat tabs; no global member feed.
 > **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), native in-app calls, admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
+> **v6 changelog:** white-label template architecture — Style Families (structure/style, never color), Color Theme as its own layer with school presets, configurable navigation geometry per device, per-element style variants, the Studio, and the Platform Law vs Family Grammar split. Full catalog in [configuration.md](configuration.md).
 
 ---
 
@@ -14,6 +15,7 @@
 - **One identity per person.** A verified member record powers the directory, events, chats, payments, and the digital alumni ID. Honorary accounts for teachers/staff.
 - **No global member feed.** Members never post "school-wide." All member-generated content lives inside groups. The only school-wide channel is **News**, posted by school/alumni admins. This concentrates activity in groups instead of spreading it thin.
 - **Trust-based onboarding.** Signup requires an invite code from a verified member. Accounts stay limited — read + group posts only, no DMs, money, or RSVPs — until 3 setmates identify the member or an admin overrides. Vouching is invisible once verified.
+- **Template, not a bespoke app.** Fedites is a white-label product: every school deploys a fully configured instance. All branding, structure, and behavior live in instance config (§15) — zero school-specific values in code.
 
 ## 2. Content Model (three layers)
 
@@ -126,6 +128,7 @@ One gated tab, sections matching duties:
 | **Content** | Spotlight scheduling, yearbook/Memory Lane uploads, wishlist & adopt-a-project management, internship approvals |
 | **Oversight** | Analytics dashboard, audit logs, data export, integrations (Mailchimp, Zapier, accounting) |
 | **Settings** | Dues cycle & tiers config, emergency broadcast policy (any admin + second-admin approval by default, configurable), contact-reveal audit view |
+| **Studio** | The customization workbench: color themes, style families, nav patterns, element variants, terminology, copy tables, feature flags — with live preview, publish/versioning, export/import (§15) |
 
 ## 8. Money & Participation Without Pressure
 
@@ -174,12 +177,12 @@ One gated tab, sections matching duties:
 
 ## 12. Build Order (each slice shippable)
 
-1. **Rails:** auth, verification (invite codes + vouching), profiles, sets, roles, notification dispatcher, admin shell.
+1. **Rails:** auth, verification (invite codes + vouching), profiles, sets, roles, notification dispatcher, admin shell, **config service + instance_id schema**.
 2. **Daily loop:** groups engine (all 6 types, Activity + Chat tabs), Chat tab, DMs, News bulletin, Feed v1 (sources + melt), Groups home.
 3. **Belonging:** events core (calendar, reunion suite, QR check-in), badges, personalization (intent rails, suggestions).
 4. **Money:** dues, donations, campaigns, wallet/ledger, multi-currency.
 5. **Memory & school:** Memory Lane, School Bridge, jobs, mentor hours.
-6. **Governance & polish:** elections, AGM toolkit, full moderation, analytics, PWA, dark mode, low-bandwidth.
+6. **Governance & polish:** elections, AGM toolkit, full moderation, analytics, PWA, dark mode, low-bandwidth, **the Studio (§15)**.
 
 ## 13. MVP Coverage Check
 
@@ -203,3 +206,16 @@ One gated tab, sections matching duties:
 ## 14. Locked Decisions Register
 
 All behavioral decisions from the clarification sessions are recorded in [rules.md §P](rules.md) and are **binding** on this spec: invite-code signup with 3-setmate vouching (read + group posts until vouched, invisible after), self-only face search, city-level location with event opt-in, logged contact reveals, admin-toggled news comments, chat delete-anytime/edit-15-minutes, native in-app calls, online + manual payments, named-by-default donor wall, admin-settable dues cycle & emergency policy, all-verified voting, admin/group-admin event creation, always-anonymous suggestion box, member-upload archives with admin approval, memorial state for deceased members, Fedites-first branding, PWA + app-store distribution, English i18n-ready, in-app alumni ID, no games, no leaderboards.
+
+## 15. White-Label & Configuration
+
+Fedites ships as a reusable template — any school, anywhere, anytime.
+
+- **Config stack (precedence):** element overrides > instance overrides > **Color Theme** > **Style Family** > Platform Law.
+- **Color Theme is its own layer** — never part of a family. Curated presets of popular school color combinations (wine red + white is the Fedites default), plus custom palettes gated by contrast validation.
+- **Style Families** define structure and style — surfaces, radius, density, icons, type pairing, motion, element defaults — **never color**. MVP: **Fedites Classic** (flat, sharp, hairline — the signature look), **Minimalist**, **Editorial**. Roadmap: Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism.
+- **Navigation geometry is configurable per device** — mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first. Items stay; geometry moves.
+- **Every element has multiple style variants** (nav bars, buttons, modals, toasts, tabs, badges, icons, tables, and more), grouped into families, with per-element overrides.
+- **Platform Law stays fixed for every family and instance:** accessibility floors, performance budgets, press states, no emojis, copy/privacy/navigation rules, API-enforced permissions, archive-never-delete.
+- **The Studio** (Manage area): live preview in device frames, draft → preview → publish with versioning and rollback, validation gates that refuse to publish a11y/performance failures, terminology glossary, copy tables, feature flags, and export/import of full instance presets.
+- Full catalog and schemas: [configuration.md](configuration.md).
