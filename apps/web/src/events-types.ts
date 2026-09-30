@@ -18,3 +18,9 @@ export interface EventUpdateBody extends Partial<EventCreateBody> { checkInOpen?
 export interface Ticket { payload: string; qrSvg: string; eventTitle: string; startsAt: string }
 export interface EventTask { id: string; title: string; assignee: string | null; assigneeName: string | null; dueAt: string | null; done: boolean }
 export interface BudgetItem { id: string; label: string; amountMinor: number; currency: string; kind: "planned" | "actual" }
+
+export interface PhotoWallItem {
+  id: string; mediaId: string; uploader: string; uploaderId: string;
+  createdAt: string; tags: Array<{ memberId: string; name: string }>;
+  taggedByMe: boolean; isMine: boolean;
+}

@@ -40,7 +40,7 @@ pnpm dev               # api :8787 + web :5173
 |---|---|---|
 | 3.1 | Events: calendar, create/RSVP (§P), group badges, countdowns, Activity bridge | `apps/api/src/events.ts`, web `EventsScreen` |
 | 3.2 | Reunion suite (tasks/budget/RSVPs), QR tickets + door check-in, live counts, virtual attendance | same module, web organizer suite + jsQR scanner |
-| 3.3 | Event photo wall + AI photo finder (pluggable stub, self-only) | next batch |
+| 3.3 | Event photo wall + AI photo finder (pluggable stub, self-only) | `apps/api/src/{photos,face}.ts`, web `PhotoWall` + profile privacy section |
 | 3.4 | Recognition engine + personalization | next batch |
 
 ## Phase 2 — Daily Loop (complete)

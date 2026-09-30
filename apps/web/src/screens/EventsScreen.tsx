@@ -5,6 +5,7 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
+import { PhotoWall } from "./PhotoWall.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
 import { Section } from "./ProfileScreen.js";
 import type { EventListItem, Ticket, EventTask, BudgetItem } from "../events-types.js";
@@ -201,6 +202,8 @@ export function EventDetailScreen({ eventId, onNavigate, member }: {
           <button type="button" className="btn btn--outlined press" onClick={() => void openTicket()}>My QR ticket</button>
         </div>
       )}
+
+      <PhotoWall event={event} member={member} onNavigate={onNavigate} />
 
       {event.virtualLink !== null && (
         <div style={{ padding: "0 16px 16px" }}>

@@ -14,6 +14,15 @@
 - Anniversary flag for recurring reunion countdowns. No live location in this batch (permitted, not required).
 - Migration `0004_events.sql`; PG suite `phase3-events.pg.test.ts` (permission matrix, §P RSVP refusal, ticket/check-in flow incl. tampering, suite, badges/bridge).
 
+## Phase 3 — Belonging, batch 2: Photo Wall + AI Photo Finder (complete)
+
+### Session 3.3
+- Event photo wall: attendees (going/maybe/checked-in) upload images; 3:2 fixed ratio (D3); tags with member search land an inbox notice; photos reportable; archived not deleted (N1).
+- Face engine (rail): pluggable provider interface — STUB ships first (deterministic content-hash embeddings; honest limitation: matches identical/near-identical bytes only, not faces). Real providers (insightface sidecar / cloud API) drop in via FACE_PROVIDER env without touching callers.
+- K3 consent gates enforced at the API (M5): opt-in required before enrollment or search; the whole face index is deletable anytime — opt-out wipes every row (§P self-search-only by construction: the search key is always the caller's own reference embedding).
+- Provider-version check: a provider change requires re-enrollment (409).
+- Flags: events.photoWall + events.faceFinder; migration 0005; PG suite phase3-photos.pg.test.ts (5 tests).
+
 ## Phase 2 — Daily Loop (complete)
 
 ### Session 2.1 — Group engine core

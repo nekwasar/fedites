@@ -2,7 +2,7 @@
  * Profile + settings (1.3): profile builder, privacy controls, private
  * legacy family links, 2FA, invites. Digital ID lives on /id.
  */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
 import type { FamilyLink, Invite, SessionMember, VerificationStatus } from "@fedites/config";
@@ -66,6 +66,8 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
         <button type="button" className="btn btn--outlined press" onClick={() => onNavigate("/members/" + member.id)}>View my public profile</button>
       </Section>
 
+      <FaceSearch />
+
       <FamilyLinks />
 
       <Section label="Two-factor authentication">
@@ -100,6 +102,65 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
         <button type="button" className="btn btn--outlined press" onClick={() => void Api.logout().then(() => { window.location.href = "/auth"; })}>Sign out</button>
       </Section>
     </main>
+  );
+}
+
+function FaceSearch(): React.ReactElement {
+  const [status, setStatus] = useState<{ optIn: boolean; enrolled: boolean } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const load = (): void => { Api.faceStatus().then(setStatus).catch(() => undefined); };
+  useEffect(load, []);
+
+  const toggle = async (): Promise<void> => {
+    if (status === null) return;
+    try {
+      await Api.faceOptIn(!status.optIn);
+      setNote(!status.optIn ? "Face search is on. Enroll a reference selfie to make photos of you findable — to you only." : "Face search is off. Your face index has been deleted.");
+      load();
+    } catch (e) { setNote((e as Error).message); }
+  };
+
+  const enroll = async (file: File): Promise<void> => {
+    try {
+      await Api.faceEnroll(file);
+      setNote("Reference saved. Only you can search with it.");
+      load();
+    } catch (e) { setNote((e as Error).message); }
+  };
+
+  const wipe = async (): Promise<void> => {
+    try {
+      await Api.faceDelete();
+      setNote("Face index deleted.");
+      load();
+    } catch (e) { setNote((e as Error).message); }
+  };
+
+  return (
+    <Section label="Face search (AI photo finder)">
+      <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
+        Opt in to find photos of yourself on event walls. Self-only: searches run your reference and can never surface anyone else's data. Turning it off, or deleting below, removes your entire face index.
+      </p>
+      {status !== null && (
+        <p className="micro">Opt-in: {status.optIn ? "on" : "off"} · reference: {status.enrolled ? "enrolled" : "none"}</p>
+      )}
+      {status !== null && !status.optIn && (
+        <button type="button" className="btn btn--filled press" onClick={() => void toggle()}>Turn on face search</button>
+      )}
+      {status !== null && status.optIn && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f !== undefined) void enroll(f); }} />
+          <button type="button" className="btn btn--outlined press" onClick={() => fileRef.current?.click()}>
+            {status.enrolled ? "Re-enroll reference" : "Enroll reference selfie"}
+          </button>
+          <button type="button" className="btn btn--underline-link press" onClick={() => void wipe()}>Delete my face data</button>
+          <button type="button" className="btn btn--underline-link press" onClick={() => void toggle()}>Turn off</button>
+        </div>
+      )}
+      {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", marginTop: 8 }}>{note}</p>}
+    </Section>
   );
 }
 

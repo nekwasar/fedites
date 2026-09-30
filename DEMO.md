@@ -1,3 +1,14 @@
+# Phase 3 batch 2 demo (Photo wall + face finder)
+
+Continuing from batch 1's running app:
+
+1. **Wall** — Open the Mini Reunion as member1 (going) → Add photo (pick any image) → it lands on the wall at 3:2. As member2: Tag → search → pick member1 → member1's inbox shows "tagged you in a photo".
+2. **Opt-in** — As member1: Menu → Face search → Turn on → Enroll reference selfie (pick the SAME image file used on the wall).
+3. **Find me** — Back on the event wall → Find me → the photo is matched and shown (stub provider: identical bytes match; real face embeddings drop in later).
+4. **Self-only + deletion** — As member2: opt in, enroll a DIFFERENT image → Find me returns nothing despite member1's photo existing. As member1: Delete my face data → index gone, finder refuses.
+
+---
+
 # Phase 3 batch 1 demo (Events & Reunions)
 
 ```sh

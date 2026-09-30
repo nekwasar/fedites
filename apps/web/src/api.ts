@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -147,6 +147,22 @@ export const Api = {
   addEventTask: (id: string, b: { title: string; assignee?: string; dueAt?: string }): Promise<{ id: string }> => post(`/v1/events/${id}/tasks`, b),
   updateEventTask: (id: string, taskId: string, b: { done?: boolean; title?: string; assignee?: string | null }): Promise<{ ok: boolean }> => patch(`/v1/events/${id}/tasks/${taskId}`, b),
   addBudgetItem: (id: string, b: { label: string; amountMinor: number; currency: string; kind: "planned" | "actual" }): Promise<{ id: string }> => post(`/v1/events/${id}/budget`, b),
+
+  /* photo wall + face finder (3.3) */
+  eventPhotos: (id: string): Promise<{ photos: PhotoWallItem[] }> => call(`/v1/events/${id}/photos`),
+  uploadEventPhoto: async (eventId: string, file: File): Promise<{ id: string }> => {
+    const media = await Api.uploadMedia(file);
+    return post(`/v1/events/${eventId}/photos`, { mediaId: media.id });
+  },
+  tagPhoto: (eventId: string, photoId: string, memberId: string): Promise<{ ok: boolean }> => post(`/v1/events/${eventId}/photos/${photoId}/tags`, { memberId }),
+  faceStatus: (): Promise<{ optIn: boolean; enrolled: boolean }> => call("/v1/me/face/status"),
+  faceOptIn: (enabled: boolean): Promise<{ ok: boolean }> => post("/v1/me/face/opt-in", { enabled }),
+  faceEnroll: async (file: File): Promise<{ ok: boolean; provider: string }> => {
+    const media = await Api.uploadMedia(file);
+    return post("/v1/me/face/reference", { mediaId: media.id });
+  },
+  faceDelete: (): Promise<{ ok: boolean }> => del("/v1/me/face/reference"),
+  findMe: (eventId: string): Promise<{ matches: Array<{ photoId: string; mediaId: string; score: number }> }> => call(`/v1/events/${eventId}/find-me`),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

@@ -26,6 +26,8 @@ export const defaultFlags: ReadonlyArray<{ key: string; enabled: boolean }> = [
   { key: "news.bulletin", enabled: true },
   { key: "feed.personalized", enabled: true },
   { key: "events.core", enabled: true }, // Phase 3
+  { key: "events.photoWall", enabled: true }, // Phase 3
+  { key: "events.faceFinder", enabled: true }, // pluggable stub provider (3.3)
   { key: "recognition.badges", enabled: false },
   { key: "money.dues", enabled: false }, // Phase 4
   { key: "money.donations", enabled: false },
