@@ -20,6 +20,7 @@ import {
 } from "@fedites/config";
 import { requireMember, requireDutyRole } from "./sessions.js";
 import { evaluate } from "./policy.js";
+import { record } from "./recognition.js";
 
 const TICKET_PREFIX = "fedites-ticket:";
 
@@ -296,6 +297,7 @@ export async function eventsRoutes(
        ON CONFLICT (event_id, member_id) DO NOTHING RETURNING id`,
       [member.instanceId, id, memberId, member.id],
     );
+    await record(pool, member.instanceId, memberId, "event.checkin", { type: "event", id }).catch(() => undefined);
     const c = await counts(id);
     return done.rows.length > 0
       ? { ok: true, duplicate: false, counts: c }

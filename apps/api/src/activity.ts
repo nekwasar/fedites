@@ -9,6 +9,7 @@ import { z } from "zod";
 import type { Pool } from "pg";
 import { requireMember, requireDutyRole } from "./sessions.js";
 import { markActivitySeen } from "./unread.js";
+import { record } from "./recognition.js";
 import type { InstanceConfig } from "@fedites/config";
 
 const postBody = z.object({
@@ -175,6 +176,7 @@ export async function activityRoutes(app: FastifyInstance, opts: { pool: Pool; l
       [member.instanceId, id, member.id, body.kind, body.body ?? null],
     );
     const postId = post.rows[0]!.id;
+    await record(pool, member.instanceId, member.id, "activity.post", { type: "activity_post", id: postId }).catch(() => undefined);
     if (body.mediaIds !== undefined) {
       for (const [i, mediaId] of body.mediaIds.entries()) {
         await pool.query(
@@ -255,6 +257,7 @@ export async function activityRoutes(app: FastifyInstance, opts: { pool: Pool; l
       "INSERT INTO comments (instance_id, post_id, author_id, parent_id, body) VALUES ($1,$2,$3,$4,$5) RETURNING id",
       [member.instanceId, postId, member.id, body.parentId ?? null, body.body],
     );
+    await record(pool, member.instanceId, member.id, "activity.comment", { type: "activity_post", id: postId }).catch(() => undefined);
     if (p.group_id !== null) {
       opts.hub.broadcast([`group:${p.group_id}`], { type: "comment.new", groupId: p.group_id, postId });
     }

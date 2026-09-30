@@ -1,3 +1,13 @@
+# Phase 3 batch 3 demo (Recognition + Personalization)
+
+1. **Earn** — Post in Set '98 as member1 → Menu → Recognition shows points, the "First words" badge, and your (private) week streak. Comment ten times → "Conversationalist" appears.
+2. **Founding** — New signups verified within 30 days of instance creation get "Founding member" automatically; admins can award it manually (audited).
+3. **Intents** — Menu → "What brings you here" → pick Network & jobs + Events & reunions → Save → Discovery in Groups home floats matching suggestions.
+4. **Classmates rail** — Feed shows "Suggested classmates" (same set, no chat yet) → Say hello opens their profile. Dismiss retires it.
+5. **Tune** — On any feed card: "More from this group" — older posts from that group now rank above newer ones elsewhere; "Less" mutes entirely.
+
+---
+
 # Phase 3 batch 2 demo (Photo wall + face finder)
 
 Continuing from batch 1's running app:

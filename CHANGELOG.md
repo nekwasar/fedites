@@ -23,6 +23,16 @@
 - Provider-version check: a provider change requires re-enrollment (409).
 - Flags: events.photoWall + events.faceFinder; migration 0005; PG suite phase3-photos.pg.test.ts (5 tests).
 
+## Phase 3 — Belonging, batch 3: Recognition + Personalization (complete)
+
+### Session 3.4
+- One recognition engine (rail 6): a single activity-points ledger feeds badges, streaks, and founding status. Points: post 5, comment 2, photo 5, check-in 10, RSVP 1, verified 20.
+- Badges: verified, founding member, first words, conversationalist (10 comments), shutterbug (10 photos), event-goer (3 check-ins). Thresholds evaluated on the ledger; manual admin awards duty-gated + audited (N2).
+- Founding member status: auto on verification within 30 days of instance creation; admin-awardable for late pioneers.
+- Weekly streaks: private to the member (K5 — no shaming, no push nagging), shown in Menu alongside points. K2: public profiles show badge titles only — never points or league tables.
+- Personalization (spec §5): join-intent capture (six options, multi-select, editable in Menu) boosts matching discovery suggestions; "Suggested classmates" rail (same-set, no DM yet) dismissible like all rails; tune-my-feed "More from this group" affinity (+12h rank boost per level, capped) alongside "Less from this group"; per-category notification preferences (mentions/events/news) stored and dispatcher-ready under absolute quiet hours (J4).
+- Migration 0006; PG suite phase3-recognition.pg.test.ts (6 tests).
+
 ## Phase 2 — Daily Loop (complete)
 
 ### Session 2.1 — Group engine core

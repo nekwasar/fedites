@@ -10,6 +10,7 @@ import { randomBytes } from "node:crypto";
 import type { Pool } from "pg";
 import { decisionBodySchema } from "@fedites/config";
 import { requireMember, requireDutyRole } from "./sessions.js";
+import { record, evaluateFounding } from "./recognition.js";
 
 const vouchBody = z.object({ memberId: z.string().uuid() });
 
@@ -115,6 +116,10 @@ export async function verificationRoutes(
       [member.instanceId, member.id, target.id, JSON.stringify({ decision: body.decision, setYear: body.setYear })],
     );
 
+    if (status === "verified" || status === "honorary") {
+      await record(pool, member.instanceId, target.id, "verified").catch(() => undefined);
+      await evaluateFounding(pool, member.instanceId, target.id).catch(() => undefined);
+    }
     const kind = body.decision === "reject" ? "verification.rejected" : body.decision === "activate" ? "verification.activated" : "verification.verified";
     await pool.query(
       `INSERT INTO notifications (instance_id, member_id, kind, payload)
@@ -183,6 +188,8 @@ export async function verificationRoutes(
         "UPDATE members SET verification = 'verified', approved_at = now() WHERE id = $1",
         [target.id],
       );
+      await record(pool, member.instanceId, target.id, "verified").catch(() => undefined);
+      await evaluateFounding(pool, member.instanceId, target.id).catch(() => undefined);
       await pool.query(
         `INSERT INTO notifications (instance_id, member_id, kind, payload)
          VALUES ($1,$2,'verification.verified',$3)`,

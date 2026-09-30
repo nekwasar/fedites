@@ -77,3 +77,9 @@ export interface ReportItem {
 }
 
 export interface MemberHit { id: string; display_name: string; verification: string; set_year: number | null }
+
+export interface RecognitionMe {
+  points: number;
+  badges: Array<{ badge: string; title: string; description: string; awardedAt: string; awardedBy: string | null }>;
+  streak: { current: number; longest: number };
+}

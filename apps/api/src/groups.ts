@@ -97,17 +97,20 @@ export async function groupsRoutes(app: FastifyInstance, opts: { pool: Pool; loa
     rows.sort((a, b) => (a.pinned === b.pinned ? b.sortKey - a.sortKey : a.pinned ? -1 : 1));
 
     // Discovery shrinks as the list fills, never disappears (§4.1).
-    const discovery = await pool.query<{ id: string; type: string; name: string; members: string; posts_week: string; member_city: string | null; group_city: string | null }>(
+    const discovery = await pool.query<{ id: string; type: string; name: string; members: string; posts_week: string; member_city: string | null; intent_match: boolean }>(
       `SELECT g.id, g.type, g.name,
               (SELECT count(*) FROM group_members x WHERE x.group_id = g.id)::text AS members,
               (SELECT count(*) FROM activity_posts p WHERE p.group_id = g.id AND p.created_at > now() - interval '7 days')::text AS posts_week,
-              m.city AS member_city, g.description AS group_city
+              me.city AS member_city,
+              me.intents ?| ARRAY['network','business'] AND g.type = 'chapter' OR me.intents ? 'events' AS intent_match
        FROM groups g
-       CROSS JOIN (SELECT city FROM members WHERE id = $1) m
+       CROSS JOIN (SELECT city, prefs->'intents' AS intents FROM members WHERE id = $1) me
        WHERE g.instance_id = $2 AND g.status = 'active'
          AND NOT EXISTS (SELECT 1 FROM group_members gm WHERE gm.group_id = g.id AND gm.member_id = $1)
          AND g.type IN ('chapter','interest')
-       ORDER BY (CASE WHEN g.type = 'chapter' AND m.city IS NOT NULL AND g.name ILIKE '%' || m.city || '%' THEN 0 ELSE 1 END), posts_week DESC
+       ORDER BY (CASE WHEN me.city IS NOT NULL AND g.name ILIKE '%' || me.city || '%' THEN 0 ELSE 1 END),
+                (CASE WHEN me.intents ?| ARRAY['network','business','events'] THEN 0 ELSE 1 END),
+                posts_week DESC
        LIMIT 6`,
       [member.id, member.instanceId],
     );
@@ -118,6 +121,7 @@ export async function groupsRoutes(app: FastifyInstance, opts: { pool: Pool; loa
         id: g.id, type: g.type, name: g.name,
         memberCount: Number(g.members), postsThisWeek: Number(g.posts_week),
         citySuggested: g.member_city !== null && g.name.toLowerCase().includes(String(g.member_city).toLowerCase()),
+        intentSuggested: g.intent_match,
       })),
       terminology: config.instance.terminology,
     };
@@ -374,6 +378,23 @@ export async function groupsRoutes(app: FastifyInstance, opts: { pool: Pool; loa
   });
 
   /* -------------------------- per-member prefs ------------------------- */
+
+  /** Tune-my-feed (spec §5): "more from this group" nudges affinity; the
+   *  feed weights recency by it. Explainable, never a black box. */
+  app.post("/v1/groups/:id/tune", async (request, reply) => {
+    const member = await requireMember(request, reply);
+    if (member === null) return reply;
+    const { id } = request.params as { id: string };
+    const body = z.object({ more: z.boolean() }).parse(request.body);
+    const delta = body.more ? 1 : -1;
+    const res = await pool.query<{ affinity: number }>(
+      `UPDATE group_members SET affinity = LEAST(3, GREATEST(-1, affinity + $1))
+       WHERE group_id = $2 AND member_id = $3 RETURNING affinity`,
+      [delta, id, member.id],
+    );
+    if (res.rows[0] === undefined) return reply.status(404).send({ error: "Join the group first." });
+    return { ok: true, affinity: res.rows[0].affinity };
+  });
 
   app.post("/v1/groups/:id/feed-mute", async (request, reply) => {
     const member = await requireMember(request, reply);

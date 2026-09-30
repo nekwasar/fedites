@@ -3,7 +3,7 @@
  * the same zod schemas the server parses with. Session rides the HttpOnly
  * cookie (credentials: include).
  */
-import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem } from "./phase2-types.js";
+import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
 import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem } from "./events-types.js";
 import type {
   SignupBody,
@@ -163,6 +163,16 @@ export const Api = {
   },
   faceDelete: (): Promise<{ ok: boolean }> => del("/v1/me/face/reference"),
   findMe: (eventId: string): Promise<{ matches: Array<{ photoId: string; mediaId: string; score: number }> }> => call(`/v1/events/${eventId}/find-me`),
+
+  /* recognition + personalization (3.4) */
+  myRecognition: (): Promise<RecognitionMe> => call("/v1/recognition/me"),
+  memberRecognition: (id: string): Promise<{ badges: Array<{ badge: string; title: string; awardedAt: string }> }> => call(`/v1/members/${id}/recognition`),
+  awardBadge: (memberId: string, badge: string): Promise<{ ok: boolean }> => post("/v1/recognition/award", { memberId, badge }),
+  getIntents: (): Promise<{ intents: string[]; options: string[] }> => call("/v1/me/intents"),
+  setIntents: (intents: string[]): Promise<{ ok: boolean }> => post("/v1/me/intents", { intents }),
+  getNotifyPrefs: (): Promise<{ prefs: { mentions: string; events: string; news: string } }> => call("/v1/me/notification-prefs"),
+  setNotifyPrefs: (b: { mentions?: string; events?: string; news?: string }): Promise<{ ok: boolean }> => post("/v1/me/notification-prefs", b),
+  tuneGroup: (id: string, more: boolean): Promise<{ affinity: number }> => post(`/v1/groups/${id}/tune`, { more }),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

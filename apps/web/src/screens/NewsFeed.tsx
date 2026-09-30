@@ -165,6 +165,17 @@ export function FeedScreen({ onNavigate }: { onNavigate: (to: string) => void })
           </div>
           {rail.items.map((raw) => {
             const item = raw as Record<string, unknown>;
+            if (rail.key === "classmates") {
+              return (
+                <button key={String(item.id)} type="button" className="row press" style={{ cursor: "pointer" }} onClick={() => onNavigate(`/members/${String(item.id)}`)}>
+                  <span style={{ flex: 1, textAlign: "left" }}>
+                    <span style={{ font: "500 14px var(--font-ui)", color: "var(--c-base-contrast)" }}>{String(item.name)}</span>
+                    <span className="micro tabular">{item.setYear !== null && item.setYear !== undefined ? `Set '${String(Number(item.setYear)).slice(-2)}` : "Classmate"}</span>
+                  </span>
+                  <span className="micro" style={{ color: "var(--c-accent)" }}>Say hello</span>
+                </button>
+              );
+            }
             if (rail.key === "countdowns") {
               const startsAt = new Date(String(item.startsAt));
               const days = Math.ceil((startsAt.getTime() - Date.now()) / 86_400_000);
@@ -210,10 +221,16 @@ export function FeedScreen({ onNavigate }: { onNavigate: (to: string) => void })
           <p style={{ font: "15px var(--font-ui)", margin: "8px 0" }}>{item.body}</p>
           {item.author !== null && <div className="micro">by {item.author}</div>}
           {item.groupId !== null && (
-            <button type="button" className="btn btn--underline-link press" style={{ minHeight: 28 }}
-              onClick={() => { void Api.feedMute(item.groupId!, true).then(load); }}>
-              Less from this group
-            </button>
+            <>
+              <button type="button" className="btn btn--underline-link press" style={{ minHeight: 28 }}
+                onClick={() => { void Api.tuneGroup(item.groupId!, true).then(load); }}>
+                More from this group
+              </button>
+              <button type="button" className="btn btn--underline-link press" style={{ minHeight: 28 }}
+                onClick={() => { void Api.feedMute(item.groupId!, true).then(load); }}>
+                Less from this group
+              </button>
+            </>
           )}
         </article>
       ))}

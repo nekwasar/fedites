@@ -11,6 +11,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Pool } from "pg";
 import { getFaceProvider, cosineSimilarity } from "./face.js";
+import { record } from "./recognition.js";
 import { requireMember } from "./sessions.js";
 import type { InstanceConfig } from "@fedites/config";
 
@@ -53,6 +54,7 @@ export async function photoRoutes(
        VALUES ($1,$2,$3,$4) RETURNING id`,
       [member.instanceId, id, body.mediaId, member.id],
     );
+    await record(pool, member.instanceId, member.id, "photo.upload", { type: "event_photo", id: res.rows[0]!.id }).catch(() => undefined);
 
     // Index the photo for the face engine when the finder is enabled (M3).
     const config = await opts.loadConfigByInstance(member.instanceId);

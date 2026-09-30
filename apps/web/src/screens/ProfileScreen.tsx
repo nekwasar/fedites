@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
 import type { FamilyLink, Invite, SessionMember, VerificationStatus } from "@fedites/config";
+import type { RecognitionMe } from "../phase2-types.js";
 
 const fieldStyle: React.CSSProperties = {
   width: "100%", minHeight: 44, padding: "0 12px", marginBottom: 12,
@@ -68,6 +69,17 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
 
       <FaceSearch />
 
+      <RecognitionSection />
+
+      <IntentsSection />
+
+      <Section label="Notifications">
+        <NotifyPrefs />
+        <p style={{ font: "13px var(--font-ui)", color: "var(--c-neutral-500)" }}>
+          Quiet hours still silence everything (J4).
+        </p>
+      </Section>
+
       <FamilyLinks />
 
       <Section label="Two-factor authentication">
@@ -102,6 +114,113 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
         <button type="button" className="btn btn--outlined press" onClick={() => void Api.logout().then(() => { window.location.href = "/auth"; })}>Sign out</button>
       </Section>
     </main>
+  );
+}
+
+function RecognitionSection(): React.ReactElement {
+  const [data, setData] = useState<{ points: number; badges: Array<{ badge: string; title: string; description: string; awardedAt: string; awardedBy: string | null }>; streak: { current: number; longest: number } } | null>(null);
+
+  useEffect(() => { Api.myRecognition().then((v: RecognitionMe) => setData(v)).catch(() => undefined); }, []);
+
+  return (
+    <Section label="Recognition">
+      {data === null ? <div className="skeleton" style={{ height: 16 }} /> : (
+        <>
+          <div style={{ display: "flex", gap: 24, marginBottom: 12 }}>
+            <div>
+              <div className="tabular" style={{ font: "700 28px var(--font-ui)", color: "var(--c-accent)" }}>{data.points}</div>
+              <div className="micro">Activity points</div>
+            </div>
+            <div>
+              <div className="tabular" style={{ font: "700 28px var(--font-ui)" }}>{data.streak.current}</div>
+              <div className="micro">Week streak (yours only)</div>
+            </div>
+          </div>
+          {data.badges.length === 0
+            ? <p style={{ font: "15px var(--font-ui)", color: "var(--c-neutral-500)" }}>Badges land as you take part. No leagues, no shaming.</p>
+            : data.badges.map((b) => (
+              <div key={b.badge} className="row" style={{ padding: "8px 0" }}>
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: "block", font: "600 15px var(--font-ui)", color: "var(--c-base-contrast)" }}>{b.title}</span>
+                  <span className="micro">{b.description}</span>
+                </span>
+                <span className="micro tabular">{new Date(b.awardedAt).toLocaleDateString()}</span>
+              </div>
+            ))}
+        </>
+      )}
+    </Section>
+  );
+}
+
+function IntentsSection(): React.ReactElement {
+  const OPTIONS: Array<{ key: string; label: string }> = [
+    { key: "reconnect", label: "Reconnect" },
+    { key: "network", label: "Network & jobs" },
+    { key: "give-back", label: "Give back to school" },
+    { key: "events", label: "Events & reunions" },
+    { key: "business", label: "Grow my business" },
+    { key: "mentor", label: "Mentor" },
+  ];
+  const [selected, setSelected] = useState<string[] | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { Api.getIntents().then((r) => setSelected(r.intents)).catch(() => setSelected([])); }, []);
+
+  const toggle = (key: string): void => {
+    if (selected === null) return;
+    setSelected(selected.includes(key) ? selected.filter((k) => k !== key) : [...selected, key]);
+  };
+  const save = async (): Promise<void> => {
+    if (selected === null) return;
+    await Api.setIntents(selected).catch(() => undefined);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <Section label="What brings you here">
+      <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
+        This tunes your feed, suggestions, and Menu ranking. Explainable, editable anytime.
+      </p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {OPTIONS.map((o) => {
+          const on = selected?.includes(o.key) === true;
+          return (
+            <button key={o.key} type="button" className="press" onClick={() => toggle(o.key)} aria-pressed={on}
+              style={{ minHeight: 44, padding: "0 12px", cursor: "pointer", border: "1px solid var(--c-hairline)", background: on ? "var(--c-accent)" : "var(--c-base)", color: on ? "var(--c-accent-contrast)" : "var(--c-base-contrast)", font: "13px var(--font-ui)" }}>
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+      <button type="button" className="btn btn--filled press" style={{ marginTop: 12 }} onClick={() => void save()}>{saved ? "Saved" : "Save"}</button>
+    </Section>
+  );
+}
+
+function NotifyPrefs(): React.ReactElement {
+  const [prefs, setPrefs] = useState<{ mentions: string; events: string; news: string } | null>(null);
+  useEffect(() => { Api.getNotifyPrefs().then((r) => setPrefs(r.prefs)).catch(() => undefined); }, []);
+  const flip = (key: "mentions" | "events" | "news"): void => {
+    if (prefs === null) return;
+    const next = { ...prefs, [key]: prefs[key] === "on" ? "off" : "on" };
+    setPrefs(next);
+    void Api.setNotifyPrefs({ [key]: next[key] }).catch(() => undefined);
+  };
+  if (prefs === null) return <div className="skeleton" style={{ height: 16 }} />;
+  return (
+    <div>
+      {(["mentions", "events", "news"] as const).map((k) => (
+        <div key={k} className="row" style={{ padding: "8px 0" }}>
+          <span style={{ flex: 1, font: "14px var(--font-ui)", textTransform: "capitalize" }}>{k}</span>
+          <button type="button" className="press" onClick={() => flip(k)} aria-pressed={prefs[k] === "on"}
+            style={{ minHeight: 36, padding: "0 12px", cursor: "pointer", border: "1px solid var(--c-hairline)", background: prefs[k] === "on" ? "var(--c-accent)" : "var(--c-base)", color: prefs[k] === "on" ? "var(--c-accent-contrast)" : "var(--c-base-contrast)", font: "13px var(--font-ui)" }}>
+            {prefs[k]}
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 

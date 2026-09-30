@@ -40,6 +40,8 @@ export function MemberScreen({ id }: { id: string }): React.ReactElement {
           {[member.profession, member.city, member.country].filter((x) => x !== null && x !== "").join(" · ")}
         </p>
       </section>
+      <MemberBadges id={member.id} />
+
       <section style={{ padding: "0 16px 24px" }}>
         <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Contact</div>
         {member.contactVisible || contact !== null ? (
@@ -57,5 +59,24 @@ export function MemberScreen({ id }: { id: string }): React.ReactElement {
         )}
       </section>
     </main>
+  );
+}
+
+function MemberBadges({ id }: { id: string }): React.ReactElement {
+  const [badges, setBadges] = useState<Array<{ badge: string; title: string; awardedAt: string }> | null>(null);
+  useEffect(() => {
+    Api.memberRecognition(id).then((r) => setBadges(r.badges)).catch(() => setBadges([]));
+  }, [id]);
+  if (badges === null || badges.length === 0) return <span />;
+  return (
+    <section style={{ padding: "0 16px 24px" }}>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Recognition</div>
+      {badges.map((b) => (
+        <div key={b.badge} className="row" style={{ padding: "8px 0" }}>
+          <span style={{ flex: 1, font: "600 14px var(--font-ui)" }}>{b.title}</span>
+          <span className="micro tabular">{new Date(b.awardedAt).toLocaleDateString()}</span>
+        </div>
+      ))}
+    </section>
   );
 }

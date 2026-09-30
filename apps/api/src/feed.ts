@@ -35,9 +35,10 @@ export async function feedRoutes(app: FastifyInstance, opts: { pool: Pool }): Pr
     );
 
     // My groups (including set/city chapters I joined), minus feed-muted.
-    const groupItems = await pool.query<{ id: string; group_id: string; group_name: string; group_type: string; kind: string; body: string | null; author_name: string | null; created_at: Date; my_reaction: string | null; comment_count: string }>(
+    const groupItems = await pool.query<{ id: string; group_id: string; group_name: string; group_type: string; kind: string; body: string | null; author_name: string | null; created_at: Date; rank_ts: Date; my_reaction: string | null; comment_count: string }>(
       `SELECT p.id, p.group_id, g.name AS group_name, g.type AS group_type, p.kind, p.body,
               m.display_name AS author_name, p.created_at,
+              p.created_at + (COALESCE(gm.affinity, 0) * interval '12 hours') AS rank_ts,
               (SELECT emoji FROM reactions r WHERE r.post_id = p.id AND r.member_id = $2 LIMIT 1) AS my_reaction,
               (SELECT count(*) FROM comments c WHERE c.post_id = p.id AND c.archived_at IS NULL)::text AS comment_count
        FROM activity_posts p
@@ -46,7 +47,7 @@ export async function feedRoutes(app: FastifyInstance, opts: { pool: Pool }): Pr
        LEFT JOIN members m ON m.id = p.author_id
        WHERE p.instance_id = $1 AND p.kind <> 'news' AND p.archived_at IS NULL
          AND ($3::timestamptz IS NULL OR p.created_at < $3::timestamptz)
-       ORDER BY p.created_at DESC LIMIT 20`,
+       ORDER BY p.created_at + (COALESCE(gm.affinity, 0) * interval '12 hours') DESC LIMIT 20`,
       [member.instanceId, member.id, before ?? null],
     );
 
@@ -68,6 +69,26 @@ export async function feedRoutes(app: FastifyInstance, opts: { pool: Pool }): Pr
         rails.push({
           key: "countdowns", kind: "countdowns", title: "Coming up",
           items: events.rows.map((e) => ({ id: e.id, title: e.title, startsAt: e.starts_at, groupName: e.group_name })),
+        });
+      }
+    }
+    if (!dismissed.includes("classmates")) {
+      const classmates = await pool.query<{ id: string; display_name: string; set_year: number | null }>(
+        `SELECT m.id, m.display_name, s.year AS set_year
+         FROM members m
+         LEFT JOIN sets s ON s.id = m.set_id
+         WHERE m.instance_id = $1 AND m.set_id = (SELECT set_id FROM members WHERE id = $2)
+           AND m.id <> $2 AND m.verification IN ('verified','honorary')
+           AND m.memorial = false AND m.deleted_at IS NULL
+           AND NOT EXISTS (SELECT 1 FROM messages msg
+                WHERE (msg.dm_a = LEAST(m.id, $2) AND msg.dm_b = GREATEST(m.id, $2)))
+         ORDER BY m.display_name LIMIT 5`,
+        [member.instanceId, member.id],
+      );
+      if (classmates.rows.length > 0) {
+        rails.push({
+          key: "classmates", kind: "classmates", title: "Suggested classmates",
+          items: classmates.rows.map((m) => ({ id: m.id, name: m.display_name, setYear: m.set_year })),
         });
       }
     }
@@ -101,12 +122,20 @@ export async function feedRoutes(app: FastifyInstance, opts: { pool: Pool }): Pr
         })),
         ...groupItems.rows.map((g) => ({
           kind: g.kind as string, id: g.id, body: g.body, author: g.author_name,
-          createdAt: g.created_at, commentsEnabled: true,
+          createdAt: g.created_at, rankTs: g.rank_ts.toISOString(), commentsEnabled: true,
           promotedFrom: null, reactions: g.my_reaction,
           commentCount: Number(g.comment_count),
           groupId: g.group_id, groupName: g.group_name, groupType: g.group_type,
         })),
-      ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      ].sort((a, b) => {
+        // Tune-my-feed (§5): affinity-boosted items rank by their boosted
+        // timestamp; everything else by raw recency. Explainable.
+        const ra = (a as { rankTs?: string }).rankTs;
+        const rb = (b as { rankTs?: string }).rankTs;
+        const ta = new Date(ra ?? a.createdAt).getTime();
+        const tb = new Date(rb ?? b.createdAt).getTime();
+        return tb - ta;
+      }),
       rails,
     };
   });
