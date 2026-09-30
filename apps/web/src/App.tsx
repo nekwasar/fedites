@@ -20,40 +20,13 @@ import {
   MobileTabBar, MobileTopTabs, MobileHybrid, MobileDrawer, MobileFloatingDock,
   DesktopSideRail, DesktopTopNav, DesktopTopSide, DesktopCommandFirst,
 } from "./shell/nav-patterns.js";
+import { GroupsHomeScreen } from "./screens/GroupsHomeScreen.js";
+import { GroupScreen } from "./screens/GroupScreen.js";
+import { ChatListScreen, ChatThreadScreen } from "./screens/ChatThread.js";
+import { NewsScreen, FeedScreen } from "./screens/NewsFeed.js";
+import { useRealtime } from "./realtime.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
-
-const tabJobs: Record<string, string> = {
-  "/": "tab.groups.job",
-  "/feed": "tab.feed.job",
-  "/chat": "tab.chat.job",
-  "/events": "tab.events.job",
-  "/menu": "tab.menu.job",
-};
-
-function PlaceholderScreen({ boot, route }: { boot: BootState; route: string }): React.ReactElement {
-  const copyKey = tabJobs[route] ?? "tab.groups.job";
-  const navItem = boot.navItems.find((i) => i.route === route);
-  const flags = new Map(boot.session.config.instance.flags.map((f) => [f.key, f.enabled]));
-  const enabled = navItem ? flags.get(`nav.${navItem.item}`) !== false : true;
-  const itemKey = navItem?.item ?? "groups";
-  return (
-    <main style={{ paddingBottom: 96 }}>
-      <h1 className="screen-title">{navItem?.label ?? "Groups"}</h1>
-      <div className="micro" style={{ padding: "0 16px 16px" }}>
-        {boot.session.config.instance.copy[copyKey] ?? ""}
-      </div>
-      {!enabled && <Empty title="Coming in a later phase" body="This feature ships behind a flag until its build phase (M3)." />}
-      {enabled && (
-        <Empty
-          title={boot.session.config.instance.copy[`empty.${itemKey}.title`] ?? "Nothing here yet"}
-          body={boot.session.config.instance.copy[`empty.${itemKey}.body`] ?? "Content will appear here."}
-          action={route === "/" ? <button type="button" className="btn btn--filled press">Find your people</button> : undefined}
-        />
-      )}
-    </main>
-  );
-}
 
 /** Studio preview scaffolding (0.4): device frames + live config switchers. */
 function StudioPreview({
@@ -122,6 +95,39 @@ function StudioPreview({
   );
 }
 
+function NewProposal({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
+  const [name, setName] = useState("");
+  const [type, setType] = useState<"chapter" | "interest" | "guild" | "committee">("interest");
+  const [done, setDone] = useState<string | null>(null);
+  return (
+    <main style={{ paddingBottom: 96, maxWidth: 480 }}>
+      <h1 className="screen-title">Propose a group</h1>
+      {done !== null ? (
+        <Empty title="Proposal sent" body={`Status: ${done}. Admins review new proposals.`} action={<button type="button" className="btn btn--filled press" onClick={() => onNavigate("/")}>Back to Groups</button>} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+            {(["interest", "guild", "chapter", "committee"] as const).map((t) => (
+              <button key={t} type="button" className="press" onClick={() => setType(t)} aria-pressed={type === t}
+                style={{ minHeight: 44, padding: "0 12px", cursor: "pointer", border: "1px solid var(--c-hairline)", background: type === t ? "var(--c-accent)" : "var(--c-base)", color: type === t ? "var(--c-accent-contrast)" : "var(--c-base-contrast)", font: "13px var(--font-ui)" }}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <input
+            value={name} onChange={(e) => setName(e.target.value)} placeholder="Group name" aria-label="Group name"
+            style={{ width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)" }}
+          />
+          <button type="button" className="btn btn--filled press" style={{ marginTop: 12 }} disabled={name.trim().length < 2}
+            onClick={() => void Api.createGroup({ type, name }).then((r) => setDone(r.status))}>
+            Submit proposal
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
 export default function App(): React.ReactElement {
   const [boot, setBoot] = useState<BootState | null>(null);
   const [bootError, setBootError] = useState<string | null>(null);
@@ -133,6 +139,8 @@ export default function App(): React.ReactElement {
     window.innerWidth < 1024 ? "mobile" : "desktop",
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const realtime = useRealtime(API_URL, member !== null, member !== null ? ["member:" + member.id] : []);
+  const [newsUnread, setNewsUnread] = useState(0);
   const [overrides, setOverrides] = useState<{
     themeId?: string;
     familyId?: string;
@@ -167,6 +175,18 @@ export default function App(): React.ReactElement {
   }, [member]);
 
   useEffect(refreshUnread, [refreshUnread]);
+
+  // Realtime (2.3): WS events wake the UI; counts always come from the API
+  // (I5 — badges never disagree). A "news.new" bumps the News badge.
+  useEffect(() => {
+    if (realtime === null) return;
+    if (realtime.type === "news.new") setNewsUnread((n) => n + 1);
+    if (realtime.type === "message.new" || realtime.type === "read") {
+      Api.chatThreads().catch(() => undefined);
+      refreshUnread();
+    }
+    if (realtime.type === "post.new") refreshUnread();
+  }, [realtime, refreshUnread]);
 
   // Live theme/family application (0.3 demo gate).
   useEffect(() => {
@@ -243,13 +263,27 @@ export default function App(): React.ReactElement {
       );
     }
     switch (route.path) {
+      case "/": return <GroupsHomeScreen onNavigate={go} />;
+      case "/feed": return <FeedScreen onNavigate={go} />;
+      case "/chat": return <ChatListScreen onNavigate={go} />;
+      case "/news": return <NewsScreen signedIn={authed} onNavigate={go} />;
+      case "/groups":
+        return route.param !== undefined
+          ? <GroupScreen groupId={route.param} onNavigate={go} signedIn={authed} onOpenChat={(g) => go(`/chats/group/${g}`)} />
+          : <Empty title="Group not found" body="The link may be wrong." />;
+      case "/chats":
+        return route.param !== undefined && route.path === "/chats"
+          ? <ChatThreadScreen type={(window.location.pathname.split("/")[2] === "dm" ? "dm" : "group")} id={route.param} onNavigate={go} />
+          : <ChatListScreen onNavigate={go} />;
+      case "/groups/new": return authed ? <NewProposal onNavigate={go} /> : <Empty title="Sign in first" body="Proposals need a member account." />;
       case "/notifications": return <InboxScreen onNavigate={go} />;
       case "/me": return <ProfileScreen member={member} onNavigate={go} />;
       case "/id": return <IdScreen />;
       case "/members": return route.param !== undefined ? <MemberScreen id={route.param} /> : <Empty title="Member not found" body="The link may be wrong." />;
       case "/manage": return dutyRoles ? <ManageScreen member={member} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
       case "/menu": return <ProfileScreen member={member} onNavigate={go} />;
-      default: return <PlaceholderScreen boot={{ ...boot, session: { ...boot.session, config: { ...boot.session.config, nav: effNav } } }} route={route.path} />;
+      case "/events": return <Empty title="Events arrives in Phase 3" body="Calendar, countdowns, and your QR ticket are next." />;
+      default: return <GroupsHomeScreen onNavigate={go} />;
     }
   };
 
@@ -278,6 +312,12 @@ export default function App(): React.ReactElement {
           {boot.session.config.instance.shortName}
         </span>
         <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4 }}>
+          <button type="button" className="press" aria-label="News" onClick={() => { setNewsUnread(0); go("/news"); }} style={{ position: "relative", minHeight: 44, minWidth: 44, background: "transparent", border: "none", cursor: "pointer", color: "var(--c-base-contrast)" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 4h13v16H4zM8 8h5M8 12h5M8 16h3M17 8h3v12H7" /></svg>
+            {newsUnread > 0 && (
+              <span className="tabular" style={{ position: "absolute", top: 4, right: 2, background: "var(--c-accent)", color: "var(--c-accent-contrast)", font: "600 10px var(--font-ui)", padding: "1px 5px" }}>{newsUnread}</span>
+            )}
+          </button>
           <button type="button" className="press" aria-label="Notifications" onClick={() => go("/notifications")} style={{ position: "relative", minHeight: 44, minWidth: 44, background: "transparent", border: "none", cursor: "pointer", color: "var(--c-base-contrast)" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M6 16V10a6 6 0 1 1 12 0v6l2 3H4zM10 19a2 2 0 0 0 4 0" /></svg>
             {unread > 0 && (

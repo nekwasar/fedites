@@ -11,3 +11,4 @@ apps/web/dist
 apps/mobile/.expo
 .turbo
 out
+media/

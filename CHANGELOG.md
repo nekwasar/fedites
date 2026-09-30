@@ -1,6 +1,36 @@
 # Changelog
 
-## Phase 1 — Rails (in progress)
+## Phase 2 — Daily Loop (complete)
+
+### Session 2.1 — Group engine core
+- One group object, six types (set/chapter/interest/guild/house/committee); joining rules per spec §6 enforced at the API: chapter + interest one-tap, guild request → group-admin approval, committee invite-only, set/house auto-assigned.
+- Creation lifecycle: interest/guild start as `proposed` → duty-admin approval; committees skip; chapters are admin-created. Archive (read-only) never delete (N1).
+- Groups home: adaptive density ("Find your people" vs "My groups"), unseen-activity tags (messages/posts/photos) from the one `thread_reads` watermark table, pinned-first + latest-unseen ordering, discovery with activity pulse (posts this week, member count) and city-chapter suggestion (§4.1).
+- J2: groups ≥ 50 members default to mentions-only notifications.
+
+### Session 2.2 — Activity tab
+- Posts, photos, files, polls (one vote per member, counts within the group — K2), threaded comments, reactions (emoji-counts, toggling, no league tables — K2).
+- Media library (rail 4): upload endpoint (25 MB cap) + authenticated serving; local-disk store now, MinIO swap later.
+- Pinned announcements (group admins); archived groups read-only.
+
+### Session 2.3 — Chat (realtime)
+- Group chats + DMs; WebSockets hub with session-token auth, rooms (group / dm pair / personal), reconnect with backoff, pre-auth frame buffering + `ready` signal.
+- Reply/quote, read receipts (watermark + live broadcast), typing indicators (ephemeral, never stored), edit within admin-settable window ("edited" shown), delete own anytime (tombstone).
+- Pin-to-feed bridge: chat message → Activity post, linked both ways.
+- I5: single unread implementation shared by Chat tab and Groups home — badges agree (tested).
+
+### Session 2.4 — News bulletin
+- Admin-only composer; comments admin-toggled per post (default off, refused server-side); reactions always on; "Discuss this in your set group" data when off; group post → promote-to-News with source attribution + audit.
+
+### Session 2.5 — Feed v1
+- Sources: News + your groups' activity; every card carries its source group; ordering explainable, newest-first; committee content only for members; feed-muted groups drop out ("Less from this group").
+- Intent rails v0: countdowns + suggested groups; dismissal retires the rail (stored per member).
+- Melt-into-group (F5 signature motion): 3+ consecutive same-group items morph the header into that group's space with the Open group / Back to My Feed pill.
+
+### Session 2.6 — Group admin + moderation v1
+- Reports (exactly one target); group admins + school moderators act; remove-content archives (reversible via undo within 30 days — N2); escalation to school moderators; every action audit-logged.
+
+## Phase 1 — Rails (complete)
 
 ### Session 1.1 — Auth
 - Signup with invite code (creates `pending` account), login (email + password, optional TOTP), logout, sessions (hashed tokens, HttpOnly cookie, 30-day, revocable), 2FA setup/enable/disable (RFC 6238 TOTP, zero deps), scrypt password hashing, rate limiting on auth endpoints.

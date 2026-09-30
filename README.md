@@ -34,6 +34,17 @@ pnpm dev               # api :8787 + web :5173
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
 
+## Phase 2 — Daily Loop (complete)
+
+| Session | Deliverable | Where |
+|---|---|---|
+| 2.1 | Group engine: one object, 6 types, join rules, Groups home with unseen tags | `apps/api/src/groups.ts`, web `GroupsHomeScreen` |
+| 2.2 | Activity tab: posts/photos/polls, threaded comments, reactions, media, pin | `apps/api/src/activity.ts`, `media.ts`, web `GroupScreen` |
+| 2.3 | Chat: WS realtime, receipts, typing, edit window, DMs, pin-to-feed | `apps/api/src/chat.ts`, `ws.ts`, web `ChatThread` |
+| 2.4 | News bulletin: composer, reactions-only, discuss-in-set-group, promote | `apps/api/src/news.ts`, web `NewsScreen` |
+| 2.5 | Feed v1: sources, rails v0, melt-into-group, less-from-group | `apps/api/src/feed.ts`, web `FeedScreen` |
+| 2.6 | Group admin panel, reports, escalation, audit | `apps/api/src/moderation.ts` |
+
 ## Phase 1 — Rails (complete)
 
 | Session | Deliverable | Where |

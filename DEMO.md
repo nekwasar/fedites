@@ -1,3 +1,21 @@
+# Phase 2 demo script (the daily loop)
+
+```sh
+pnpm db:migrate && pnpm db:seed
+pnpm dev    # api :8787 (WS on /ws) + web :5173
+```
+
+Sign in as any demo member (`demopass123`).
+
+1. **2.1 Groups home** — Home shows My groups with unseen tags; Discover more suggests city chapter (if your profile city is Lagos) and busy interest groups; Propose a group → admin approves it in Manage.
+2. **2.2 Activity day in Set '98** — Open Set '98 → post, comment (threaded), react, create a poll and vote. Group admin pins the announcement — it jumps to the top.
+3. **2.3 Chat** — Chat tab lists group chats + DMs with previews and unread badges; send a message (appears instantly — optimistic), reply/quote, edit within 15 minutes ("edited"), delete your own. Two browsers: typing indicator + live messages + Seen receipts. Badges on Groups home and Chat agree. Pin a message to the feed → it becomes an Activity post.
+4. **2.4 News** — Sign in as president → News icon (top bar) → composer → post with comments off. As a member: reactions work; comments refused; "Discuss this in your set group" jumps to your set group. Promote a standout group post → News shows "From Set '98".
+5. **2.5 Feed** — Feed mixes News + group activity, each card shows its source crest; 3+ consecutive items from one group morph the header into that group ("Open group / Back to My Feed"); "Less from this group" mutes; dismiss the rails.
+6. **2.6 Moderation** — Report a spammy post; group admin removes it (content archived, audit written); escalate another to school moderators who see it in their queue.
+
+---
+
 # Phase 1 demo script (2 minutes)
 
 Prereqs: `pnpm install`, Postgres running, `.env` set. Then:

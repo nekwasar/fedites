@@ -133,16 +133,65 @@ function AuthGate({ onDone, accent, danger }: { accent: string; danger: string; 
   );
 }
 
-function SignedIn({ member, boot, onSignOut }: { member: Member; boot: SessionBoot; accent: string; onSignOut: () => void }): React.ReactElement {
-  const [tab, setTab] = useState<string>("/me");
-  const [inbox, setInbox] = useState<Inbox | null>(null);
+interface GroupRow { id: string; name: string; unseen: { chatUnread: number; newPosts: number; newPhotos: number } }
+interface ThreadRow { type: "group" | "dm"; id: string; name: string; preview: string; unread: number; lastAt: string | null }
+interface Msg { id: string; author: string; body: string | null; isMine: boolean; createdAt: string }
 
-  useEffect(() => {
+function SignedIn({ member, boot, onSignOut }: { member: Member; boot: SessionBoot; accent: string; onSignOut: () => void }): React.ReactElement {
+  const [tab, setTab] = useState<string>("/");
+  const [inbox, setInbox] = useState<Inbox | null>(null);
+  const [groups, setGroups] = useState<GroupRow[] | null>(null);
+  const [threads, setThreads] = useState<ThreadRow[] | null>(null);
+  const [openThread, setOpenThread] = useState<ThreadRow | null>(null);
+  const [messages, setMessages] = useState<Msg[] | null>(null);
+  const [draft, setDraft] = useState("");
+
+  const refresh = useCallback((): void => {
     api<Inbox>("/v1/notifications").then(setInbox).catch(() => undefined);
-  }, [tab]);
+    api<{ myGroups: GroupRow[] }>("/v1/groups/home").then((r) => setGroups(r.myGroups)).catch(() => undefined);
+    api<{ threads: ThreadRow[] }>("/v1/chat/threads").then((r) => setThreads(r.threads)).catch(() => undefined);
+  }, []);
+
+  useEffect(() => { refresh(); }, [refresh, tab]);
+  useEffect(() => {
+    if (openThread === null) { setMessages(null); return; }
+    api<{ messages: Msg[] }>(`/v1/chat/${openThread.type}/${openThread.id}/messages`).then((r) => setMessages(r.messages)).catch(() => undefined);
+    void api(`/v1/chat/${openThread.type}/${openThread.id}/read`, { method: "POST", body: "{}" }).catch(() => undefined);
+  }, [openThread]);
+
+  const send = async (): Promise<void> => {
+    if (openThread === null || draft.trim().length === 0) return;
+    const path = openThread.type === "group" ? `/v1/chat/group/${openThread.id}/messages` : `/v1/chat/dm/${openThread.id}/messages`;
+    await api(path, { method: "POST", body: JSON.stringify({ body: draft }) }).catch(() => undefined);
+    setDraft("");
+    api<{ messages: Msg[] }>(`/v1/chat/${openThread.type}/${openThread.id}/messages`).then((r) => setMessages(r.messages)).catch(() => undefined);
+  };
 
   const items = visibleItems(boot.config.nav, member.roles.some((r) => r !== "member"));
   const current = items.find((i) => i.route === tab) ?? items[0]!;
+
+  if (openThread !== null) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Pressable onPress={() => setOpenThread(null)} style={styles.masthead}>
+          <Text style={styles.mastheadText}>{openThread.name}</Text>
+          <Text style={styles.micro}>{openThread.type === "group" ? "Open group space" : "Back to chats"}</Text>
+        </Pressable>
+        <ScrollView style={{ flex: 1 }}>
+          {(messages ?? []).map((m) => (
+            <View key={m.id} style={styles.row}>
+              <Text style={{ fontSize: 13, fontWeight: "600" }}>{m.isMine ? "You" : m.author}</Text>
+              <Text style={{ fontSize: 15 }}>{m.body}</Text>
+            </View>
+          ))}
+        </ScrollView>
+        <TextInput style={styles.input} placeholder="Message" value={draft} onChangeText={setDraft} onSubmitEditing={() => void send()} />
+        <Pressable onPress={() => void send()} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.9 }]}>
+          <Text style={styles.btnText}>Send</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -152,20 +201,39 @@ function SignedIn({ member, boot, onSignOut }: { member: Member; boot: SessionBo
       </View>
       <Text style={styles.title}>{current.label}</Text>
       <ScrollView style={{ flex: 1 }}>
-        <Text style={styles.body}>{member.displayName}</Text>
-        <Text style={styles.micro}>{member.verification}{member.roles.length > 1 ? ` · ${member.roles.filter((r) => r !== "member").join(", ")}` : ""}</Text>
+        {tab === "/" && groups !== null && groups.map((g) => (
+          <Pressable key={g.id} style={styles.row} onPress={() => setOpenThread({ type: "group", id: g.id, name: g.name, preview: "", unread: g.unseen.chatUnread, lastAt: null })}>
+            <Text style={{ fontSize: 15, fontWeight: "600" }}>{g.name}</Text>
+            <Text style={styles.micro}>
+              {g.unseen.chatUnread > 0 ? `${g.unseen.chatUnread} new messages · ` : ""}
+              {g.unseen.newPosts > 0 ? `${g.unseen.newPosts} new posts · ` : ""}
+              {g.unseen.newPhotos > 0 ? `${g.unseen.newPhotos} new photos` : ""}
+            </Text>
+          </Pressable>
+        ))}
+        {tab === "/chat" && threads !== null && threads.map((t) => (
+          <Pressable key={t.type + t.id} style={styles.row} onPress={() => setOpenThread(t)}>
+            <Text style={{ fontSize: 15, fontWeight: "600" }}>{t.name}{t.unread > 0 ? ` (${t.unread})` : ""}</Text>
+            <Text style={styles.micro}>{t.preview}</Text>
+          </Pressable>
+        ))}
         {tab === "/me" && (
           <>
+            <Text style={styles.body}>{member.displayName}</Text>
+            <Text style={styles.micro}>{member.verification}{member.roles.length > 1 ? ` · ${member.roles.filter((r) => r !== "member").join(", ")}` : ""}</Text>
+            {inbox !== null && inbox.items.map((n) => (
+              <View key={n.id} style={styles.row}>
+                <Text style={{ fontSize: 15, fontWeight: n.read ? "400" : "600" }}>{n.title}</Text>
+              </View>
+            ))}
             <Pressable onPress={onSignOut} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.9 }]}>
               <Text style={styles.btnText}>Sign out</Text>
             </Pressable>
           </>
         )}
-        {inbox !== null && tab !== "/me" && inbox.items.map((n) => (
-          <View key={n.id} style={styles.row}>
-            <Text style={{ fontSize: 15, fontWeight: n.read ? "400" : "600" }}>{n.title}</Text>
-          </View>
-        ))}
+        {(tab === "/feed" || tab === "/events") && (
+          <Text style={styles.body}>{tab === "/feed" ? "Feed v1 on web; mobile feed lands with Phase 3 polish." : "Events arrive in Phase 3."}</Text>
+        )}
       </ScrollView>
       <View style={[styles.tabbar, { backgroundColor: boot.resolved.theme.base }]}>
         {items.map((i) => (

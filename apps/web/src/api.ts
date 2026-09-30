@@ -3,6 +3,7 @@
  * the same zod schemas the server parses with. Session rides the HttpOnly
  * cookie (credentials: include).
  */
+import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem } from "./phase2-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -83,6 +84,67 @@ export const Api = {
   roles: (memberId: string): Promise<{ roles: string[] }> => call(`/v1/members/${memberId}/roles`),
   setRole: (memberId: string, b: RoleBody): Promise<{ ok: boolean }> => post(`/v1/members/${memberId}/roles`, b),
   removeRole: (memberId: string, roleKey: string): Promise<{ ok: boolean }> => del(`/v1/members/${memberId}/roles/${roleKey}`),
+  /* ---------------------- Phase 2: the daily loop ---------------------- */
+
+  /* groups (2.1) */
+  browseGroups: (): Promise<{ groups: GroupSummary[] }> => call("/v1/groups"),
+  groupsHome: (): Promise<GroupsHome> => call("/v1/groups/home"),
+  group: (id: string): Promise<GroupProfile> => call(`/v1/groups/${id}`),
+  createGroup: (b: { type: string; name: string; description?: string }): Promise<{ id: string; status: string }> => post("/v1/groups", b),
+  approveGroup: (id: string): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/approve`),
+  joinGroup: (id: string): Promise<{ joined: boolean; requested?: boolean; notifyLevel?: string }> => post(`/v1/groups/${id}/join`),
+  leaveGroup: (id: string): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/leave`),
+  joinRequests: (id: string): Promise<{ requests: JoinRequest[] }> => call(`/v1/groups/${id}/requests`),
+  decideJoinRequest: (id: string, requestId: string, decision: "approve" | "reject"): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/requests/${requestId}`, { decision }),
+  makeGroupAdmin: (id: string, memberId: string, isAdmin: boolean): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/admins`, { memberId, isAdmin }),
+  feedMute: (id: string, muted: boolean): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/feed-mute`, { muted }),
+  visitGroup: (id: string, tab: "activity" | "chat"): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/visit`, { tab }),
+
+  /* activity (2.2) */
+  groupActivity: (id: string, before?: string): Promise<ActivityFeed> => call(`/v1/groups/${id}/activity${before ? `?before=${encodeURIComponent(before)}` : ""}`),
+  postActivity: (id: string, b: { kind: "post" | "photo" | "file"; body?: string; mediaIds?: string[] }): Promise<{ id: string }> => post(`/v1/groups/${id}/activity`, b),
+  createPoll: (id: string, b: { body?: string; options: string[] }): Promise<{ id: string }> => post(`/v1/groups/${id}/poll`, b),
+  votePoll: (postId: string, optionId: string): Promise<{ ok: boolean }> => post(`/v1/activity/${postId}/vote`, { optionId }),
+  comments: (postId: string): Promise<{ comments: CommentItem[] }> => call(`/v1/activity/${postId}/comments`),
+  addComment: (postId: string, body: string, parentId?: string): Promise<{ id: string }> => post(`/v1/activity/${postId}/comments`, { body, parentId }),
+  react: (postId: string, emoji: string): Promise<{ reactions: Record<string, number>; myReaction: string | null }> => post(`/v1/activity/${postId}/reactions`, { emoji }),
+  pinPost: (postId: string): Promise<{ pinned: boolean }> => post(`/v1/activity/${postId}/pin`),
+  promoteToNews: (postId: string): Promise<{ id: string }> => post(`/v1/activity/${postId}/promote`),
+  markActivitySeen: (id: string): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/activity/seen`),
+  searchMembers: (q: string): Promise<{ members: MemberHit[] }> => call(`/v1/members/search?q=${encodeURIComponent(q)}`),
+
+  /* chat (2.3) */
+  chatThreads: (): Promise<{ threads: ChatThread[] }> => call("/v1/chat/threads"),
+  threadMessages: (type: "group" | "dm", id: string): Promise<{ messages: ChatMessage[] }> => call(`/v1/chat/${type}/${id}/messages`),
+  sendGroupMessage: (groupId: string, b: { body?: string; mediaId?: string; replyToId?: string }): Promise<ChatMessage> => post(`/v1/chat/group/${groupId}/messages`, b),
+  sendDm: (otherId: string, b: { body?: string; mediaId?: string; replyToId?: string }): Promise<ChatMessage> => post(`/v1/chat/dm/${otherId}/messages`, b),
+  editMessage: (id: string, body: string): Promise<{ ok: boolean }> => patch(`/v1/chat/messages/${id}`, { body }),
+  deleteMessage: (id: string): Promise<{ ok: boolean }> => del(`/v1/chat/messages/${id}`),
+  markThreadRead: (type: "group" | "dm", id: string): Promise<{ ok: boolean }> => post(`/v1/chat/${type}/${id}/read`),
+  sendTyping: (type: "group" | "dm", id: string): Promise<{ ok: boolean }> => post(`/v1/chat/${type}/${id}/typing`),
+  pinToFeed: (messageId: string): Promise<{ id: string }> => post(`/v1/chat/messages/${messageId}/pin`),
+
+  /* news (2.4) */
+  news: (): Promise<NewsResponse> => call("/v1/news"),
+  postNews: (b: { body: string; commentsEnabled?: boolean }): Promise<{ id: string }> => post("/v1/news", b),
+
+  /* feed (2.5) */
+  feed: (): Promise<FeedResponse> => call("/v1/feed"),
+  dismissRail: (key: string): Promise<{ ok: boolean }> => post(`/v1/feed/rails/${key}/dismiss`),
+
+  /* moderation (2.6) */
+  report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),
+  reports: (): Promise<{ reports: ReportItem[] }> => call("/v1/reports"),
+  decideReport: (id: string, decision: "remove-content" | "dismiss" | "escalate", resolution?: string): Promise<{ ok: boolean }> => post(`/v1/reports/${id}`, { decision, resolution }),
+
+  /* media */
+  uploadMedia: async (file: File): Promise<{ id: string; kind: string }> => {
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_URL}/v1/media`, { method: "POST", credentials: "include", body: form });
+    if (!res.ok) throw new ApiError(res.status, "Upload failed. Try a smaller file.");
+    return (await res.json()) as { id: string; kind: string };
+  },
 };
 
 export type { SessionMember };
