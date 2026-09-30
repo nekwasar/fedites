@@ -1,0 +1,160 @@
+/*
+ * Fedites UI — token-only styles (rules.md M1: zero hardcoded values here or
+ * in component code; everything references tokens or theme CSS variables).
+ *
+ * Fedites Classic family (A1/A4/A5): flat solids, radius 0, hairline rows,
+ * no cards, no shadows, no gradients, no blur. Press states (F1): ~100ms
+ * darken/scale, transform-only animation (F2). 44px touch targets (E9).
+ */
+
+:root {
+  /* Color Theme layer mounts slot variables here at runtime:
+     --c-accent, --c-base, ... (set by applyTheme()). */
+  --font-ui: var(--family-font-ui, system-ui, sans-serif);
+  --font-mono: var(--family-font-mono, ui-monospace, monospace);
+  --font-masthead: var(--family-font-masthead, var(--font-ui));
+  --radius-sm: var(--family-radius-sm, 0px);
+  --radius-md: var(--family-radius-md, 0px);
+  --radius-lg: var(--family-radius-lg, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  font-size: var(--type-body, 15px);
+  line-height: var(--lh-body, 22px);
+  background: var(--c-base);
+  color: var(--c-base-contrast);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* B6: tabular numerals for all counts, money, timestamps, IDs. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* B2: uppercase micro-labels — the institutional signature. */
+.micro {
+  font-size: var(--type-micro, 11px);
+  line-height: var(--lh-micro, 16px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-neutral-500);
+}
+
+/* G1: rows with hairline dividers are the default pattern. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  min-height: var(--tap, 44px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-bottom: var(--hairline, 1px) solid var(--c-hairline);
+  background: var(--c-base);
+  width: 100%;
+  text-align: left;
+}
+
+.row[aria-current="true"] {
+  box-shadow: inset 2px 0 0 var(--c-accent);
+}
+
+/* F1 press state: transform-only (F2), fast, tactile. */
+.press {
+  transition: transform var(--motion-press, 100ms) var(--motion-ease, ease-out),
+    filter var(--motion-press, 100ms) var(--motion-ease, ease-out);
+}
+.press:active {
+  transform: scale(0.97);
+  filter: brightness(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press, .press:active { transition: none; transform: none; }
+  * { animation: none !important; }
+}
+
+/* G10: one primary action per screen; buttons are verbs (H4). */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+  min-height: var(--tap, 44px);
+  padding: 0 var(--space-4, 16px);
+  font-family: var(--font-ui);
+  font-size: var(--type-body1, 17px);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--c-base-contrast);
+}
+.btn--filled { background: var(--c-accent); color: var(--c-accent-contrast); }
+.btn--outlined { border: var(--hairline, 1px) solid var(--c-accent); color: var(--c-accent); background: transparent; }
+.btn--underline-link {
+  background: transparent; color: var(--c-accent);
+  text-decoration: underline; font-weight: 500; min-height: auto; padding: var(--space-1, 4px) 0;
+}
+.btn--tonal { background: var(--c-neutral-100); color: var(--c-base-contrast); }
+
+/* Typographic empty states (G4): headline, invitation, action. no images. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  padding: var(--space-12, 48px) var(--space-4, 16px);
+  text-align: center;
+}
+.empty h2 { margin: 0; font-size: var(--type-title, 22px); line-height: var(--lh-title, 28px); }
+.empty p { margin: 0; color: var(--c-neutral-500); font-size: var(--type-body, 15px); }
+
+/* Masthead (Classic: hairline, flat, no photo headers — A12). */
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  min-height: var(--tap, 44px);
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  border-bottom: var(--hairline, 1px) solid var(--c-hairline);
+  font-family: var(--font-masthead);
+  font-weight: 700;
+  font-size: var(--type-title, 22px);
+  color: var(--c-accent);
+}
+
+/* Skeletons, never spinners (F7). */
+.skeleton {
+  background: var(--c-neutral-100);
+  min-height: var(--space-4, 16px);
+  width: 100%;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* Focus visible (L5). */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+/* Screen header: title + one job (I-rules). */
+.screen-title {
+  margin: 0;
+  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-2, 8px);
+  font-size: var(--type-headline, 32px);
+  line-height: var(--lh-headline, 38px);
+  font-weight: 700;
+  color: var(--c-base-contrast);
+}

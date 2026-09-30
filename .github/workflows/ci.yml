@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: fedites
+          POSTGRES_PASSWORD: fedites
+          POSTGRES_DB: fedites_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U fedites" --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://fedites:fedites@127.0.0.1:55432/fedites_test
+      TEST_DATABASE_URL: postgres://fedites:fedites@127.0.0.1:55432/fedites_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (M6 — strict, no any)
+        run: pnpm turbo run typecheck
+      - name: Token lint (M1 — no hardcoded values)
+        run: pnpm turbo run check:tokens
+      - name: ESLint (D1/M5 gates)
+        run: pnpm turbo run lint
+      - name: Unit tests
+        run: pnpm turbo run test
+      - name: PG tests — migrations + seed populate a fake school (0.2 gate)
+        run: pnpm --filter @fedites/db test:pg
+      - name: Build (empty app deploys itself on every commit — 0.1 gate)
+        run: pnpm turbo run build
+      - name: Boot API + seed demo (smoke)
+        run: |
+          pnpm --filter @fedites/db seed
+          pnpm --filter @fedites/api start &
+          sleep 3
+          curl -fsS http://127.0.0.1:8787/v1/health
+          INSTANCE=$(curl -fsS "http://127.0.0.1:8787/v1/config?device=mobile" | head -c 40)
+          echo "session boot ok: $INSTANCE"
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -f ops/api.Dockerfile -t fedites-api:${{ github.sha }} .
+      - name: Build Web image
+        run: docker build -f ops/web.Dockerfile -t fedites-web:${{ github.sha }} .
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to staging VPS
+        # Configure STAGING_HOST / STAGING_SSH_KEY secrets to enable the
+        # pull-deploy script (phases.md 0.1: staging deploy on every commit).
+        run: |
+          if [ -z "${{ secrets.STAGING_HOST }}" ]; then
+            echo "STAGING_HOST not configured — skipping (images built and pinned to sha)."
+            exit 0
+          fi
+          echo "${{ secrets.STAGING_SSH_KEY }}" > key && chmod 600 key
+          scp -i key -o StrictHostKeyChecking=accept-new ops/deploy-staging.sh "${{ secrets.STAGING_HOST }}:/opt/fedites/"
+          ssh -i key -o StrictHostKeyChecking=accept-new "${{ secrets.STAGING_HOST }}" "sh /opt/fedites/deploy-staging.sh ${{ github.sha }}"

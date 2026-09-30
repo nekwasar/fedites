@@ -1,0 +1,52 @@
+{
+  "name": "@fedites/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/entry.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'no unit tests yet' && exit 0",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "@fedites/config": "workspace:*",
+    "expo": "~51.0.28",
+    "react": "18.2.0",
+    "react-native": "0.74.5"
+  },
+  "devDependencies": {
+    "@types/react": "~18.2.79",
+    "typescript": "^5.5.4",
+    "eslint": "^9.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "typescript-eslint": "^8.2.0"
+  },
+  "expo": {
+    "name": "Fedites",
+    "slug": "fedites",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "ios": {
+      "bundleIdentifier": "app.fedites.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "app.fedites.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  }
+}

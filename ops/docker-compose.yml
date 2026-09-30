@@ -1,0 +1,57 @@
+# Fedites staging stack (phases.md 0.1): API + web + Postgres + Redis + MinIO.
+# Stack per phases.md: PostgreSQL, Redis, MinIO media on VPS.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fedites
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fedites}
+      POSTGRES_DB: fedites
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fedites"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1"]
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-fedites}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-fedites-secret}
+    volumes:
+      - minio-data:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: ops/api.Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 8787
+      DATABASE_URL: postgres://fedites:${POSTGRES_PASSWORD:-fedites}@db:5432/fedites
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8787:8787"
+
+  web:
+    build:
+      context: ..
+      dockerfile: ops/web.Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://127.0.0.1:8787}
+    ports:
+      - "8080:80"
+
+volumes:
+  db-data:
+  minio-data:

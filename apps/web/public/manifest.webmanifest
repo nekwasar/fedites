@@ -1,0 +1,11 @@
+{
+  "name": "Fedites",
+  "short_name": "Fedites",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#7B1E2B",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "fedites",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "check:tokens": "turbo run check:tokens",
+    "db:migrate": "pnpm --filter @fedites/db migrate",
+    "db:seed": "pnpm --filter @fedites/db seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.2",
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.15",
+    "prettier": "^3.3.3"
+  }
+}

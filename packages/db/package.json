@@ -1,0 +1,34 @@
+{
+  "name": "@fedites/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate": "tsx src/cli.ts migrate",
+    "seed": "tsx src/cli.ts seed",
+    "test": "vitest run --passWithNoTests --exclude '**/*.pg.test.ts'",
+    "test:pg": "vitest run src/schema.pg.test.ts",
+    "lint": "eslint src --max-warnings 0"
+  },
+  "dependencies": {
+    "pg": "^8.12.0",
+    "@fedites/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.6",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5",
+    "eslint": "^9.9.0",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "typescript-eslint": "^8.2.0"
+  }
+}
