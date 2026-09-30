@@ -30,6 +30,7 @@ export async function policyRoutes(
     }
 
     const subject: PolicySubject = {
+      status: member.verification === "verified" ? "verified" : member.verification === "honorary" ? "honorary" : member.verification === "pending" ? "pending" : "limited",
       verified: member.verification === "verified",
       honorary: member.verification === "honorary",
       roles: member.roles,

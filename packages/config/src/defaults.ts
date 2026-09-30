@@ -18,8 +18,8 @@ export const defaultFlags: ReadonlyArray<{ key: string; enabled: boolean }> = [
   { key: "nav.events", enabled: true },
   { key: "nav.menu", enabled: true },
   { key: "nav.manage", enabled: false }, // appears for role-holders (Phase 1)
-  { key: "rails.identity", enabled: false }, // Phase 1
-  { key: "rails.verification", enabled: false },
+  { key: "rails.identity", enabled: true }, // Phase 1
+  { key: "rails.verification", enabled: true },
   { key: "groups.engine", enabled: false }, // Phase 2
   { key: "groups.activity", enabled: false },
   { key: "groups.chat", enabled: false },

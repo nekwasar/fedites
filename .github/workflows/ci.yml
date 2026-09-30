@@ -41,8 +41,10 @@ jobs:
         run: pnpm turbo run lint
       - name: Unit tests
         run: pnpm turbo run test
-      - name: PG tests — migrations + seed populate a fake school (0.2 gate)
-        run: pnpm --filter @fedites/db test:pg
+      - name: PG tests — schema, migrations + seed, and the Phase 1 walking skeleton
+        run: |
+          pnpm --filter @fedites/db test:pg
+          pnpm --filter @fedites/api test:pg
       - name: Build (empty app deploys itself on every commit — 0.1 gate)
         run: pnpm turbo run build
       - name: Boot API + seed demo (smoke)

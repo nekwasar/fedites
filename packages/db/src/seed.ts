@@ -11,6 +11,7 @@ import type { Pool } from "pg";
 import { randomUUID } from "node:crypto";
 import { defaultConfig } from "@fedites/config";
 import { withTx, type Tx } from "./client.js";
+import { hashPassword } from "./password.js";
 
 export interface SeedResult {
   instanceId: string;
@@ -18,11 +19,16 @@ export interface SeedResult {
   groupIds: Record<string, string>;
 }
 
+/** Demo password for every seeded member (UAT per session discipline). */
+export const DEMO_PASSWORD = "demopass123";
+/** Demo invite code for walking the signup flow by hand. */
+export const DEMO_INVITE_CODE = "WELCOME-98";
+
 export async function seed(pool: Pool): Promise<SeedResult> {
   return withTx(pool, async (tx) => seedTx(tx));
 }
 
-export async function seedTx(tx: Tx): Promise<SeedResult> {
+async function seedTx(tx: Tx): Promise<SeedResult> {
   // Idempotency: if the demo instance exists, return it.
   const existing = await tx.query<{ id: string }>(
     "SELECT id FROM instances WHERE short_name = $1",
@@ -32,6 +38,8 @@ export async function seedTx(tx: Tx): Promise<SeedResult> {
     const instanceId = existing.rows[0].id;
     return { instanceId, memberIds: {}, groupIds: {} };
   }
+
+  const demoHash = await hashPassword(DEMO_PASSWORD);
 
   const instanceId = randomUUID();
   await tx.query(
@@ -93,11 +101,11 @@ export async function seedTx(tx: Tx): Promise<SeedResult> {
     const id = randomUUID();
     memberIds[p.key] = id;
     await tx.query(
-      `INSERT INTO members (id, instance_id, set_id, house_id, display_name, email, verification)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      `INSERT INTO members (id, instance_id, set_id, house_id, display_name, email, verification, password_hash)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
       [
         id, instanceId, setIds[p.year] ?? null, houseIds[p.house] ?? null, p.name,
-        `${p.key}@example.test`, p.honorary ? "honorary" : "verified",
+        `${p.key}@example.test`, p.honorary ? "honorary" : "verified", demoHash,
       ],
     );
     if (p.role) {
@@ -152,6 +160,12 @@ export async function seedTx(tx: Tx): Promise<SeedResult> {
       [instanceId, groupIds.committeeExec!, memberIds[key]!],
     );
   }
+
+  // Demo invite code for walking the signup flow by hand (UAT).
+  await tx.query(
+    `INSERT INTO invite_codes (instance_id, code, created_by) VALUES ($1,$2,$3)`,
+    [instanceId, DEMO_INVITE_CODE, memberIds.president!],
+  );
 
   // "Start here" posts (group lifecycle, spec §6)
   for (const g of groups) {

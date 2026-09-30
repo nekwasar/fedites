@@ -16,6 +16,8 @@ export type Action =
   | "face.search";
 
 export interface PolicySubject {
+  /** pending = pre-approval; limited = approved but not yet vouched; verified; honorary */
+  status: "pending" | "limited" | "verified" | "honorary";
   verified: boolean;
   honorary: boolean;
   roles: readonly string[];
@@ -33,10 +35,6 @@ export function hasDutyRole(roles: readonly string[]): boolean {
 export function isFullMember(policy: BehaviorPolicy, subject: PolicySubject): boolean {
   if (subject.honorary) return true;
   if (subject.verified) return true;
-  if (policy.vouching.enabled && policy.vouching.adminOverride) {
-    // Admin override can verify; limited members need setmates count or admin.
-    return subject.vouchCount >= policy.vouching.setmatesRequired;
-  }
   return subject.vouchCount >= policy.vouching.setmatesRequired;
 }
 
@@ -49,8 +47,12 @@ export function evaluate(
 
   switch (action) {
     case "group.post": {
-      // Limited accounts may read everything and post in groups (§P).
-      return { allowed: true, reason: "group posting open to all members" };
+      // Limited accounts may read everything and post in groups; pending
+      // signups are read-only until an admin activates them (§P, 1.2 queue).
+      if (subject.status === "pending") {
+        return { allowed: false, reason: "An admin activates new signups before posting opens" };
+      }
+      return { allowed: true, reason: "group posting open to approved members" };
     }
     case "dm.send": {
       if (!policy.probationCapabilities.dms && !isFullMember(policy, subject)) {

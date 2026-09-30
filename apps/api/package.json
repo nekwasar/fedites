@@ -8,24 +8,28 @@
     "start": "tsx src/server.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude '**/*pg.test.ts'",
+    "test:pg": "vitest run src/phase1.pg.test.ts",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "@fedites/config": "workspace:*",
+    "@fedites/db": "workspace:*",
     "fastify": "^4.28.1",
     "pg": "^8.12.0",
-    "@fedites/config": "workspace:*",
-    "@fedites/db": "workspace:*"
+    "qrcode": "^1.5.4",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/pg": "^8.11.6",
-    "tsx": "^4.17.0",
-    "typescript": "^5.5.4",
-    "vitest": "^2.0.5",
-    "eslint": "^9.9.0",
+    "@types/qrcode": "^1.5.6",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
-    "typescript-eslint": "^8.2.0"
+    "eslint": "^9.9.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.2.0",
+    "vitest": "^2.0.5"
   }
 }

@@ -5,24 +5,28 @@ import { evaluate, isFullMember, hasDutyRole, type PolicySubject } from "./polic
 const config = defaultConfig;
 
 const verified: PolicySubject = {
-  verified: true, honorary: false, roles: ["member"], vouchCount: 0,
+  status: "verified", verified: true, honorary: false, roles: ["member"], vouchCount: 0,
 };
 const limited: PolicySubject = {
-  verified: false, honorary: false, roles: ["member"], vouchCount: 0,
+  status: "limited", verified: false, honorary: false, roles: ["member"], vouchCount: 0,
+};
+const pending: PolicySubject = {
+  status: "pending", verified: false, honorary: false, roles: ["member"], vouchCount: 0,
 };
 const vouched: PolicySubject = {
-  verified: false, honorary: false, roles: ["member"], vouchCount: 3,
+  status: "limited", verified: false, honorary: false, roles: ["member"], vouchCount: 3,
 };
 const president: PolicySubject = {
-  verified: true, honorary: false, roles: ["president"], vouchCount: 0,
+  status: "verified", verified: true, honorary: false, roles: ["president"], vouchCount: 0,
 };
 const groupAdmin: PolicySubject = {
-  verified: true, honorary: false, roles: ["member"], groupAdminOf: ["g1"], vouchCount: 0,
+  status: "verified", verified: true, honorary: false, roles: ["member"], groupAdminOf: ["g1"], vouchCount: 0,
 };
 
 describe("policy engine (M5 — enforced at the API, config-driven)", () => {
-  it("limited accounts can read and post in groups (rules §P)", () => {
+  it("limited accounts can read and post in groups; pending are read-only (rules §P)", () => {
     expect(evaluate(config, "group.post", limited).allowed).toBe(true);
+    expect(evaluate(config, "group.post", pending).allowed).toBe(false);
   });
 
   it("limited accounts cannot DM, pay, or RSVP until vouched by 3 setmates", () => {

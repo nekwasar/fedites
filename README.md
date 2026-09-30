@@ -24,7 +24,7 @@ pnpm db:seed           # seed the fake school (3 sets, 6 group types, roles)
 pnpm dev               # api :8787 + web :5173
 ```
 
-## Phase 0 — status
+## Phase 0 — status (complete)
 
 | Session | Deliverable | Where |
 |---|---|---|
@@ -33,6 +33,19 @@ pnpm dev               # api :8787 + web :5173
 | 0.3 | Design system part 1: tokens, color theme layer, variant registry, family inheritance | `packages/tokens`, `packages/config/src/{themes,families,resolve,law}.ts` |
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
+
+## Phase 1 — Rails (complete)
+
+| Session | Deliverable | Where |
+|---|---|---|
+| 1.1 | Auth: signup (invite code), login, 2FA (TOTP), sessions | `apps/api/src/{auth,sessions,password,totp}.ts`, migration `0002` |
+| 1.2 | Verification flow: invites, admin queue, set assignment, honorary, setmate vouching | `apps/api/src/verification.ts`, web `AuthScreen` + `ManageScreen` |
+| 1.3 | Profile builder, digital alumni ID (QR), privacy v1, private family links, logged contact reveal | `apps/api/src/profile.ts`, web `ProfileScreen`/`IdScreen`/`MemberScreen` |
+| 1.4 | Roles & permissions, Manage shell, notification dispatcher v1 (in-app inbox) | `apps/api/src/{manage,notify}.ts`, web `ManageScreen`/`InboxScreen` |
+
+**Phase gate (walking skeleton):** every tab exists; a real member signs up with a code, is activated by an admin, is verified by 3 setmates, gets an ID card, and an admin role change sticks — all covered by `apps/api/src/phase1.pg.test.ts` and demoable via [DEMO.md](DEMO.md).
+
+Demo credentials after seeding: every member's password is `demopass123` (e.g. `president@example.test`); invite code `WELCOME-98`.
 
 ### Demo gates
 

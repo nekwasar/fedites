@@ -1,18 +1,25 @@
 /**
- * Fedites web shell — config-driven (phases.md 0.4).
- * Renders: resolved color theme (0.3) + nav pattern from config (0.4)
- * + placeholder screens with typographic empty states (G4).
- * The Studio preview scaffolding allows switching family/theme/nav/device
- * without a store update — clients hot-reload config (configuration.md §7).
+ * Fedites web shell — config-driven + authenticated (Phase 1).
+ * Rails now live: session auth, verification flow, profiles, ID card,
+ * notification inbox, Manage panel. Tabs render placeholders until their
+ * phase (M3). Mobile-first layouts (E1); desktop restructures (E2/E5).
  */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { applyTheme, applyFamily } from "@fedites/ui";
+import { themePresets, families, mobilePatterns, desktopPatterns, type NavPatternId, type SessionMember as ContractMember } from "@fedites/config";
 import { fetchSessionBoot, type BootState } from "./boot.js";
+import { Api, ApiError } from "./api.js";
+import { useRoute } from "./router.js";
+import { AuthScreen } from "./screens/AuthScreen.js";
+import { InboxScreen, Empty } from "./screens/InboxScreen.js";
+import { ProfileScreen } from "./screens/ProfileScreen.js";
+import { IdScreen } from "./screens/IdScreen.js";
+import { MemberScreen } from "./screens/MemberScreen.js";
+import { ManageScreen } from "./screens/ManageScreen.js";
 import {
   MobileTabBar, MobileTopTabs, MobileHybrid, MobileDrawer, MobileFloatingDock,
   DesktopSideRail, DesktopTopNav, DesktopTopSide, DesktopCommandFirst,
 } from "./shell/nav-patterns.js";
-import { themePresets, families, mobilePatterns, desktopPatterns, type NavPatternId } from "@fedites/config";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
 
@@ -22,7 +29,6 @@ const tabJobs: Record<string, string> = {
   "/chat": "tab.chat.job",
   "/events": "tab.events.job",
   "/menu": "tab.menu.job",
-  "/manage": "tab.menu.job",
 };
 
 function PlaceholderScreen({ boot, route }: { boot: BootState; route: string }): React.ReactElement {
@@ -37,18 +43,13 @@ function PlaceholderScreen({ boot, route }: { boot: BootState; route: string }):
       <div className="micro" style={{ padding: "0 16px 16px" }}>
         {boot.session.config.instance.copy[copyKey] ?? ""}
       </div>
-      {!enabled && (
-        <div className="empty">
-          <h2>Coming in a later phase</h2>
-          <p>This feature ships behind a flag until its build phase (M3).</p>
-        </div>
-      )}
+      {!enabled && <Empty title="Coming in a later phase" body="This feature ships behind a flag until its build phase (M3)." />}
       {enabled && (
-        <div className="empty">
-          <h2>{boot.session.config.instance.copy[`empty.${itemKey}.title`] ?? "Nothing here yet"}</h2>
-          <p>{boot.session.config.instance.copy[`empty.${itemKey}.body`] ?? "Content will appear here."}</p>
-          {route === "/" && <button type="button" className="btn btn--filled press">Find your people</button>}
-        </div>
+        <Empty
+          title={boot.session.config.instance.copy[`empty.${itemKey}.title`] ?? "Nothing here yet"}
+          body={boot.session.config.instance.copy[`empty.${itemKey}.body`] ?? "Content will appear here."}
+          action={route === "/" ? <button type="button" className="btn btn--filled press">Find your people</button> : undefined}
+        />
       )}
     </main>
   );
@@ -65,7 +66,7 @@ function StudioPreview({
   onTheme: (id: string) => void;
   onFamily: (id: (typeof families)[number]["id"]) => void;
 }): React.ReactElement | null {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   if (!boot.session.config.instance.flags.some((f) => f.key === "demo.previewSession" && f.enabled)) return null;
   return (
     <aside
@@ -81,15 +82,13 @@ function StudioPreview({
         className="press"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        style={{ minHeight: 44, background: "transparent", border: "none", cursor: "pointer", font: "600 11px var(--font-ui)", letterSpacing: "0.08em", textTransform: "uppercase" }}
+        style={{ minHeight: 44, background: "transparent", border: "none", cursor: "pointer", font: "600 11px var(--font-ui)", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--c-base-contrast)" }}
       >
         {open ? "Close preview" : "Preview"}
       </button>
       {open && (
         <div style={{ display: "grid", gap: 16 }}>
-          <div className="micro">Preview banner</div>
           <p style={{ margin: 0, font: "13px var(--font-ui)" }}>{boot.session.config.instance.copy["preview.banner"]}</p>
-
           <div className="micro">Device frame</div>
           <div>
             {(["mobile", "desktop"] as const).map((d) => (
@@ -98,44 +97,22 @@ function StudioPreview({
               </button>
             ))}
           </div>
-
           <div className="micro">Nav pattern (config swap)</div>
           {(device === "mobile" ? mobilePatterns : desktopPatterns).map((p) => (
-            <button
-              key={p}
-              type="button"
-              className="press"
-              onClick={() => onPattern(p)}
-              style={{ minHeight: 44, width: "100%", textAlign: "left", border: "1px solid var(--c-hairline)", background: "var(--c-base)", font: "13px var(--font-ui)", cursor: "pointer", padding: "0 12px" }}
-            >
+            <button key={p} type="button" className="press" onClick={() => onPattern(p)} style={{ minHeight: 44, width: "100%", textAlign: "left", border: "1px solid var(--c-hairline)", background: "var(--c-base)", font: "13px var(--font-ui)", cursor: "pointer", padding: "0 12px" }}>
               {p}
             </button>
           ))}
-
           <div className="micro">Color theme presets</div>
           {themePresets.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="press"
-              onClick={() => onTheme(t.id)}
-              aria-label={`Theme ${t.name}`}
-              style={{ minHeight: 44, width: "100%", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--c-hairline)", background: "var(--c-base)", cursor: "pointer", padding: "0 12px" }}
-            >
+            <button key={t.id} type="button" className="press" onClick={() => onTheme(t.id)} aria-label={`Theme ${t.name}`} style={{ minHeight: 44, width: "100%", display: "flex", alignItems: "center", gap: 12, border: "1px solid var(--c-hairline)", background: "var(--c-base)", cursor: "pointer", padding: "0 12px" }}>
               <span style={{ width: 24, height: 24, background: t.light.accent, display: "inline-block" }} />
               <span style={{ font: "13px var(--font-ui)", color: "var(--c-base-contrast)" }}>{t.name}</span>
             </button>
           ))}
-
           <div className="micro">Style family</div>
           {families.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className="press"
-              onClick={() => onFamily(f.id)}
-              style={{ minHeight: 44, width: "100%", textAlign: "left", border: "1px solid var(--c-hairline)", background: "var(--c-base)", font: "13px var(--font-ui)", cursor: "pointer", padding: "0 12px" }}
-            >
+            <button key={f.id} type="button" className="press" onClick={() => onFamily(f.id)} style={{ minHeight: 44, width: "100%", textAlign: "left", border: "1px solid var(--c-hairline)", background: "var(--c-base)", font: "13px var(--font-ui)", cursor: "pointer", padding: "0 12px" }}>
               {f.name}
             </button>
           ))}
@@ -147,8 +124,11 @@ function StudioPreview({
 
 export default function App(): React.ReactElement {
   const [boot, setBoot] = useState<BootState | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [route, setRoute] = useState("/");
+  const [bootError, setBootError] = useState<string | null>(null);
+  const [member, setMember] = useState<ContractMember | null>(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const [route, navigate] = useRoute();
   const [device, setDevice] = useState<"mobile" | "desktop">(
     window.innerWidth < 1024 ? "mobile" : "desktop",
   );
@@ -160,26 +140,33 @@ export default function App(): React.ReactElement {
     desktopPattern?: (typeof desktopPatterns)[number];
   }>({});
 
-  const handlePattern = (p: NavPatternId): void => {
-    if ((mobilePatterns as readonly string[]).includes(p)) {
-      setOverrides((o) => ({ ...o, mobilePattern: p as (typeof mobilePatterns)[number] }));
-    }
-    if ((desktopPatterns as readonly string[]).includes(p)) {
-      setOverrides((o) => ({ ...o, desktopPattern: p as (typeof desktopPatterns)[number] }));
-    }
-  };
-
-  const params = useMemo(() => {
+  const params = useCallback(() => {
     const p = new URLSearchParams();
     p.set("device", device);
     return p;
   }, [device]);
 
   useEffect(() => {
-    fetchSessionBoot(API_URL, params)
+    fetchSessionBoot(API_URL, params())
       .then(setBoot)
-      .catch((e: unknown) => setError(String(e)));
+      .catch((e: unknown) => setBootError(String(e)));
   }, [params]);
+
+  const refreshSession = useCallback((): void => {
+    Api.session()
+      .then((s) => { setMember(s.member); })
+      .catch(() => setMember(null))
+      .finally(() => setSessionLoaded(true));
+  }, []);
+
+  useEffect(refreshSession, [refreshSession, route]);
+
+  const refreshUnread = useCallback((): void => {
+    if (member === null) { setUnread(0); return; }
+    Api.inbox().then((i) => setUnread(i.unread)).catch(() => undefined);
+  }, [member]);
+
+  useEffect(refreshUnread, [refreshUnread]);
 
   // Live theme/family application (0.3 demo gate).
   useEffect(() => {
@@ -191,10 +178,7 @@ export default function App(): React.ReactElement {
     if (preset) {
       applyTheme(document.documentElement, preset.light);
     } else {
-      const resolved = boot.session.resolved.theme as unknown as Record<string, string | undefined>;
-      const full = { ...resolved };
-      for (const k of Object.keys(full)) if (full[k] === undefined) delete full[k];
-      applyTheme(document.documentElement, full as Parameters<typeof applyTheme>[1]);
+      applyTheme(document.documentElement, boot.session.resolved.theme as Parameters<typeof applyTheme>[1]);
     }
     const family =
       overrides.familyId !== undefined
@@ -203,16 +187,16 @@ export default function App(): React.ReactElement {
     if (family) applyFamily(document.documentElement, family);
   }, [boot, overrides, device]);
 
-  if (error !== null) {
+  if (bootError !== null) {
     return (
-      <div className="empty">
-        <h2>Could not reach the platform</h2>
-        <p>Check that the API is running, then try again.</p>
-        <button type="button" className="btn btn--filled press" onClick={() => location.reload()}>Retry</button>
-      </div>
+      <Empty
+        title="Could not reach the platform"
+        body="Check that the API is running, then try again."
+        action={<button type="button" className="btn btn--filled press" onClick={() => location.reload()}>Retry</button>}
+      />
     );
   }
-  if (boot === null) {
+  if (boot === null || !sessionLoaded) {
     return (
       <div style={{ padding: 16, display: "grid", gap: 8 }}>
         <div className="skeleton" style={{ height: 32, maxWidth: 240 }} />
@@ -233,48 +217,99 @@ export default function App(): React.ReactElement {
   const items = boot.navItems;
   const contentMargin =
     device === "desktop" && (pattern === "side-rail" || pattern === "top+side") ? 220 : 0;
-  const topOffset = pattern === "top-tabs" || pattern === "top-nav" || pattern === "hybrid" ? 48 : 0;
+  const topOffset = pattern === "top-tabs" || pattern === "top-nav" || pattern === "top+side" ? 48 : 0;
 
-  const navigate = (r: string): void => {
+  const go = (r: string): void => {
     if (r === "__drawer") { setDrawerOpen(true); return; }
-    setRoute(r);
-    window.history.pushState(null, "", r);
+    navigate(r);
+  };
+
+  const authed = member !== null;
+  const dutyRoles = authed && member.roles.some((r) => r !== "member");
+
+  const screen = (): React.ReactElement => {
+    if (route.path === "/auth") {
+      return authed
+        ? <Empty title="You are signed in" body="Your account is active on this device." action={<button type="button" className="btn btn--filled press" onClick={() => go("/")}>Go home</button>} />
+        : <AuthScreen onDone={() => { refreshSession(); navigate("/"); }} />;
+    }
+    if (!authed) {
+      return (
+        <Empty
+          title="Sign in to continue"
+          body="This area needs a member account. New here? You will need an invite code."
+          action={<button type="button" className="btn btn--filled press" onClick={() => go("/auth")}>Sign in or join</button>}
+        />
+      );
+    }
+    switch (route.path) {
+      case "/notifications": return <InboxScreen onNavigate={go} />;
+      case "/me": return <ProfileScreen member={member} onNavigate={go} />;
+      case "/id": return <IdScreen />;
+      case "/members": return route.param !== undefined ? <MemberScreen id={route.param} /> : <Empty title="Member not found" body="The link may be wrong." />;
+      case "/manage": return dutyRoles ? <ManageScreen member={member} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
+      case "/menu": return <ProfileScreen member={member} onNavigate={go} />;
+      default: return <PlaceholderScreen boot={{ ...boot, session: { ...boot.session, config: { ...boot.session.config, nav: effNav } } }} route={route.path} />;
+    }
   };
 
   const patterns: Record<string, React.ReactElement> = {
-    "tab-bar": <MobileTabBar items={items} route={route} onNavigate={navigate} />,
-    "top-tabs": <MobileTopTabs items={items} route={route} onNavigate={navigate} />,
-    hybrid: <MobileHybrid items={items} route={route} onNavigate={navigate} />,
-    drawer: (
-      <MobileDrawer items={items} route={route} onNavigate={navigate} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-    ),
-    "floating-dock": <MobileFloatingDock items={items} route={route} onNavigate={navigate} />,
-    "side-rail": <DesktopSideRail items={items} route={route} onNavigate={navigate} />,
-    "top-nav": <DesktopTopNav items={items} route={route} onNavigate={navigate} />,
-    "top+side": <DesktopTopSide items={items} route={route} onNavigate={navigate} />,
-    "command-first": <DesktopCommandFirst items={items} route={route} onNavigate={navigate} />,
+    "tab-bar": <MobileTabBar items={items} route={route.path} onNavigate={go} />,
+    "top-tabs": <MobileTopTabs items={items} route={route.path} onNavigate={go} />,
+    hybrid: <MobileHybrid items={items} route={route.path} onNavigate={go} />,
+    drawer: <MobileDrawer items={items} route={route.path} onNavigate={go} open={drawerOpen} onClose={() => setDrawerOpen(false)} />,
+    "floating-dock": <MobileFloatingDock items={items} route={route.path} onNavigate={go} />,
+    "side-rail": <DesktopSideRail items={items} route={route.path} onNavigate={go} />,
+    "top-nav": <DesktopTopNav items={items} route={route.path} onNavigate={go} />,
+    "top+side": <DesktopTopSide items={items} route={route.path} onNavigate={go} />,
+    "command-first": <DesktopCommandFirst items={items} route={route.path} onNavigate={go} />,
   };
 
   return (
     <>
-      <header className="masthead" style={{ marginLeft: contentMargin, marginTop: pattern === "top-nav" || pattern === "top+side" ? 56 : 0 }}>
-        {boot.session.config.instance.shortName}
-        <span className="micro" style={{ marginLeft: "auto", fontFamily: "var(--font-mono)" }}>
-          {boot.session.resolved.family.name}
+      <header className="masthead" style={{ marginLeft: contentMargin, marginTop: pattern === "top-nav" || pattern === "top+side" ? 56 : 0, position: "relative" }}>
+        <span
+          style={{ cursor: "pointer" }}
+          onClick={() => go("/")}
+          role="link"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter") go("/"); }}
+        >
+          {boot.session.config.instance.shortName}
+        </span>
+        <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4 }}>
+          <button type="button" className="press" aria-label="Notifications" onClick={() => go("/notifications")} style={{ position: "relative", minHeight: 44, minWidth: 44, background: "transparent", border: "none", cursor: "pointer", color: "var(--c-base-contrast)" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M6 16V10a6 6 0 1 1 12 0v6l2 3H4zM10 19a2 2 0 0 0 4 0" /></svg>
+            {unread > 0 && (
+              <span className="tabular" style={{ position: "absolute", top: 4, right: 2, background: "var(--c-accent)", color: "var(--c-accent-contrast)", font: "600 10px var(--font-ui)", padding: "1px 5px" }}>{unread}</span>
+            )}
+          </button>
+          {authed ? (
+            <button type="button" className="press" aria-label="Your profile" onClick={() => go("/me")} style={{ minHeight: 44, minWidth: 44, background: "transparent", border: "1px solid var(--c-hairline)", cursor: "pointer", font: "600 14px var(--font-masthead)", color: "var(--c-accent)" }}>
+              {member.displayName.slice(0, 1)}
+            </button>
+          ) : (
+            <button type="button" className="btn btn--filled press" onClick={() => go("/auth")}>Sign in</button>
+          )}
         </span>
       </header>
       <div style={{ marginLeft: contentMargin, marginTop: topOffset }}>
-        <PlaceholderScreen boot={{ ...boot, session: { ...boot.session, config: { ...boot.session.config, nav: effNav } } }} route={route} />
+        {screen()}
       </div>
       {patterns[pattern]}
       <StudioPreview
         boot={boot}
         device={device}
         onDevice={setDevice}
-        onPattern={handlePattern}
+        onPattern={(p) => {
+          if ((mobilePatterns as readonly string[]).includes(p)) setOverrides((o) => ({ ...o, mobilePattern: p as (typeof mobilePatterns)[number] }));
+          if ((desktopPatterns as readonly string[]).includes(p)) setOverrides((o) => ({ ...o, desktopPattern: p as (typeof desktopPatterns)[number] }));
+        }}
         onTheme={(id) => setOverrides((o) => ({ ...o, themeId: id }))}
         onFamily={(id) => setOverrides((o) => ({ ...o, familyId: id }))}
       />
     </>
   );
 }
+
+export { ApiError };
