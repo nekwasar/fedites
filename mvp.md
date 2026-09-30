@@ -6,6 +6,8 @@ The features approved for the first build: **112 features** across sections 1–
 - **Legacy family linking** is included but **private** by default.
 - **WhatsApp bridge only** — no Telegram.
 - **Newsletter builder** ships with **storable and uploadable templates**.
+- **Calls are external meeting links** (Google Meet / Zoom) — no native in-app calling.
+- **Struck by decision, never deferred:** stories, games (daily trivia, games arcade, fantasy leagues), leaderboards, milestone celebrations, and the Telegram bridge.
 
 ## 1. Identity & Verification (8)
 - **Alumni verification** — Confirm members truly attended using year groups, records, photos, and trusted peer vouching.
@@ -40,7 +42,7 @@ The features approved for the first build: **112 features** across sections 1–
   - Templates must be **storable and uploadable** (save, reuse, and import custom designs).
 - **WhatsApp bridge** — Mirror key announcements automatically into the messaging groups members already use every day.
 - **SMS fallback** — Reach members without smartphones through simple text-message alerts containing only the essential links.
-- **Voice & video calls** — Native voice and video calling for mentorship sessions, committee meetings, and casual catch-ups.
+- **Voice & video calls** — Calls open in-app Google Meet or Zoom links for mentors, committees, and catch-ups.
 
 ## 4. Feed, Content & Memory (13)
 - **News feed** — One single scrolling timeline mixing posts, photos, achievements, events, donations, and announcements together.
@@ -126,7 +128,7 @@ The features approved for the first build: **112 features** across sections 1–
 ## 12. Fun & Nostalgia (8) — the tender ones
 - **School bell notifications** — An optional notification chime sampled from the actual old school bell sound recording.
 - **School anthem player** — Stream treasured old recordings of anthems, hymns, and favorite school songs anytime anywhere.
-- **Crest stickers & frames** — Custom school-crest emoji, stickers, and profile frames for all special celebratory occasions year-round.
+- **Crest stickers & frames** — Custom school-crest stickers, frames, and photo overlays for all special celebratory occasions year-round.
 - **Confetti moments** — Joyful celebratory confetti animations whenever donations land or milestone goals finally get completed.
 - **"Remember when" threads** — Weekly nostalgia prompts that spark warm, collective memory storytelling sessions between school generations.
 - **Recipe exchange** — Members recreate and share the famous old tuck-shop and dining-hall recipes together online.
@@ -150,11 +152,11 @@ The features approved for the first build: **112 features** across sections 1–
 
 - **Section 11 — Care, Welfare & Support:** excluded entirely (welfare dues, hospital visit coordination, grief circles, mental wellness circles, emergency assistance loans, legal aid network, disaster relief fundraising, medical fund).
 - **Section 5:** ticketing & payments, icebreaker matchmaking, live Q&A and polling, scavenger hunts, hotel & travel deals, visa invitation letters, carpool coordination, watch parties.
-- **Section 4:** stories, podcast & video channel.
+- **Section 4:** stories (struck by decision); podcast & video channel (deferred).
 - **Section 3:** auto-translation; Telegram bridge (WhatsApp bridge only).
 - **Section 2:** digital business cards, anonymous salary insights, mentorship matching.
 - **Section 7:** merchandise store, auctions & raffles, investment club, group savings circles, welfare fund.
 - **Section 9:** legacy admission registry, retired teachers' welfare.
-- **Section 10:** milestone celebrations, leaderboards (deferred — conflicts with the no-popularity-metrics rule).
+- **Section 10:** milestone celebrations and leaderboards (struck by decision — automated celebration of personal milestones and any popularity ranking both conflict with K2/K5; anniversary countdowns stay, they celebrate the school, not the member).
 - **Section 12:** daily trivia, games arcade, fantasy leagues (all games removed by decision).
 - **Sections 14–15 (Growth & Platform, Marketplace):** not part of this MVP by default — the full catalog lives in [features.md](features.md) for a later phase.

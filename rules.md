@@ -79,7 +79,7 @@ Every state (error, success, unread, verified) pairs color with text or icon.
 ## D. Iconography & Media
 
 **D1. No emojis.** [LOCKED]
-No emojis anywhere: UI, buttons, system copy, notifications, emails, empty states. One custom line-icon set, single stroke weight. Member-authored chat content is the only emoji territory.
+No emojis anywhere: UI, buttons, system copy, notifications, emails, empty states. One custom line-icon set, single stroke weight. **Member-authored content is the only emoji territory** — chat messages, comments, and reactions.
 *Check: lint/copy review; system strings audited.*
 
 **D3. Fixed photo ratios.** [PROPOSED]
@@ -305,7 +305,7 @@ Soft-delete window on admin destructive actions, surfaced in audit logs.
 The app is a white-label template — each school configures its own instance. Rules split into two tiers.
 
 **Platform Law — binds every family and every instance; never configurable:**
-Accessibility floors (WCAG AA, 44px targets, keyboard/screen-reader, focus visible) · performance budgets (L1) · press states (F1 — each family implements its own, e.g. ripple counts) · reduced motion (F9) · no emojis (D1) · copy rules (H1–H5) · navigation integrity (I1–I6) · attention rules (J1–J5) · privacy rules (K1–K6) · engineering rules (M1–M6) · product behavior (N1–N2) · API-enforced permissions, audit logs, archive-never-delete. The Studio cannot publish any family, variant, or theme that fails a law gate.
+Accessibility floors (WCAG AA, 44px targets, keyboard/screen-reader, focus visible) · performance budgets (L1) · press states (F1 — each family implements its own, e.g. ripple counts) · reduced motion (F9) · no emojis (D1) · copy rules (H1–H5) · navigation integrity (I2–I6) · attention rules (J2–J5) · privacy rules (K1–K5) · engineering rules (M1–M6) · product behavior (N1–N2) · API-enforced permissions, audit logs, archive-never-delete. The Studio cannot publish any family, variant, or theme that fails a law gate.
 
 **Family Grammar — per style family, configurable:**
 Surface treatment (hairlines vs cards vs glass), elevation, blur, radius, density, icon set, type pairing, motion personality. A1/A4/A5 define the **Fedites Classic** family — the default and signature look. Families ship as versioned packs; every variant must pass the law gates before release.
@@ -330,7 +330,7 @@ From the clarification sessions. These are **decided** — they override any con
 
 **Communication**
 - Chat: **delete own messages anytime; edit within 15 minutes** ("edited" shown).
-- **Native in-app audio/video calls**, including mentor office hours.
+- **Calls are external meeting links** (Google Meet / Zoom) generated in-app — mentor office hours, committee meetings, casual catch-ups. No native WebRTC.
 - News comments: **admin-toggled per post** (default off); reactions always on; "discuss in your set group" button when comments are off.
 - MVP chat ships with voice notes, photo/video, reply/quote, read receipts, and typing indicators.
 
@@ -352,7 +352,7 @@ From the clarification sessions. These are **decided** — they override any con
 - Distribution: **PWA + native apps in Play Store and App Store**.
 - **English only, i18n-ready** strings.
 - Digital alumni ID: **in-app proof card** with QR linking to the public profile.
-- **No games in MVP**; **leaderboards deferred** (see K2, N2).
+- **No games and no leaderboards, ever** — struck by decision, not deferred (see K2).
 - **White-label template product:** one codebase, many instances; `instance_id` on every table; zero instance constants in code (extends M1).
 - **Style Families** define structure and style, **never color**: Fedites Classic (default), Minimalist, Editorial at MVP; Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism post-launch.
 - **Color Theme is its own layer** (independent of family) with curated school color presets; wine red + white is the default preset.
@@ -373,4 +373,4 @@ From the clarification sessions. These are **decided** — they override any con
 | Phase gates | UAT includes rules pass — admin, treasurer, five members walk the flows |
 | Spec | rules.md is binding on spec.md; conflicts resolve in favor of rules.md |
 
-**Status: DRAFT v1.** Trim/amend by ID — deletions, additions, or rewording all welcome before this becomes v1.0 binding.
+**Status: DRAFT v1.2.** Trim/amend by ID — deletions, additions, or rewording all welcome before this becomes v1.0 binding.

@@ -1,8 +1,10 @@
 # Fedites — Alumni Community Platform
 
-## Complete Feature Catalog (162 features)
+## Complete Feature Catalog (156 features)
 
 Every feature below is described in exactly 13 words — from big infrastructure to the smallest tender touches.
+
+**Struck by decision (removed from the catalog, not deferred):** Telegram bridge · stories · games (daily trivia, games arcade, fantasy leagues) · leaderboards · milestone celebrations · native in-app calls (calls use external Meet/Zoom links).
 
 ## 1. Identity & Verification (8)
 - **Alumni verification** — Confirm members truly attended using year groups, records, photos, and trusted peer vouching.
@@ -37,14 +39,13 @@ Every feature below is described in exactly 13 words — from big infrastructure
 - **Mentions & push alerts** — Tag members, who then receive instant push notifications across all their connected devices.
 - **Email digests** — Automated weekly summaries of community activity, delivered neatly into every member's email inbox.
 - **Newsletter builder** — Simple drag-and-drop builder for producing polished, branded association newsletters without hiring any designers.
-- **WhatsApp/Telegram bridges** — Mirror key announcements automatically into the messaging groups members already use every day.
+- **WhatsApp bridge** — Mirror key announcements automatically into the messaging groups members already use every day.
 - **SMS fallback** — Reach members without smartphones through simple text-message alerts containing only the essential links.
-- **Voice & video calls** — Native voice and video calling for mentorship sessions, committee meetings, and casual catch-ups.
+- **Voice & video calls** — Calls open in-app Google Meet or Zoom links for mentors, committees, and catch-ups.
 - **Auto-translation** — Instantly translate posts and comments so globally scattered alumni always understand each other.
 
-## 4. Feed, Content & Memory (15)
+## 4. Feed, Content & Memory (14)
 - **News feed** — One single scrolling timeline mixing posts, photos, achievements, events, donations, and announcements together.
-- **Stories** — Ephemeral twenty-four-hour posts for casual, low-pressure sharing that never clutters anyone's profile page.
 - **Reactions & threaded comments** — Expressive emoji reactions plus nested reply threads underneath every single published community post.
 - **Alumni spotlights** — Regular interview features celebrating members' most inspiring careers, ventures, giving, and community contributions.
 - **Long-form articles** — Members publish personal essays, memoirs, reflections, tributes, obituaries, and professional thought leadership pieces.
@@ -129,12 +130,10 @@ Every feature below is described in exactly 13 words — from big infrastructure
 - **Records verification** — Employers can request officially verified enrollment and graduation records through the platform securely.
 - **Legacy admission registry** — Register alumni children's admission applications where school policy legitimately allows them some preference.
 
-## 10. Milestones & Recognition (11)
+## 10. Milestones & Recognition (9)
 - **Achievement awards** — An annual awards ceremony honoring members' professional, charitable, community, and lifetime service excellence.
 - **Hall of fame** — A permanent, browsable showcase honoring the association's most distinguished members across all generations.
 - **Badges & streaks** — Collectible earned badges for volunteering, donating, attending events, and other consistently active participation.
-- **Leaderboards** — Friendly season-based rankings of most active, most generous, and top-recruiting members, refreshed monthly.
-- **Milestone celebrations** — Automated congratulations for promotions, weddings, new babies, new degrees, and other proud milestones.
 - **Birthday reminders** — Never forget any classmate's birthday again; send collective group wishes instantly and automatically.
 - **Founding member status** — A permanent recognition status proudly awarded to early joiners and founding community pioneers.
 - **Memorial pages** — Respectful tribute pages for deceased alumni, with digital condolence books and shared memories.
@@ -152,14 +151,11 @@ Every feature below is described in exactly 13 words — from big infrastructure
 - **Disaster relief fundraising** — Rapid-response fundraising activated within hours whenever disasters strike any members' home communities worldwide.
 - **Medical fund** — Crowdfunded medical treatment support for any member facing serious, sudden, and expensive illness.
 
-## 12. Fun & Nostalgia (11) — the tender ones
+## 12. Fun & Nostalgia (8) — the tender ones
 - **School bell notifications** — An optional notification chime sampled from the actual old school bell sound recording.
 - **School anthem player** — Stream treasured old recordings of anthems, hymns, and favorite school songs anytime anywhere.
-- **Crest stickers & frames** — Custom school-crest emoji, stickers, and profile frames for all special celebratory occasions year-round.
+- **Crest stickers & frames** — Custom school-crest stickers, frames, and photo overlays for all special celebratory occasions year-round.
 - **Confetti moments** — Joyful celebratory confetti animations whenever donations land or milestone goals finally get completed.
-- **Daily trivia** — Play daily trivia quizzes about school history, famous teachers, and beloved campus legends.
-- **Games arcade** — Casual chess, drafts, and scrabble leagues played between members entirely online, all year-round.
-- **Fantasy leagues** — Predict football match results and playfully compete against members from other year sets.
 - **"Remember when" threads** — Weekly nostalgia prompts that spark warm, collective memory storytelling sessions between school generations.
 - **Recipe exchange** — Members recreate and share the famous old tuck-shop and dining-hall recipes together online.
 - **Nostalgia radio** — Collaborative playlists of era-defining old songs from everyone's shared school days, curated together.
@@ -198,6 +194,6 @@ Every feature below is described in exactly 13 words — from big infrastructure
 
 ---
 
-**Total: 162 features.**
+**Total: 156 features.**
 
 **Suggested build order:** start with verification + profiles + directory + feed + group chats + dues + events (the daily-use core), then add mentorship, jobs, and fundraising, and sprinkle the tender nostalgia features throughout — they're cheap to build and drive the emotional attachment that keeps people coming back.

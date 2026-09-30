@@ -1,10 +1,10 @@
 # Fedites — Platform Specification (v6)
 
 > Single-school alumni community platform. Master architecture spec.
-> Feature scope: the 112 MVP features in [mvp.md](mvp.md). Full catalog (162) in [features.md](features.md).
+> Feature scope: the 112 MVP features in [mvp.md](mvp.md). Full catalog (156) in [features.md](features.md).
 >
 > **v4 changelog:** navigation reworked — Groups is now the home page; Feed is a separate personalized scroll; Chat is its own tab; Menu replaces Explore/Network/Me; every group has Activity | Chat tabs; no global member feed.
-> **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), native in-app calls, admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
+> **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), in-app calls (superseded in v6.1 by external meeting links), admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
 > **v6 changelog:** white-label template architecture — Style Families (structure/style, never color), Color Theme as its own layer with school presets, configurable navigation geometry per device, per-element style variants, the Studio, and the Platform Law vs Family Grammar split. Full catalog in [configuration.md](configuration.md).
 > **v6.1 changelog:** calls redirected to external meeting links (Meet/Zoom) — native WebRTC removed from scope. Tech stack locked: React+Vite web, Expo mobile, Node/TypeScript backend.
 
@@ -30,16 +30,16 @@
 
 ## 3. Navigation (5 tabs + Manage, mobile-first)
 
-| Tab | Job | Icon |
+| Tab | Job | Icon (line-icon set) |
 |---|---|---|
-| **Groups** *(home)* | All your spaces + discovery | 🏘️ |
-| **Feed** | Personalized latest activity; slides into group feeds | 📰 |
-| **Chat** | WhatsApp-style: group chats + private chats | 💬 |
-| **Events** | Calendar, countdowns, my QR ticket | 📅 |
-| **Menu** | Profile, settings, directory, full feature catalog | ☰ |
-| **Manage** 🔒 | Committee Panel — role-holders only | 🛡️ |
+| **Groups** *(home)* | All your spaces + discovery | house |
+| **Feed** | Personalized latest activity; slides into group feeds | news |
+| **Chat** | WhatsApp-style: group chats + private chats | chat |
+| **Events** | Calendar, countdowns, my QR ticket | calendar |
+| **Menu** | Profile, settings, directory, full feature catalog | menu |
+| **Manage** (locked) | Committee Panel — role-holders only | shield |
 
-**Top bar (all pages):** 🔍 universal search · 📰 News (unread badge) · 🔔 notification center.
+**Top bar (all pages):** universal search · News (unread badge) · notification center.
 
 Each page has one clear job: **Groups = spaces · Feed = content · Chat = conversations · Events = time · Menu = self & catalog · Manage = duty.**
 
@@ -48,7 +48,7 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 ### 4.1 Groups (home)
 - **Adaptive by membership density.**
   - **New users** → "Find your people": auto-joined set group + sports house at top, then suggested city chapter, trending interest groups (each card shows an **activity pulse** — posts this week, member count — so nobody joins ghost towns), browse by type.
-  - **Established users** → **"My groups"**: one row per group — crest · name · **unseen-activity tags** (💬 12 · 🆕 5 new · 📷 12 new photos) · timestamp. Pinned groups first, then sorted by latest unseen activity.
+  - **Established users** → **"My groups"**: one row per group — crest · name · **unseen-activity tags** (12 unread messages · 5 new posts · 12 new photos) · timestamp. Pinned groups first, then sorted by latest unseen activity.
 - **"Discover more"** remains as a compact segment — discovery shrinks as the list fills, never disappears.
 - Key rule: a group exists in two places — its row here (the **space**, with activity tags) and its row in Chat (the **conversation**, chat previews only). Same thread, two doors, one shared unread count.
 
@@ -149,7 +149,7 @@ One gated tab, sections matching duties:
 3. **One universal search** — people, group Activity posts, chats, events, groups, wiki, yearbook names, past questions, News, and feature names from a single bar.
 4. **One media library** — Feed photos, group galleries, event walls, yearbook scans, newsletters draw from the same organized store.
 5. **One wallet/ledger** — dues, donations, sponsorships, reimbursements all write to one ledger; the transparent ledger is a filtered view.
-6. **One recognition engine** — badges, streaks, leaderboards, founding status all read the same activity points.
+6. **One recognition engine** — badges, streaks, founding status all read the same activity points.
 7. **One moderation & privacy layer** — the same reporting, visibility, and admin tools apply to every surface, including the Feed's visibility filter.
 
 **Golden rule:** no feature ships unless it (a) uses the shared identity, (b) emits an activity event into the notification rails (and Group Activity where it belongs), and (c) respects privacy settings.
@@ -172,7 +172,7 @@ One gated tab, sections matching duties:
 - **Verification UX:** invite-code entry → profile → set claim → vouching requests go to setmates in-app.
 - **Week 1:** Chat, Feed, suggested-classmates rail, city-chapter suggestion.
 - **Ongoing:** join groups from Discover, RSVP events, pay dues.
-- **Earned/unlocked:** badges, arcade.
+- **Earned/unlocked:** badges and recognition points.
 - **Elected:** Manage tab appears for role-holders.
 - Menu remains the permanent catalog for everything else.
 
@@ -202,11 +202,11 @@ One gated tab, sections matching duties:
 | 12 Fun & Nostalgia (8) | Menu→Memory Lane + system-wide touches |
 | 13 Comfort, Trust & Craft (9) | Menu→Settings + platform defaults |
 
-**Excluded by design:** all of §11 (Care, Welfare & Support), §§14–15 (Growth & Platform, Marketplace), and every struck item from mvp.md — no Telegram bridge, no stories, no podcast & video channel, no merchandise store, no auctions & raffles, no investment club, no group savings circles, no welfare fund, no milestone celebrations, no legacy admission registry, no retired teachers' welfare, no digital business cards, no anonymous salary insights, no mentorship matching, no auto-translation, no public dues badge, **no global member feed**, no games (trivia, arcade, fantasy leagues), no leaderboards.
+**Excluded by design:** all of §11 (Care, Welfare & Support), §§14–15 (Growth & Platform, Marketplace), and every struck item from mvp.md — no Telegram bridge, no stories, no podcast & video channel, no merchandise store, no auctions & raffles, no investment club, no group savings circles, no welfare fund, no milestone celebrations, no legacy admission registry, no retired teachers' welfare, no digital business cards, no anonymous salary insights, no mentorship matching, no auto-translation, no public dues badge, **no global member feed**, no games (trivia, arcade, fantasy leagues), no leaderboards, no native in-app calls (external Meet/Zoom links only).
 
 ## 14. Locked Decisions Register
 
-All behavioral decisions from the clarification sessions are recorded in [rules.md §P](rules.md) and are **binding** on this spec: invite-code signup with 3-setmate vouching (read + group posts until vouched, invisible after), self-only face search, city-level location with event opt-in, logged contact reveals, admin-toggled news comments, chat delete-anytime/edit-15-minutes, native in-app calls, online + manual payments, named-by-default donor wall, admin-settable dues cycle & emergency policy, all-verified voting, admin/group-admin event creation, always-anonymous suggestion box, member-upload archives with admin approval, memorial state for deceased members, Fedites-first branding, PWA + app-store distribution, English i18n-ready, in-app alumni ID, no games, no leaderboards.
+All behavioral decisions from the clarification sessions are recorded in [rules.md §P](rules.md) and are **binding** on this spec: invite-code signup with 3-setmate vouching (read + group posts until vouched, invisible after), self-only face search, city-level location with event opt-in, logged contact reveals, admin-toggled news comments, chat delete-anytime/edit-15-minutes, external meeting-link calls (Meet/Zoom), online + manual payments, named-by-default donor wall, admin-settable dues cycle & emergency policy, all-verified voting, admin/group-admin event creation, always-anonymous suggestion box, member-upload archives with admin approval, memorial state for deceased members, Fedites-first branding, PWA + app-store distribution, English i18n-ready, in-app alumni ID, no games, no leaderboards.
 
 ## 15. White-Label & Configuration
 
@@ -217,6 +217,6 @@ Fedites ships as a reusable template — any school, anywhere, anytime.
 - **Style Families** define structure and style — surfaces, radius, density, icons, type pairing, motion, element defaults — **never color**. MVP: **Fedites Classic** (flat, sharp, hairline — the signature look), **Minimalist**, **Editorial**. Roadmap: Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism.
 - **Navigation geometry is configurable per device** — mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first. Items stay; geometry moves.
 - **Every element has multiple style variants** (nav bars, buttons, modals, toasts, tabs, badges, icons, tables, and more), grouped into families, with per-element overrides.
-- **Platform Law stays fixed for every family and instance:** accessibility floors, performance budgets, press states, no emojis, copy/privacy/navigation rules, API-enforced permissions, archive-never-delete.
+- **Platform Law stays fixed for every family and instance:** accessibility floors, performance budgets, press states, no emojis (chat messages, comments, and reactions only), copy/privacy/navigation rules, API-enforced permissions, archive-never-delete.
 - **The Studio** (Manage area): live preview in device frames, draft → preview → publish with versioning and rollback, validation gates that refuse to publish a11y/performance failures, terminology glossary, copy tables, feature flags, and export/import of full instance presets.
 - Full catalog and schemas: [configuration.md](configuration.md).

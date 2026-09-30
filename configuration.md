@@ -12,7 +12,7 @@
 4. Instance overrides  — the school's own deltas (terminology, flags, nav geometry)
 3. Color Theme         — standalone layer; NEVER part of a family
 2. Style Family        — structure & style pack (surfaces, density, icons, motion)
-1. Platform Law        — fixed gates: a11y, performance, privacy, press states, no emojis
+1. Platform Law        — fixed gates: a11y, performance, privacy, press states, no emojis (chat messages, comments, and reactions only)
 ```
 
 Precedence is deterministic: element > instance > color theme > family > law. Overrides persist as deltas, so composing "Minimalist family + Heritage color theme + outlined buttons" works cleanly.
@@ -38,7 +38,7 @@ Each family is a versioned pack defining: radius scale, surface treatment, eleva
 | Material-inspired | Elevation, ripple press states, shared-axis motion | Roadmap |
 | Glassmorphism | Blur surfaces with flat fallback tokens on low-end devices | Roadmap |
 
-**Law gates for every family & variant:** WCAG AA, 44px touch targets, keyboard/screen-reader, performance budget, press states (family-implemented), reduced-motion honored, no emojis.
+**Law gates for every family & variant:** WCAG AA, 44px touch targets, keyboard/screen-reader, performance budget, press states (family-implemented), reduced-motion honored, no emojis (chat messages, comments, and reactions only).
 
 ## 4. Navigation Geometry (per device, configurable)
 
@@ -102,4 +102,4 @@ Every variant passes the law gates in both themes before release. **No element s
 
 ## 9. What Stays Fixed (Platform Law, never configurable)
 
-Accessibility floors · performance budgets · press states · reduced motion · no emojis · copy voice rules · navigation integrity (I1–I6) · attention rules (J1–J5) · privacy rules (K1–K6) · engineering rules (M1–M6) · archive-never-delete · API-enforced permissions · audit logs.
+Accessibility floors · performance budgets · press states · reduced motion · no emojis (chat messages, comments, and reactions only) · copy voice rules · navigation integrity (I2–I6) · attention rules (J2–J5) · privacy rules (K1–K5) · engineering rules (M1–M6) · archive-never-delete · API-enforced permissions · audit logs.

@@ -1,6 +1,6 @@
 # Fedites — Phased Build Plan
 
-> Session-by-session plan for building the platform defined in [spec.md](spec.md) (v4) with the 116-feature scope from [mvp.md](mvp.md).
+> Session-by-session plan for building the platform defined in [spec.md](spec.md) (v6.1) with the 112-feature scope from [mvp.md](mvp.md).
 > A **session** = one focused build increment ending in a demo.
 
 ---
@@ -17,7 +17,7 @@
 
 ---
 
-## Phase 0 — Foundations (2–3 sessions)
+## Phase 0 — Foundations (4 sessions)
 
 | Session | Deliverable | Demo gate |
 |---|---|---|
@@ -58,7 +58,7 @@
 | 3.1 | Events: calendar, create/RSVP, group events badged into Events tab, countdowns |
 | 3.2 | Reunion planning suite + QR door check-in + virtual attendance |
 | 3.3 | Event photo wall + AI photo finder (**self-search-only** face pipeline) |
-| 3.4 | Recognition engine + badges, streaks, leaderboards, founding status + personalization (intent capture, suggestions, tune-my-feed) |
+| 3.4 | Recognition engine + badges, streaks, founding status + personalization (intent capture, suggestions, tune-my-feed) |
 
 **Phase gate:** plan a mini-reunion end-to-end — event, RSVP, check-in by QR, photos findable by face.
 
@@ -79,7 +79,7 @@
 |---|---|
 | 5.1 | Media library + Memory Lane shell: throwback archive, yearbook upload + search, on-this-day |
 | 5.2 | Wiki, slang dictionary, history timeline |
-| 5.3 | Fun bundle: trivia, one or two arcade games, remember-when prompts, recipe exchange, nostalgia radio, anthem player, stickers/frames |
+| 5.3 | Fun bundle: school bell chime, remember-when prompts, recipe exchange, nostalgia radio, anthem player, crest stickers/frames, time capsules, letters to future self |
 | 5.4 | School Bridge: wishlist, adopt-a-project, past questions bank, teacher tributes + career: job board, business directory, mentor office hours, referrals |
 
 **Phase gate:** Memory Lane has real digitized content a nostalgic member can spend 20 minutes inside.
@@ -116,7 +116,7 @@
 
 ## Totals & Risks
 
-- **Rough total: ~32 build sessions + 2 parallel tracks.**
+- **Rough total: ~37 build sessions + 2 parallel tracks.**
 - **Riskiest external dependencies:** payment provider approval and WhatsApp business verification — start both in Phase 0 or Phase 4 slips.
-- **Stack (locked):** React+Vite+Tailwind+Radix (web) · Expo/React Native (mobile) · Node+TypeScript backend · PostgreSQL · Redis · WebSockets · LiveKit→**replaced by external meeting links (Meet/Zoom)** · MinIO media on VPS. Monorepo: Turborepo + pnpm with shared `packages/tokens`, `packages/config`, `packages/ui`.
+- **Stack (locked):** React+Vite+Tailwind+Radix (web) · Expo/React Native (mobile) · Node+TypeScript backend · PostgreSQL · Redis · WebSockets · external meeting links (Google Meet / Zoom) for calls · MinIO media on VPS. Monorepo: Turborepo + pnpm with shared `packages/tokens`, `packages/config`, `packages/ui`.
 - Build order follows spec.md §12: rails → daily loop → belonging → money → memory & school → governance & polish → beta & launch.
