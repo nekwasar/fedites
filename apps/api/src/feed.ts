@@ -92,6 +92,27 @@ export async function feedRoutes(app: FastifyInstance, opts: { pool: Pool }): Pr
         });
       }
     }
+    if (!dismissed.includes("campaigns")) {
+      const campaigns = await pool.query<{ id: string; title: string; goal_minor: string; currency: string; raised: string }>(
+        `SELECT c.id, c.title, c.goal_minor::text, c.currency,
+                (SELECT COALESCE(sum(l.amount_minor), 0)::text FROM ledger_entries l
+                 WHERE l.campaign_id = c.id AND l.status = 'confirmed') AS raised
+         FROM campaigns c
+         WHERE c.instance_id = $1 AND c.status = 'open' AND c.archived_at IS NULL
+         ORDER BY c.created_at DESC LIMIT 3`,
+        [member.instanceId],
+      );
+      if (campaigns.rows.length > 0) {
+        rails.push({
+          key: "campaigns", kind: "campaigns", title: "Campaign progress",
+          items: campaigns.rows.map((c) => ({
+            id: c.id, title: c.title, currency: c.currency,
+            goalMinor: Number(c.goal_minor), raisedMinor: Number(c.raised),
+            progress: Math.min(100, Math.round((Number(c.raised) / Math.max(Number(c.goal_minor), 1)) * 100)),
+          })),
+        });
+      }
+    }
     if (!dismissed.includes("suggested")) {
       const suggested = await pool.query<{ id: string; name: string; type: string; members: string; posts_week: string }>(
         `SELECT g.id, g.name, g.type,

@@ -80,6 +80,14 @@ export class Hub {
     return wss;
   }
 
+  /** Send one event to every connected client (e.g. F6 goal moment). */
+  broadcastAll(event: Record<string, unknown>): void {
+    const payload = JSON.stringify(event);
+    for (const c of this.clients) {
+      if (c.socket.readyState === c.socket.OPEN) c.socket.send(payload);
+    }
+  }
+
   /** Broadcast an event to every room; recipients must be authenticated clients. */
   broadcast(rooms: string[], event: Record<string, unknown>): void {
     const payload = JSON.stringify(event);

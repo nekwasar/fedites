@@ -32,3 +32,8 @@ export interface MoneyOverview { dues: DuesAssessmentView[]; ledger: LedgerRow[]
 export interface ReceiptView { receiptNo: string | null; payer: string; kind: string; amountMinor: number; currency: string; issuedAt: string; community: string }
 export interface AdminDuesRow { id: string; memberName: string; period: string; amountMinor: number; currency: string; dueDate: string; status: string; receiptNo: string | null }
 export interface TierCreateBody { name: string; amountMinor: number; currency: string; cycle?: string; perks?: { voting?: boolean; eventPriority?: boolean; idMarking?: boolean } }
+
+export interface CampaignView { id: string; title: string; description: string | null; goalMinor: number; currency: string; raisedMinor: number; deadline: string | null; goalReached: boolean; progress: number; status: string }
+export interface DonorWall { donors: Array<{ name: string; at: string }> }
+export interface TransparentLedger { rows: Array<{ kind: string; amountMinor: number; currency: string; receiptNo: string | null; createdAt: string; campaign: string | null; payer: string | null }>; totals: Record<string, number> }
+export interface DonationSchedule { id: string; amountMinor: number; currency: string; frequency: string; campaign: string | null; nextDate: string }

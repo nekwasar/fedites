@@ -28,7 +28,7 @@ async function nextReceiptNo(pool: Pool, instanceId: string, year: number): Prom
 }
 
 /** Confirm a payment intent into the one ledger + receipt (§P). */
-async function confirmIntent(
+export async function confirmIntent(
   pool: Pool,
   instanceId: string,
   intentId: string,

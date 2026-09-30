@@ -5,6 +5,7 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
+import type { CampaignView } from "../events-types.js";
 import { Section } from "./ProfileScreen.js";
 import type { DuesAssessmentView, LedgerRow, TierView, AdminDuesRow, ReceiptView } from "../events-types.js";
 
@@ -219,6 +220,75 @@ export function MoneyAdminSection(): React.ReactElement {
               <button type="button" className="btn btn--underline-link press" style={{ minHeight: 36 }} onClick={() => void waive(r.id)}>Waive</button>
             </span>
           )}
+        </div>
+      ))}
+    </section>
+  );
+}
+
+/** Manage → Giving: campaign creation/close + donation confirmation queue. */
+export function CampaignAdmin(): React.ReactElement {
+  const [campaigns, setCampaigns] = useState<CampaignView[] | null>(null);
+  const [intents, setIntents] = useState<Array<{ id: string; memberName: string; amountMinor: number; currency: string; purpose: string; campaign: string | null }> | null>(null);
+  const [title, setTitle] = useState("");
+  const [goal, setGoal] = useState("");
+  const [note, setNote] = useState<string | null>(null);
+
+  const load = (): void => {
+    Api.campaigns().then((r) => setCampaigns(r.campaigns)).catch(() => undefined);
+    Api.moneyIntents().then((r) => setIntents(r.intents)).catch(() => undefined);
+  };
+  useEffect(load, []);
+
+  const create = async (): Promise<void> => {
+    const g = Number(goal);
+    if (title.trim().length < 2 || Number.isNaN(g)) return;
+    await Api.createCampaign({ title, goalMinor: Math.round(g * 100), currency: "NGN" }).catch((e: Error) => setNote(e.message));
+    setTitle(""); setGoal("");
+    load();
+  };
+
+  const confirm = async (id: string): Promise<void> => {
+    const r = await Api.confirmIntent(id).catch((e: Error) => { setNote(e.message); return null; });
+    if (r !== null) { setNote(`Confirmed — ${r.receiptNo}`); load(); }
+  };
+
+  return (
+    <section style={{ padding: "0 16px 24px" }}>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Giving — campaigns & confirmations</div>
+      {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", margin: "0 0 8px" }}>{note}</p>}
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Campaign title" aria-label="Campaign title"
+          style={{ minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)" }} />
+        <input value={goal} onChange={(e) => setGoal(e.target.value)} inputMode="decimal" placeholder="Goal (naira)" aria-label="Campaign goal"
+          style={{ minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)" }} />
+        <button type="button" className="btn btn--outlined press" onClick={() => void create()} disabled={title.trim().length < 2}>Create campaign</button>
+      </div>
+
+      {campaigns !== null && campaigns.map((c) => (
+        <div key={c.id} className="row" style={{ padding: "8px 0" }}>
+          <span style={{ flex: 1, font: "500 14px var(--font-ui)" }}>
+            {c.title} <span className="micro tabular">{c.progress}%</span>
+          </span>
+          {c.status === "open" && (
+            <button type="button" className="btn btn--underline-link press" style={{ minHeight: 28 }} onClick={() => void Api.closeCampaign(c.id).then(load)}>Close</button>
+          )}
+        </div>
+      ))}
+
+      <div className="micro" style={{ margin: "16px 0 8px" }}>Awaiting confirmation</div>
+      {intents === null ? <div className="skeleton" style={{ height: 32 }} /> : intents.length === 0 ? (
+        <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No gifts awaiting confirmation.</p>
+      ) : intents.map((i) => (
+        <div key={i.id} className="row" style={{ padding: "8px 0" }}>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: "block", font: "500 14px var(--font-ui)" }}>
+              {i.memberName} — <span className="tabular">{money(i.amountMinor, i.currency)}</span>
+            </span>
+            <span className="micro">{i.purpose}{i.campaign !== null ? ` · ${i.campaign}` : ""}</span>
+          </span>
+          <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => void confirm(i.id)}>Confirm</button>
         </div>
       ))}
     </section>

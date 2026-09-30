@@ -18,6 +18,7 @@ export const POINTS = {
   "event.checkin": 10,
   "event.rsvp": 1,
   "verified": 20,
+  "donation": 15,
 } as const;
 
 export type PointKind = keyof typeof POINTS;

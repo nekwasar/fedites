@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
 import { AssociationSection } from "./Money.js";
+import { GivingSection } from "./Giving.js";
 import type { FamilyLink, Invite, SessionMember, VerificationStatus } from "@fedites/config";
 import type { RecognitionMe } from "../phase2-types.js";
 
@@ -69,6 +70,8 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
       </Section>
 
       <AssociationSection />
+
+      <GivingSection />
 
       <FaceSearch />
 

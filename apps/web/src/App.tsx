@@ -25,6 +25,7 @@ import { GroupScreen } from "./screens/GroupScreen.js";
 import { ChatListScreen, ChatThreadScreen } from "./screens/ChatThread.js";
 import { NewsScreen, FeedScreen } from "./screens/NewsFeed.js";
 import { EventsScreen, EventDetailScreen } from "./screens/EventsScreen.js";
+import { GivingSection, CampaignScreen, TransparentLedgerScreen } from "./screens/Giving.js";
 import { useRealtime } from "./realtime.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
@@ -277,6 +278,11 @@ export default function App(): React.ReactElement {
           ? <ChatThreadScreen type={(window.location.pathname.split("/")[2] === "dm" ? "dm" : "group")} id={route.param} onNavigate={go} />
           : <ChatListScreen onNavigate={go} />;
       case "/groups/new": return authed ? <NewProposal onNavigate={go} /> : <Empty title="Sign in first" body="Proposals need a member account." />;
+      case "/money/campaigns":
+        return route.param !== undefined && route.path === "/money/campaigns"
+          ? <CampaignScreen campaignId={route.param} onNavigate={go} />
+          : <GivingSection />;
+      case "/money/ledger": return <TransparentLedgerScreen />;
       case "/notifications": return <InboxScreen onNavigate={go} />;
       case "/me": return <ProfileScreen member={member} onNavigate={go} />;
       case "/id": return <IdScreen />;

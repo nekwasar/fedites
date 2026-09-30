@@ -11,6 +11,17 @@
 - instance.currency config slot (template default NGN) + multi-currency ledger rows stay un-merged per currency.
 - Migration 0008; PG suite phase4-money.pg.test.ts (8 tests).
 
+## Phase 4 — Money, batch 2: Giving (complete)
+
+### Session 4.3
+- Campaigns: duty-created (title/goal/deadline), live progress bars, close; goal completion records an F6 marker — the confetti moment (single component, transform/opacity only, reduced-motion honored).
+- Donations: one-time toward a campaign or the community, anonymous toggle per payment (§P); intents confirmed by the treasurer via a Manage queue → one-ledger entries + receipts + recognition points (spec §8: giving is celebrated).
+- Donor wall: named by default, anonymous respected, names only — no amounts, no league tables (K2).
+- Transparent ledger: member-browsable view of confirmed non-private entries (dues NEVER appear — tested), per-currency totals, downloadable CSV (mvp §7).
+- Recurring giving: monthly/quarterly/annually schedules produce polite confirmation intents + notices (manual-gateway consistent, never auto-charges).
+- Feed: "Campaign progress" rail (spec §4.2 giver rail), dismissible.
+- Migration 0009; PG suite phase4-giving.pg.test.ts (5 tests).
+
 ## Phase 3 — Belonging, batch 1: Events & Reunions (complete)
 
 ### Sessions 3.1 + 3.2

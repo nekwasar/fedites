@@ -1,3 +1,14 @@
+# Phase 4 batch 2 demo (Giving)
+
+1. **Campaign** — As president: Manage → Money → create "Science Lab Roof" (goal 500,000).
+2. **Give** — As member1 (Menu → Give back): amount, tick "Give anonymously" → Give to this campaign. As member2: give named.
+3. **Confirm** — As treasurer: Manage → Money → Awaiting confirmation → Confirm each → receipts issued; recognition points recorded.
+4. **Goal + wall** — Campaign page: progress 100%, confetti moment (F6), donor wall shows "Anonymous friend" and "Gozie Member" — names only.
+5. **Transparent ledger** — One tap from the campaign: every confirmed gift (dues never appear), per-currency totals, Download CSV.
+6. **Recurring** — Member schedules a monthly gift → treasurer run creates the confirmation intent + gentle notice.
+
+---
+
 # Phase 4 batch 1 demo (Ledger + Dues)
 
 1. **Tiers** — As treasurer: Manage → Money → Add tier ("Annual", 20000). Assign tiers to members.

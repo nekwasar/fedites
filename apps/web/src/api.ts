@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -186,6 +186,19 @@ export const Api = {
   markDuesPaid: (assessmentId: string, reference?: string): Promise<{ receiptNo: string; ledgerId: string }> => post(`/v1/manage/money/dues/${assessmentId}/mark-paid`, { reference }),
   waiveDues: (assessmentId: string): Promise<{ ok: boolean }> => post(`/v1/manage/money/dues/${assessmentId}/waive`, {}),
   runReminders: (): Promise<{ sent: number }> => post("/v1/manage/money/reminders/run", {}),
+
+  /* giving (4.3) */
+  campaigns: (): Promise<{ campaigns: CampaignView[] }> => call("/v1/money/campaigns"),
+  campaignDonors: (id: string): Promise<DonorWall> => call(`/v1/money/campaigns/${id}/donors`),
+  donate: (b: { amountMinor: number; currency: string; campaignId?: string; anonymous: boolean }): Promise<{ intentId: string; provider: string; status: string }> => post("/v1/money/donate", b),
+  createSchedule: (amountMinor: number, currency: string, frequency: "monthly" | "quarterly" | "annually", campaignId?: string): Promise<{ id: string }> => post("/v1/money/schedules", { amountMinor, currency, frequency, campaignId }),
+  cancelSchedule: (id: string): Promise<{ ok: boolean }> => del(`/v1/money/schedules/${id}`),
+  transparentLedger: (): Promise<TransparentLedger> => call("/v1/money/transparent-ledger"),
+  createCampaign: (b: { title: string; description?: string; goalMinor: number; currency: string; deadline?: string }): Promise<{ id: string }> => post("/v1/manage/money/campaigns", b),
+  closeCampaign: (id: string): Promise<{ ok: boolean }> => post(`/v1/manage/money/campaigns/${id}/close`, {}),
+  moneyIntents: (): Promise<{ intents: Array<{ id: string; memberName: string; amountMinor: number; currency: string; purpose: string; campaign: string | null }> }> => call("/v1/manage/money/intents"),
+  schedules: (): Promise<{ schedules: DonationSchedule[] }> => call("/v1/money/schedules"),
+  confirmIntent: (id: string, reference?: string): Promise<{ receiptNo: string; ledgerId: string }> => post(`/v1/manage/money/intents/${id}/confirm`, { reference }),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),
