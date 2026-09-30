@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 4 — Money, batch 1: Ledger + Dues (complete)
+
+### Sessions 4.1 + 4.2
+- One wallet/ledger (rail 5): ledger_entries gains status (pending/confirmed/voided — voided kept, N1), gateway reference, per-instance receipt numbers (RCPT-YYYY-NNNNNN), anonymous toggle (batch 2), entered-by, assessment link.
+- Payment gateway abstraction (like the face provider): MANUAL gateway ships first — §P-mandated "mark as paid" for cash/offline with treasurer confirmation; Paystack/Flutterwave/Stripe adapters throw "not configured" until PAYMENT_PROVIDER + keys exist.
+- Dues: admin-settable cycle → assessments per verified member (per-tier amounts override the base); member view strictly private (own only); admin views filterable and coarsely audit-logged; NO public dues data on any profile endpoint (tested).
+- Mark paid (treasurer): confirms intent → ledger entry + receipt; waive audited with 30-day window (N2); polite reminders (K5 copy, quiet-hours-ready, J4/J5) for overdue only.
+- Tiers: treasurer CRUD (annual/one-time etc., perks: voting/event-priority/id-marking), member assignment audited; digital alumni ID now carries tier marking (§8 real perk).
+- instance.currency config slot (template default NGN) + multi-currency ledger rows stay un-merged per currency.
+- Migration 0008; PG suite phase4-money.pg.test.ts (8 tests).
+
 ## Phase 3 — Belonging, batch 1: Events & Reunions (complete)
 
 ### Sessions 3.1 + 3.2

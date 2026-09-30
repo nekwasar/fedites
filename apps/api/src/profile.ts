@@ -176,9 +176,12 @@ export async function profileRoutes(
   app.get("/v1/me/id", async (request, reply) => {
     const member = await requireMember(request, reply);
     if (member === null) return reply;
-    const res = await pool.query<{ display_name: string; verification: string; set_year: number | null; house: string | null; created_at: Date }>(
-      `SELECT m.display_name, m.verification, s.year AS set_year, h.name AS house, m.created_at
-       FROM members m LEFT JOIN sets s ON s.id = m.set_id LEFT JOIN sports_houses h ON h.id = m.house_id
+    const res = await pool.query<{ display_name: string; verification: string; set_year: number | null; house: string | null; created_at: Date; tier_name: string | null }>(
+      `SELECT m.display_name, m.verification, s.year AS set_year, h.name AS house, m.created_at, t.name AS tier_name
+       FROM members m
+       LEFT JOIN sets s ON s.id = m.set_id
+       LEFT JOIN sports_houses h ON h.id = m.house_id
+       LEFT JOIN membership_tiers t ON t.id = m.tier_id
        WHERE m.id = $1`,
       [member.id],
     );
@@ -200,6 +203,7 @@ export async function profileRoutes(
         setYear: m.set_year,
         house: m.house,
         verification: m.verification,
+        tier: m.tier_name,
         memberSince: m.created_at,
         school: config.instance.displayName,
         profileUrl: target,

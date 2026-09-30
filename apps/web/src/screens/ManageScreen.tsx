@@ -6,11 +6,11 @@
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
 import { Empty } from "./InboxScreen.js";
+import { MoneyAdminSection } from "./Money.js";
 import type { ManageOverview, QueueItem, SessionMember } from "@fedites/config";
 
 const EMPTY_SECTIONS = [
   ["Moderation", "Report queue, mutes and bans, audit trail."],
-  ["Money", "Dues, donations, campaigns, ledger publishing."],
   ["Speak", "Newsletter builder, WhatsApp bridge, email digests."],
   ["Govern", "Elections, motions, AGM toolkit, constitution."],
   ["Content", "Spotlights, Memory Lane uploads, wishlist."],
@@ -54,6 +54,8 @@ export function ManageScreen({ member, onNavigate }: { member: SessionMember; on
       )}
 
       <MembersSection />
+
+      <MoneyAdminSection />
 
       <section style={{ padding: "0 16px 24px" }}>
         <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Events</div>

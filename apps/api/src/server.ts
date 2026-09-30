@@ -27,6 +27,7 @@ import { moderationRoutes } from "./moderation.js";
 import { mediaRoutes } from "./media.js";
 import { eventsRoutes } from "./events.js";
 import { recognitionRoutes } from "./recognition-routes.js";
+import { moneyRoutes } from "./money.js";
 import { photoRoutes } from "./photos.js";
 import { Hub } from "./ws.js";
 
@@ -124,6 +125,7 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(mediaRoutes, { pool });
   await app.register(eventsRoutes, { pool, loadConfigByInstance, hub });
   await app.register(recognitionRoutes, { pool });
+  await app.register(moneyRoutes, { pool, loadConfigByInstance, hub });
   await app.register(photoRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 

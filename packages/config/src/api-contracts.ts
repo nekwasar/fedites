@@ -217,3 +217,45 @@ export type Ticket = z.infer<typeof ticketSchema>;
 
 export const ticketScanSchema = z.object({ code: z.string().min(20).max(300) });
 export type TicketScan = z.infer<typeof ticketScanSchema>;
+
+/* -------------------------------- money ------------------------------ */
+
+export const tierCreateSchema = z.object({
+  name: z.string().min(1).max(60),
+  amountMinor: z.number().int().min(0),
+  currency: z.string().length(3),
+  cycle: z.enum(["annual", "semiannual", "quarterly", "monthly", "one-time"]).default("annual"),
+  perks: z.object({
+    voting: z.boolean().optional(),
+    eventPriority: z.boolean().optional(),
+    idMarking: z.boolean().optional(),
+  }).default({}),
+});
+export type TierCreateBody = z.infer<typeof tierCreateSchema>;
+
+export const markPaidSchema = z.object({
+  reference: z.string().max(120).optional(),
+});
+export type MarkPaidBody = z.infer<typeof markPaidSchema>;
+
+export const payDuesSchema = z.object({ tierId: z.string().uuid().optional() });
+export type PayDuesBody = z.infer<typeof payDuesSchema>;
+
+export interface DuesAssessmentView {
+  id: string; period: string; amountMinor: number; currency: string;
+  dueDate: string; status: "due" | "paid" | "overdue" | "waived";
+  tierName: string | null; receiptNo: string | null;
+}
+export interface LedgerRow {
+  id: string; kind: string; amountMinor: number; currency: string;
+  memo: string | null; status: "pending" | "confirmed" | "voided";
+  receiptNo: string | null; createdAt: string;
+}
+export interface TierView {
+  id: string; name: string; amountMinor: number; currency: string; cycle: string;
+  perks: { voting?: boolean; eventPriority?: boolean; idMarking?: boolean };
+}
+export interface PaymentIntentView {
+  id: string; amountMinor: number; currency: string; purpose: string;
+  provider: string; status: string; createdAt: string;
+}

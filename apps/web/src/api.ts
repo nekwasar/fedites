@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -173,6 +173,19 @@ export const Api = {
   getNotifyPrefs: (): Promise<{ prefs: { mentions: string; events: string; news: string } }> => call("/v1/me/notification-prefs"),
   setNotifyPrefs: (b: { mentions?: string; events?: string; news?: string }): Promise<{ ok: boolean }> => post("/v1/me/notification-prefs", b),
   tuneGroup: (id: string, more: boolean): Promise<{ affinity: number }> => post(`/v1/groups/${id}/tune`, { more }),
+
+  /* money (Phase 4 batch 1) */
+  moneyOverview: (): Promise<MoneyOverview> => call("/v1/money/overview"),
+  payDues: (assessmentId: string): Promise<{ intentId: string; provider: string; status: string }> => post(`/v1/money/dues/${assessmentId}/pay`, {}),
+  receipt: (ledgerId: string): Promise<ReceiptView> => call(`/v1/money/receipts/${ledgerId}`),
+  moneyTiers: (): Promise<{ tiers: TierView[] }> => call("/v1/money/tiers"),
+  createTier: (b: TierCreateBody): Promise<{ id: string }> => post("/v1/manage/money/tiers", b),
+  assignTier: (memberId: string, tierId: string): Promise<{ ok: boolean }> => post(`/v1/manage/money/members/${memberId}/tier`, { tierId }),
+  runAssessments: (b: { period: string; amountMinor?: number; tierId?: string | null; currency?: string; dueDate?: string }): Promise<{ created: number }> => post("/v1/manage/money/assessments/run", b),
+  adminDues: (status?: string): Promise<{ assessments: AdminDuesRow[] }> => call(`/v1/manage/money/dues${status ? `?status=${status}` : ""}`),
+  markDuesPaid: (assessmentId: string, reference?: string): Promise<{ receiptNo: string; ledgerId: string }> => post(`/v1/manage/money/dues/${assessmentId}/mark-paid`, { reference }),
+  waiveDues: (assessmentId: string): Promise<{ ok: boolean }> => post(`/v1/manage/money/dues/${assessmentId}/waive`, {}),
+  runReminders: (): Promise<{ sent: number }> => post("/v1/manage/money/reminders/run", {}),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

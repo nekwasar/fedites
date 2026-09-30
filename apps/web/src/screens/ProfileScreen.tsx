@@ -5,6 +5,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
+import { AssociationSection } from "./Money.js";
 import type { FamilyLink, Invite, SessionMember, VerificationStatus } from "@fedites/config";
 import type { RecognitionMe } from "../phase2-types.js";
 
@@ -66,6 +67,8 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
         </p>
         <button type="button" className="btn btn--outlined press" onClick={() => onNavigate("/members/" + member.id)}>View my public profile</button>
       </Section>
+
+      <AssociationSection />
 
       <FaceSearch />
 

@@ -24,3 +24,11 @@ export interface PhotoWallItem {
   createdAt: string; tags: Array<{ memberId: string; name: string }>;
   taggedByMe: boolean; isMine: boolean;
 }
+
+export interface DuesAssessmentView { id: string; period: string; amountMinor: number; currency: string; dueDate: string; status: "due" | "paid" | "overdue" | "waived"; tierName: string | null; receiptNo: string | null }
+export interface LedgerRow { id: string; kind: string; amountMinor: number; currency: string; memo: string | null; status: "pending" | "confirmed" | "voided"; receiptNo: string | null; createdAt: string }
+export interface TierView { id: string; name: string; amountMinor: number; currency: string; cycle: string; perks: { voting?: boolean; eventPriority?: boolean; idMarking?: boolean } }
+export interface MoneyOverview { dues: DuesAssessmentView[]; ledger: LedgerRow[]; myTier: TierView | null; owedMinor: number; currency: string }
+export interface ReceiptView { receiptNo: string | null; payer: string; kind: string; amountMinor: number; currency: string; issuedAt: string; community: string }
+export interface AdminDuesRow { id: string; memberName: string; period: string; amountMinor: number; currency: string; dueDate: string; status: string; receiptNo: string | null }
+export interface TierCreateBody { name: string; amountMinor: number; currency: string; cycle?: string; perks?: { voting?: boolean; eventPriority?: boolean; idMarking?: boolean } }

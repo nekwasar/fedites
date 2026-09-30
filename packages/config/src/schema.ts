@@ -235,6 +235,8 @@ export const instanceConfigSchema = z.object({
     /** Zero school-specific constants in code — everything flows from here. */
     displayName: z.string().min(1),
     shortName: z.string().min(1),
+    /** Default currency for money (multi-currency entries may override). */
+    currency: z.string().length(3).default("NGN"),
     terminology: terminologySchema,
     copy: copyTableSchema,
     flags: z.array(featureFlagSchema),

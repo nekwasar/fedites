@@ -1,3 +1,14 @@
+# Phase 4 batch 1 demo (Ledger + Dues)
+
+1. **Tiers** — As treasurer: Manage → Money → Add tier ("Annual", 20000). Assign tiers to members.
+2. **Cycle** — Run cycle (period 2026) → one assessment per verified member; tier amounts override the base.
+3. **Pay** — As member1 (Menu → Association): your dues show privately — Pay → "recorded, awaiting treasurer". No other member can see any of it; the public profile leaks nothing (tested).
+4. **Mark paid** — As treasurer: Money queue → optional reference → Mark paid → receipt number issued. Member's Association view shows the receipt; open it.
+5. **Reminders** — Run reminders → polite in-app notices for overdue only (K5 copy).
+6. **Waive** — Treasurer waives an assessment (audited, reversible 30 days).
+
+---
+
 # Phase 3 batch 3 demo (Recognition + Personalization)
 
 1. **Earn** — Post in Set '98 as member1 → Menu → Recognition shows points, the "First words" badge, and your (private) week streak. Comment ten times → "Conversationalist" appears.

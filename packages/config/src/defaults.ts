@@ -29,7 +29,7 @@ export const defaultFlags: ReadonlyArray<{ key: string; enabled: boolean }> = [
   { key: "events.photoWall", enabled: true }, // Phase 3
   { key: "events.faceFinder", enabled: true }, // pluggable stub provider (3.3)
   { key: "recognition.badges", enabled: true }, // Phase 3
-  { key: "money.dues", enabled: false }, // Phase 4
+  { key: "money.dues", enabled: true }, // Phase 4
   { key: "money.donations", enabled: false },
   { key: "memory.lane", enabled: false }, // Phase 5
   { key: "govern.elections", enabled: false }, // Phase 6
@@ -59,6 +59,7 @@ export const defaultConfig: InstanceConfig = {
   instance: {
     displayName: "Fedites",
     shortName: "Fedites",
+    currency: "NGN",
     terminology: {
       set: "Set",
       house: "House",
