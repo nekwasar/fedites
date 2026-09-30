@@ -196,10 +196,11 @@ export async function photoRoutes(
       stream.on("error", () => resolve());
     });
     const embedding = await provider.embed(Buffer.concat(chunks));
+    // Exactly one reference per member: replace, never accumulate.
+    await pool.query("DELETE FROM face_index WHERE member_id = $1 AND kind = 'reference'", [member.id]);
     await pool.query(
       `INSERT INTO face_index (instance_id, member_id, kind, media_id, embedding, provider)
-       VALUES ($1,$2,'reference',$3,$4,$5)
-       ON CONFLICT (member_id, media_id, kind) DO UPDATE SET embedding = $4, provider = $5`,
+       VALUES ($1,$2,'reference',$3,$4,$5)`,
       [member.instanceId, member.id, body.mediaId, JSON.stringify(embedding), provider.name],
     );
     return { ok: true, provider: provider.name };
@@ -230,7 +231,7 @@ export async function photoRoutes(
       return reply.status(403).send({ error: "Opt in to face search in your privacy settings to use the finder." });
     }
     const ref = await pool.query<{ embedding: number[]; provider: string }>(
-      "SELECT embedding, provider FROM face_index WHERE member_id = $1 AND kind = 'reference' LIMIT 1",
+      "SELECT embedding, provider FROM face_index WHERE member_id = $1 AND kind = 'reference' ORDER BY created_at DESC LIMIT 1",
       [member.id],
     );
     const reference = ref.rows[0];

@@ -86,7 +86,7 @@ export async function newsRoutes(app: FastifyInstance, opts: { pool: Pool; loadC
     const postId = res.rows[0]!.id;
     if (body.mediaIds !== undefined) {
       for (const [i, mediaId] of body.mediaIds.entries()) {
-        await pool.query("INSERT INTO post_media (post_id, media_id, position) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING", [postId, mediaId, i]);
+        await pool.query("INSERT INTO post_media (instance_id, post_id, media_id, position) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING", [member.instanceId, postId, mediaId, i]);
       }
     }
     return { id: postId };

@@ -180,8 +180,8 @@ export async function activityRoutes(app: FastifyInstance, opts: { pool: Pool; l
     if (body.mediaIds !== undefined) {
       for (const [i, mediaId] of body.mediaIds.entries()) {
         await pool.query(
-          "INSERT INTO post_media (post_id, media_id, position) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING",
-          [postId, mediaId, i],
+          "INSERT INTO post_media (instance_id, post_id, media_id, position) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING",
+          [member.instanceId, postId, mediaId, i],
         );
       }
     }
@@ -202,7 +202,7 @@ export async function activityRoutes(app: FastifyInstance, opts: { pool: Pool; l
     );
     const postId = post.rows[0]!.id;
     for (const [i, label] of body.options.entries()) {
-      await pool.query("INSERT INTO poll_options (post_id, label, position) VALUES ($1,$2,$3)", [postId, label, i]);
+      await pool.query("INSERT INTO poll_options (instance_id, post_id, label, position) VALUES ($1,$2,$3,$4)", [member.instanceId, postId, label, i]);
     }
     opts.hub.broadcast([`group:${id}`], { type: "post.new", groupId: id, postId });
     return { id: postId };
@@ -221,9 +221,9 @@ export async function activityRoutes(app: FastifyInstance, opts: { pool: Pool; l
     const opt = await pool.query("SELECT 1 FROM poll_options WHERE id = $1 AND post_id = $2", [body.optionId, postId]);
     if (opt.rows.length === 0) return reply.status(400).send({ error: "That option is not on this poll." });
     await pool.query(
-      `INSERT INTO poll_votes (post_id, option_id, member_id) VALUES ($1,$2,$3)
-       ON CONFLICT (post_id, member_id) DO UPDATE SET option_id = $2`,
-      [postId, body.optionId, member.id],
+      `INSERT INTO poll_votes (instance_id, post_id, option_id, member_id) VALUES ($1,$2,$3,$4)
+       ON CONFLICT (post_id, member_id) DO UPDATE SET option_id = $3`,
+      [member.instanceId, postId, body.optionId, member.id],
     );
     const counts = await pool.query<{ option_id: string; n: string }>(
       "SELECT option_id, count(*)::text AS n FROM poll_votes WHERE post_id = $1 GROUP BY option_id",
