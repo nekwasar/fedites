@@ -161,6 +161,20 @@ async function seedTx(tx: Tx): Promise<SeedResult> {
     );
   }
 
+  // Phase 3 demo events: a Set '98 mini-reunion (group-owned) + school AGM.
+  await tx.query(
+    `INSERT INTO events (id, instance_id, group_id, created_by, title, description, starts_at, venue, city)
+     VALUES ($1,$2,$3,$4,'Set ''98 Mini Reunion','Games, old photos, and the anthem. Bring your tie.',
+             now() + interval '60 days','School Main Hall','Lagos')`,
+    [randomUUID(), instanceId, groupIds.set98!, memberIds.president!],
+  );
+  await tx.query(
+    `INSERT INTO events (id, instance_id, created_by, title, description, starts_at, venue, city, virtual_link)
+     VALUES ($1,$2,$3,'Annual General Meeting','Quorum at 40%. Proxy forms in the constitution library.',
+             now() + interval '30 days','School Assembly Grounds','Lagos','https://meet.google.com/lookup/fedites-agm')`,
+    [randomUUID(), instanceId, memberIds.president!],
+  );
+
   // Demo invite code for walking the signup flow by hand (UAT).
   await tx.query(
     `INSERT INTO invite_codes (instance_id, code, created_by) VALUES ($1,$2,$3)`,
@@ -186,12 +200,6 @@ async function seedTx(tx: Tx): Promise<SeedResult> {
     `INSERT INTO messages (instance_id, group_id, author_id, body)
      VALUES ($1,$2,$3,$4)`,
     [instanceId, groupIds.set98!, memberIds.member2!, "Confirmed."],
-  );
-  const eventId = randomUUID();
-  await tx.query(
-    `INSERT INTO events (id, instance_id, group_id, created_by, title, starts_at, location)
-     VALUES ($1,$2,$3,$4,$5, now() + interval '90 days', $6)`,
-    [eventId, instanceId, groupIds.set98!, memberIds.member1!, "Set '98 Mini Reunion", "Lagos"],
   );
   await tx.query(
     `INSERT INTO ledger_entries (instance_id, member_id, kind, amount_minor, currency, memo, private_ledger)

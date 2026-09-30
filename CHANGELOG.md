@@ -1,5 +1,19 @@
 # Changelog
 
+## Phase 3 — Belonging, batch 1: Events & Reunions (complete)
+
+### Sessions 3.1 + 3.2
+- Unified calendar: upcoming/past, countdown chips, group events badged with the group name (spec §4.5).
+- Creation by admins and group admins only (§P, enforced at the API with the event.create policy); school-wide and group-owned events.
+- §2 bridge: creating a group event posts `kind: 'event'` into the group Activity + realtime ping.
+- RSVP going/maybe/no with optimistic UI (L6); limited accounts refused until verified (§P).
+- My QR ticket: deterministic per (event, member) secret (only the hash stored), HMAC-signed self-contained QR payload — re-issues stay stable.
+- QR door mode: organizer opens/closes, scans with the camera (jsQR), tampered signatures and wrong-event tickets refused, duplicates flagged, live counts (going/maybe/checked-in).
+- Reunion planning suite (organizers only): tasks with assignee/due/done, budget lines (planned), RSVP list with check-in status.
+- Virtual attendance: organizer-set external meeting/livestream link (v6.1 — no native WebRTC) + live chat via the owning group.
+- Anniversary flag for recurring reunion countdowns. No live location in this batch (permitted, not required).
+- Migration `0004_events.sql`; PG suite `phase3-events.pg.test.ts` (permission matrix, §P RSVP refusal, ticket/check-in flow incl. tampering, suite, badges/bridge).
+
 ## Phase 2 — Daily Loop (complete)
 
 ### Session 2.1 — Group engine core

@@ -169,3 +169,51 @@ export const roleBodySchema = z.object({
   roleKey: z.enum(["president", "treasurer", "secretary", "moderator", "editor", "member"]),
 });
 export type RoleBody = z.infer<typeof roleBodySchema>;
+
+/* ------------------------------- events ------------------------------ */
+
+export const eventCreateSchema = z.object({
+  title: z.string().min(2).max(120),
+  description: z.string().max(2000).optional(),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime().optional(),
+  venue: z.string().max(200).optional(),
+  city: z.string().max(80).optional(),
+  groupId: z.string().uuid().optional(),
+  virtualLink: z.string().url().max(400).optional(),
+  anniversary: z.boolean().optional(),
+});
+export type EventCreateBody = z.infer<typeof eventCreateSchema>;
+
+export const eventUpdateSchema = eventCreateSchema.partial().extend({
+  checkInOpen: z.boolean().optional(),
+});
+export type EventUpdateBody = z.infer<typeof eventUpdateSchema>;
+
+export const rsvpSchema = z.object({ response: z.enum(["going", "maybe", "no"]) });
+export type RsvpBody = z.infer<typeof rsvpSchema>;
+
+export interface EventListItem {
+  id: string; title: string; startsAt: string; endsAt: string | null;
+  venue: string | null; city: string | null; description: string | null;
+  virtualLink: string | null; anniversary: boolean;
+  groupId: string | null; groupName: string | null;
+  goingCount: number; myResponse: "going" | "maybe" | "no" | null;
+  organizer: boolean; createdAt: string;
+}
+
+export interface EventCounts { going: number; maybe: number; checkedIn: number }
+
+export interface EventTask { id: string; title: string; assignee: string | null; assigneeName: string | null; dueAt: string | null; done: boolean }
+export interface BudgetItem { id: string; label: string; amountMinor: number; currency: string; kind: "planned" | "actual" }
+
+export const ticketSchema = z.object({
+  payload: z.string(),
+  qrSvg: z.string(),
+  eventTitle: z.string(),
+  startsAt: z.string(),
+});
+export type Ticket = z.infer<typeof ticketSchema>;
+
+export const ticketScanSchema = z.object({ code: z.string().min(20).max(300) });
+export type TicketScan = z.infer<typeof ticketScanSchema>;

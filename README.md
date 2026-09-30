@@ -34,6 +34,15 @@ pnpm dev               # api :8787 + web :5173
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
 
+## Phase 3 — Belonging (batch 1 of 3 complete)
+
+| Session | Deliverable | Where |
+|---|---|---|
+| 3.1 | Events: calendar, create/RSVP (§P), group badges, countdowns, Activity bridge | `apps/api/src/events.ts`, web `EventsScreen` |
+| 3.2 | Reunion suite (tasks/budget/RSVPs), QR tickets + door check-in, live counts, virtual attendance | same module, web organizer suite + jsQR scanner |
+| 3.3 | Event photo wall + AI photo finder (pluggable stub, self-only) | next batch |
+| 3.4 | Recognition engine + personalization | next batch |
+
 ## Phase 2 — Daily Loop (complete)
 
 | Session | Deliverable | Where |

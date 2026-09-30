@@ -125,7 +125,7 @@ export async function requireMember(request: FastifyRequest, reply: FastifyReply
   return null;
 }
 
-export function requireDutyRole(member: SessionMember): boolean {
+export function requireDutyRole(member: { roles: readonly string[] }): boolean {
   const duty = new Set(["president", "treasurer", "secretary", "moderator", "editor"]);
   return member.roles.some((r) => duty.has(r));
 }

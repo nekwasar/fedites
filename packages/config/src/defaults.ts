@@ -25,7 +25,7 @@ export const defaultFlags: ReadonlyArray<{ key: string; enabled: boolean }> = [
   { key: "groups.chat", enabled: true },
   { key: "news.bulletin", enabled: true },
   { key: "feed.personalized", enabled: true },
-  { key: "events.core", enabled: false }, // Phase 3
+  { key: "events.core", enabled: true }, // Phase 3
   { key: "recognition.badges", enabled: false },
   { key: "money.dues", enabled: false }, // Phase 4
   { key: "money.donations", enabled: false },

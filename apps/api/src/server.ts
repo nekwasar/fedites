@@ -25,6 +25,7 @@ import { chatRoutes } from "./chat.js";
 import { feedRoutes } from "./feed.js";
 import { moderationRoutes } from "./moderation.js";
 import { mediaRoutes } from "./media.js";
+import { eventsRoutes } from "./events.js";
 import { Hub } from "./ws.js";
 
 export interface ApiDeps {
@@ -119,6 +120,7 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(feedRoutes, { pool });
   await app.register(moderationRoutes, { pool });
   await app.register(mediaRoutes, { pool });
+  await app.register(eventsRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 
   // Realtime hub attaches when the underlying server starts (start() below

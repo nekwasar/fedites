@@ -1,3 +1,19 @@
+# Phase 3 batch 1 demo (Events & Reunions)
+
+```sh
+pnpm db:migrate && pnpm db:seed   # seeds the Set '98 Mini Reunion (60 days out) + AGM
+pnpm dev
+```
+
+1. **Calendar** — Events tab: AGM (30d) and the Set '98 Mini Reunion (60d, badged "Set '98") with countdown chips.
+2. **Create** — As president: Create event → school-wide or within a group (members cannot create — §P). Creating inside Set '98 drops an event post into the group Activity.
+3. **RSVP** — As member1: open the reunion → Going (optimistic) → the ticket sheet opens with your QR.
+4. **Door mode** — As president: open the event → Organizer section → Open door → Scan ticket → point the camera at member1's screen → "Checked in", live counts update. Duplicates flagged; a tampered QR is refused.
+5. **Suite** — Add tasks ("Book the DJ", assign), mark done; add budget lines; see the RSVP list with check-in status.
+6. **Virtual attendance** — AGM carries a "Join virtually" link (v6.1: external Meet/Zoom; chat via the owning group).
+
+---
+
 # Phase 2 demo script (the daily loop)
 
 ```sh

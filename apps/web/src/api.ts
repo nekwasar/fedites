@@ -4,6 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem } from "./phase2-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -131,6 +132,21 @@ export const Api = {
   /* feed (2.5) */
   feed: (): Promise<FeedResponse> => call("/v1/feed"),
   dismissRail: (key: string): Promise<{ ok: boolean }> => post(`/v1/feed/rails/${key}/dismiss`),
+
+  /* events (3.1 + 3.2) */
+  eventsList: (): Promise<{ upcoming: EventListItem[]; past: EventListItem[] }> => call("/v1/events"),
+  eventDetail: (id: string): Promise<EventListItem> => call(`/v1/events/${id}`),
+  createEvent: (b: EventCreateBody): Promise<{ id: string }> => post("/v1/events", b),
+  updateEvent: (id: string, b: EventUpdateBody): Promise<{ ok: boolean }> => patch(`/v1/events/${id}`, b),
+  rsvp: (id: string, response: "going" | "maybe" | "no"): Promise<{ counts: { going: number; maybe: number; checkedIn: number } }> => post(`/v1/events/${id}/rsvp`, { response }),
+  myTicket: (id: string): Promise<Ticket> => call(`/v1/events/${id}/my-ticket`),
+  checkIn: (id: string, code: string): Promise<{ ok: boolean; duplicate: boolean; counts: { checkedIn: number } }> => post(`/v1/events/${id}/check-in`, { code }),
+  liveCounts: (id: string): Promise<{ counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean }> => call(`/v1/events/${id}/live-counts`),
+  eventAttendees: (id: string): Promise<{ attendees: Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> }> => call(`/v1/events/${id}/attendees`),
+  eventTasks: (id: string): Promise<{ tasks: EventTask[]; budget: BudgetItem[] }> => call(`/v1/events/${id}/tasks`),
+  addEventTask: (id: string, b: { title: string; assignee?: string; dueAt?: string }): Promise<{ id: string }> => post(`/v1/events/${id}/tasks`, b),
+  updateEventTask: (id: string, taskId: string, b: { done?: boolean; title?: string; assignee?: string | null }): Promise<{ ok: boolean }> => patch(`/v1/events/${id}/tasks/${taskId}`, b),
+  addBudgetItem: (id: string, b: { label: string; amountMinor: number; currency: string; kind: "planned" | "actual" }): Promise<{ id: string }> => post(`/v1/events/${id}/budget`, b),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

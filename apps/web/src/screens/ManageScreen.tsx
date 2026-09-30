@@ -11,8 +11,7 @@ import type { ManageOverview, QueueItem, SessionMember } from "@fedites/config";
 const EMPTY_SECTIONS = [
   ["Moderation", "Report queue, mutes and bans, audit trail."],
   ["Money", "Dues, donations, campaigns, ledger publishing."],
-  ["Events", "Reunion planning, QR door mode, live counts."],
-  ["Speak", "News composer, newsletter builder, WhatsApp bridge."],
+  ["Speak", "Newsletter builder, WhatsApp bridge, email digests."],
   ["Govern", "Elections, motions, AGM toolkit, constitution."],
   ["Content", "Spotlights, Memory Lane uploads, wishlist."],
   ["Oversight", "Analytics, audit logs, data export, integrations."],
@@ -23,7 +22,7 @@ const EMPTY_SECTIONS = [
 const ALL_ROLES = ["president", "treasurer", "secretary", "moderator", "editor", "member"] as const;
 type RoleKey = (typeof ALL_ROLES)[number];
 
-export function ManageScreen({ member }: { member: SessionMember }): React.ReactElement {
+export function ManageScreen({ member, onNavigate }: { member: SessionMember; onNavigate: (to: string) => void }): React.ReactElement {
   const [overview, setOverview] = useState<ManageOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +55,15 @@ export function ManageScreen({ member }: { member: SessionMember }): React.React
 
       <MembersSection />
 
-      {EMPTY_SECTIONS.map(([name, body]) => (
+      <section style={{ padding: "0 16px 24px" }}>
+        <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Events</div>
+        <p style={{ font: "15px var(--font-ui)", color: "var(--c-base-contrast)", margin: "0 0 8px" }}>
+          Reunion planning, QR door mode, and live counts live on each event's page.
+        </p>
+        <button type="button" className="btn btn--outlined press" onClick={() => onNavigate("/events")}>Open Events</button>
+      </section>
+
+      {onNavigate !== null && EMPTY_SECTIONS.map(([name, body]) => (
         <section key={name} style={{ padding: "0 16px 24px" }}>
           <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>{name}</div>
           <p style={{ font: "15px var(--font-ui)", color: "var(--c-neutral-500)", margin: 0 }}>

@@ -14,7 +14,7 @@
     "migrate": "tsx src/cli.ts migrate",
     "seed": "tsx src/cli.ts seed",
     "test": "vitest run --passWithNoTests --exclude '**/*pg.test.ts'",
-    "test:pg": "vitest run src/schema-pg.test.ts",
+    "test:pg": "vitest run --no-file-parallelism src/schema-pg.test.ts",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {

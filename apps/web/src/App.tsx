@@ -24,6 +24,7 @@ import { GroupsHomeScreen } from "./screens/GroupsHomeScreen.js";
 import { GroupScreen } from "./screens/GroupScreen.js";
 import { ChatListScreen, ChatThreadScreen } from "./screens/ChatThread.js";
 import { NewsScreen, FeedScreen } from "./screens/NewsFeed.js";
+import { EventsScreen, EventDetailScreen } from "./screens/EventsScreen.js";
 import { useRealtime } from "./realtime.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
@@ -280,9 +281,13 @@ export default function App(): React.ReactElement {
       case "/me": return <ProfileScreen member={member} onNavigate={go} />;
       case "/id": return <IdScreen />;
       case "/members": return route.param !== undefined ? <MemberScreen id={route.param} /> : <Empty title="Member not found" body="The link may be wrong." />;
-      case "/manage": return dutyRoles ? <ManageScreen member={member} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
+      case "/manage": return dutyRoles ? <ManageScreen member={member} onNavigate={go} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
       case "/menu": return <ProfileScreen member={member} onNavigate={go} />;
-      case "/events": return <Empty title="Events arrives in Phase 3" body="Calendar, countdowns, and your QR ticket are next." />;
+      case "/events":
+        return route.param !== undefined && route.path === "/events"
+          ? <EventDetailScreen eventId={route.param} onNavigate={go} member={member} />
+          : <EventsScreen onNavigate={go} isAdmin={authed && member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} />;
+      case "/events-new": return authed ? <EventsScreen onNavigate={go} isAdmin={true} /> : <Empty title="Sign in first" body="Event creation needs a member account." />;
       default: return <GroupsHomeScreen onNavigate={go} />;
     }
   };
