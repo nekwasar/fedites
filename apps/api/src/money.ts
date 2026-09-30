@@ -35,24 +35,34 @@ export async function confirmIntent(
   confirmedBy: string,
   reference: string | null,
 ): Promise<{ receiptNo: string; ledgerId: string }> {
-  const intent = await pool.query<{ id: string; member_id: string; amount_minor: string; currency: string; purpose: string; assessment_id: string | null; status: string }>(
-    "SELECT id, member_id, amount_minor, currency, purpose, assessment_id, status FROM payment_intents WHERE id = $1 AND instance_id = $2",
+  const intent = await pool.query<{ id: string; member_id: string; amount_minor: string; currency: string; purpose: string; assessment_id: string | null; campaign_id: string | null; meta: Record<string, unknown>; status: string }>(
+    "SELECT id, member_id, amount_minor, currency, purpose, assessment_id, campaign_id, meta, status FROM payment_intents WHERE id = $1 AND instance_id = $2",
     [intentId, instanceId],
   );
   const intentRow = intent.rows[0];
   if (!intentRow) throw new Error("Payment intent not found.");
   if (intentRow.status === "confirmed") throw new Error("This payment is already confirmed.");
+  // Intent meta rides to the ledger: p2p attribution, pledge link, tribute
+  // metadata, and the per-payment anonymous toggle (§P) — one place, all flows.
+  const meta = (intentRow.meta ?? {}) as {
+    p2pId?: string; pledgeId?: string; anonymous?: boolean; tributeName?: string; tributeKind?: string;
+  };
+  const anonymous = meta.anonymous === true;
+  const memoExtra = meta.tributeName !== undefined
+    ? ` — ${meta.tributeKind === "memory" ? "In memory of" : meta.tributeKind === "honor" ? "In honor of" : "Celebrating"} ${meta.tributeName}`
+    : "";
 
   const year = new Date().getFullYear();
   const receiptNo = await nextReceiptNo(pool, instanceId, year);
   const entry = await pool.query<{ id: string }>(
-    `INSERT INTO ledger_entries (instance_id, member_id, kind, amount_minor, currency, memo, private_ledger, reference, receipt_no, entered_by, assessment_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
+    `INSERT INTO ledger_entries (instance_id, member_id, kind, amount_minor, currency, memo, private_ledger, reference, receipt_no, entered_by, assessment_id, campaign_id, p2p_id, anonymous)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`,
     [
       instanceId, intentRow.member_id, intentRow.purpose, intentRow.amount_minor,
-      intentRow.currency, `${intentRow.purpose} payment`,
+      intentRow.currency, `${intentRow.purpose} payment${memoExtra}`,
       intentRow.purpose === "dues", // dues entries are private by definition (§P)
       reference, receiptNo, confirmedBy, intentRow.assessment_id,
+      intentRow.campaign_id, meta.p2pId ?? null, anonymous,
     ],
   );
   await pool.query(
@@ -63,6 +73,14 @@ export async function confirmIntent(
     await pool.query("UPDATE dues_assessments SET status = 'paid' WHERE id = $1", [intentRow.assessment_id]);
   }
   return { receiptNo, ledgerId: entry.rows[0]!.id };
+}
+
+export interface IntentMeta {
+  p2pId?: string;
+  pledgeId?: string;
+  anonymous?: boolean;
+  tributeName?: string;
+  tributeKind?: string;
 }
 
 export async function moneyRoutes(

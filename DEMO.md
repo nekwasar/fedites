@@ -1,3 +1,14 @@
+# Phase 4 batch 3 demo (Structured giving)
+
+1. **P2P** — As member1: Menu → Fundraisers → propose "Run for the Library". As president: Manage → Fundraiser approvals → Approve. As member2: Give 500 → treasurer confirms.
+2. **Pledges** — As member1: My pledges → record 300 → fulfil. Overdue pledges get one gentle private nudge per month (never public).
+3. **Reimbursements** — Submit a claim with a receipt image → treasurer approves & pays → money-out ledger row, receipted.
+4. **Sponsorships** — President records a gold sponsor → treasurer confirms receipt → sponsors appear on the member portal with recognition.
+5. **Scholarships** — President endows "Set '96 Scholarship" → member applies for a student → treasurer screens, selects, disburses (ledger + audit).
+6. **Publish** — Treasurer publishes the 2026 snapshot → members see per-currency totals and counts.
+
+---
+
 # Phase 4 batch 2 demo (Giving)
 
 1. **Campaign** — As president: Manage → Money → create "Science Lab Roof" (goal 500,000).

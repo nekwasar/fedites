@@ -7,6 +7,7 @@ import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
 import { AssociationSection } from "./Money.js";
 import { GivingSection } from "./Giving.js";
+import { StructuredGiving, PledgesSection, ReimbursementsSection, SponsorsSection, ScholarshipsSection } from "./Structured.js";
 import type { FamilyLink, Invite, SessionMember, VerificationStatus } from "@fedites/config";
 import type { RecognitionMe } from "../phase2-types.js";
 
@@ -72,6 +73,16 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
       <AssociationSection />
 
       <GivingSection />
+
+      <StructuredGiving />
+
+      <PledgesSection />
+
+      <ReimbursementsSection />
+
+      <SponsorsSection />
+
+      <ScholarshipsSection />
 
       <FaceSearch />
 

@@ -37,3 +37,10 @@ export interface CampaignView { id: string; title: string; description: string |
 export interface DonorWall { donors: Array<{ name: string; at: string }> }
 export interface TransparentLedger { rows: Array<{ kind: string; amountMinor: number; currency: string; receiptNo: string | null; createdAt: string; campaign: string | null; payer: string | null }>; totals: Record<string, number> }
 export interface DonationSchedule { id: string; amountMinor: number; currency: string; frequency: string; campaign: string | null; nextDate: string }
+
+export interface P2pView { id: string; title: string; story: string | null; status: string; goalMinor: number; currency: string; raisedMinor: number; creator: string; mine: boolean }
+export interface PledgeView { id: string; amountMinor: number; currency: string; status: string; promisedAt: string; dueDate: string | null; campaign: string | null }
+export interface ReimbView { id: string; amountMinor: number; currency: string; memo: string; status: string; createdAt: string }
+export interface SponsorView { sponsor_name: string; tier: string; recognition: string | null }
+export interface ScholarshipView { id: string; name: string; description: string | null; endowedMinor: number; currency: string; status: string }
+export interface Publication { id: string; period: string; totals: Record<string, { minor: number; count: number }>; row_count: number; published_at: string; published_by_name: string }

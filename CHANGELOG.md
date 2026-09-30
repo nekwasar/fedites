@@ -22,6 +22,18 @@
 - Feed: "Campaign progress" rail (spec §4.2 giver rail), dismissible.
 - Migration 0009; PG suite phase4-giving.pg.test.ts (5 tests).
 
+## Phase 4 — Money, batch 3: Structured Giving (complete)
+
+### Session 4.4
+- P2P fundraisers: member proposals go through an admin approval gate (audit-logged) before any money flows; approved fundraisers collect through the same intent→confirm pipeline; ledger rows carry p2p attribution.
+- Pledge tracking: members record promised contributions (private — K5); overdue pledges get one polite in-app nudge per 30 days (never public); fulfilment rides the intent→confirm flow.
+- Reimbursements: members submit claims with receipt uploads; treasurer approves → negative (money-out) ledger row, receipted + audited (N2).
+- Sponsorships: duty-recorded sponsors with tiered recognition (bronze/silver/gold); confirmation receipts into the ledger; member-visible sponsor list (mvp §7 portal).
+- Scholarships: endow → members apply for students → screen → select → disburse (ledger row + audit); disburse-before-select refused.
+- Ledger publishing: treasurer publishes per-period snapshots (per-currency totals + counts) visible to members.
+- Tribute giving: donations in memory/honor of someone — metadata rides intent→ledger memo ("In memory of …").
+- Migration 0010; PG suite phase4-structured.pg.test.ts (7 tests).
+
 ## Phase 3 — Belonging, batch 1: Events & Reunions (complete)
 
 ### Sessions 3.1 + 3.2

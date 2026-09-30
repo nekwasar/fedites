@@ -9,7 +9,7 @@ import type { CampaignView } from "../events-types.js";
 import { Section } from "./ProfileScreen.js";
 import type { DuesAssessmentView, LedgerRow, TierView, AdminDuesRow, ReceiptView } from "../events-types.js";
 
-const money = (minor: number, currency: string): string =>
+export const money = (minor: number, currency: string): string =>
   `${(minor / 100).toLocaleString()} ${currency}`;
 
 /** Menu → Association: the member's private money view. */

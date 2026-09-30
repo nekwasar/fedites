@@ -34,14 +34,14 @@ pnpm dev               # api :8787 + web :5173
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
 
-## Phase 4 — Money (batches 1–2 of 3 complete)
+## Phase 4 — Money (complete)
 
 | Session | Deliverable | Where |
 |---|---|---|
 | 4.1 | Wallet/ledger core, pluggable gateway (manual ships), multi-currency, receipts | `apps/api/src/{money,payments}.ts`, migration 0008 |
 | 4.2 | Dues: cycle/tiers/reminders, private status (§P), mark-paid/waive, ID tier marking | same module, web `Money.tsx` (Association + Manage) |
 | 4.3 | Donations, campaigns, donor wall, confetti (F6), transparent ledger + CSV | `apps/api/src/giving.ts`, web `Giving.tsx` + `Confetti.tsx` |
-| 4.4 | P2P approvals, tribute, pledges, reimbursements, sponsorships, scholarships | next batch |
+| 4.4 | P2P approvals, tribute, pledges, reimbursements, sponsorships, scholarships, ledger publishing | `apps/api/src/structured.ts`, web `Structured.tsx` + Manage queues |
 
 ## Phase 3 — Belonging (complete)
 

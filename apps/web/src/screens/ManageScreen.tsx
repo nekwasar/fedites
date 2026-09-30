@@ -7,6 +7,9 @@ import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
 import { Empty } from "./InboxScreen.js";
 import { MoneyAdminSection, CampaignAdmin } from "./Money.js";
+import { PublicationsSection } from "./Structured.js";
+import { money } from "./Money.js";
+import type { ScholarshipView } from "../events-types.js";
 import type { ManageOverview, QueueItem, SessionMember } from "@fedites/config";
 
 const EMPTY_SECTIONS = [
@@ -58,6 +61,14 @@ export function ManageScreen({ member, onNavigate }: { member: SessionMember; on
       <MoneyAdminSection />
 
       <CampaignAdmin />
+
+      <P2pQueue />
+
+      <ReimbursementQueue />
+
+      <ScholarshipAdmin />
+
+      <PublicationsSection />
 
       <section style={{ padding: "0 16px 24px" }}>
         <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Events</div>
@@ -189,6 +200,136 @@ function MembersSection(): React.ReactElement {
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+function P2pQueue(): React.ReactElement {
+  const [pending, setPending] = useState<Array<{ id: string; title: string; story: string | null; goal_minor: string; currency: string; creator_name: string }> | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const load = (): void => { Api.p2pQueue().then((r) => setPending(r.pending)).catch(() => undefined); };
+  useEffect(load, []);
+  const decide = async (id: string, decision: "approve" | "reject"): Promise<void> => {
+    await Api.decideP2p(id, decision).catch((e: Error) => setNote(e.message));
+    load();
+  };
+  return (
+    <section style={{ padding: "0 16px 24px" }}>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Fundraiser approvals</div>
+      {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", margin: "0 0 8px" }}>{note}</p>}
+      {pending === null ? <div className="skeleton" style={{ height: 32 }} /> : pending.length === 0 ? (
+        <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No pending fundraisers.</p>
+      ) : pending.map((p) => (
+        <div key={p.id} className="row" style={{ padding: "8px 0", flexWrap: "wrap" }}>
+          <span style={{ flex: 1, minWidth: 200 }}>
+            <span style={{ display: "block", font: "500 14px var(--font-ui)" }}>
+              {p.title} — <span className="tabular">{money(Number(p.goal_minor), p.currency)}</span>
+            </span>
+            <span className="micro">by {p.creator_name}</span>
+          </span>
+          <span style={{ display: "flex", gap: 8 }}>
+            <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => void decide(p.id, "approve")}>Approve</button>
+            <button type="button" className="btn btn--underline-link press" style={{ minHeight: 36 }} onClick={() => void decide(p.id, "reject")}>Reject</button>
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ReimbursementQueue(): React.ReactElement {
+  const [claims, setClaims] = useState<Array<{ id: string; member_name: string; amount_minor: string; currency: string; memo: string; receipt_media: string | null }> | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const load = (): void => { Api.reimbursementQueue().then((r) => setClaims(r.claims)).catch(() => undefined); };
+  useEffect(load, []);
+  const decide = async (id: string, decision: "approve" | "reject"): Promise<void> => {
+    const r = await Api.decideReimbursement(id, decision).catch((e: Error) => { setNote(e.message); return null; });
+    if (r !== null && decision === "approve") setNote("Paid — receipted.");
+    load();
+  };
+  return (
+    <section style={{ padding: "0 16px 24px" }}>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Reimbursement claims</div>
+      {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", margin: "0 0 8px" }}>{note}</p>}
+      {claims === null ? <div className="skeleton" style={{ height: 32 }} /> : claims.length === 0 ? (
+        <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No claims waiting.</p>
+      ) : claims.map((c) => (
+        <div key={c.id} className="row" style={{ padding: "8px 0", flexWrap: "wrap" }}>
+          <span style={{ flex: 1, minWidth: 200 }}>
+            <span style={{ display: "block", font: "500 14px var(--font-ui)" }}>
+              {c.member_name} — <span className="tabular">{money(Number(c.amount_minor), c.currency)}</span>
+            </span>
+            <span className="micro">{c.memo}</span>
+          </span>
+          <span style={{ display: "flex", gap: 8 }}>
+            <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => void decide(c.id, "approve")}>Approve & pay</button>
+            <button type="button" className="btn btn--underline-link press" style={{ minHeight: 36 }} onClick={() => void decide(c.id, "reject")}>Reject</button>
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function ScholarshipAdmin(): React.ReactElement {
+  const [scholarships, setScholarships] = useState<ScholarshipView[] | null>(null);
+  const [name, setName] = useState("");
+  const [endowed, setEndowed] = useState("");
+  const [applications, setApplications] = useState<Array<{ id: string; student_name: string; student_class: string | null; statement: string; submitted_by_name: string; status: string }> | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const load = (): void => {
+    Api.listScholarships().then((r) => setScholarships(r.scholarships)).catch(() => undefined);
+    if (scholarships !== null && scholarships.length > 0) {
+      Api.scholarshipApplications(scholarships[0]!.id).then((r) => setApplications(r.applications)).catch(() => undefined);
+    }
+  };
+  useEffect(load, [scholarships]);
+  const create = async (): Promise<void> => {
+    const amt = Number(endowed);
+    if (name.trim().length < 2 || Number.isNaN(amt)) return;
+    await Api.createScholarship({ name, endowedMinor: Math.round(amt * 100), currency: "NGN" }).catch((e: Error) => setNote(e.message));
+    setName(""); setEndowed("");
+    load();
+  };
+  const decide = async (id: string, decision: "screen" | "select" | "reject" | "disburse"): Promise<void> => {
+    await Api.decideApplication(id, decision, decision === "disburse" ? 150000 : undefined).catch((e: Error) => setNote(e.message));
+    load();
+  };
+  return (
+    <section style={{ padding: "0 16px 24px" }}>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Scholarships</div>
+      {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", margin: "0 0 8px" }}>{note}</p>}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Scholarship name" aria-label="Scholarship name"
+          style={{ minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)" }} />
+        <input value={endowed} onChange={(e) => setEndowed(e.target.value)} inputMode="decimal" placeholder="Endowed amount" aria-label="Endowed amount"
+          style={{ minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)" }} />
+        <button type="button" className="btn btn--outlined press" onClick={() => void create()} disabled={name.trim().length < 2}>Endow</button>
+      </div>
+      {applications !== null && applications.length > 0 && applications.map((a) => (
+        <div key={a.id} className="row" style={{ padding: "8px 0", flexWrap: "wrap" }}>
+          <span style={{ flex: 1, minWidth: 200 }}>
+            <span style={{ display: "block", font: "500 14px var(--font-ui)" }}>
+              {a.student_name} <span className="micro">{a.student_class ?? ""} · by {a.submitted_by_name}</span>
+            </span>
+            <span className="micro">{a.statement.slice(0, 80)}… · {a.status}</span>
+          </span>
+          <span style={{ display: "flex", gap: 8 }}>
+            {a.status === "submitted" && (
+              <button type="button" className="btn btn--outlined press" style={{ minHeight: 36 }} onClick={() => void decide(a.id, "screen")}>Screen</button>
+            )}
+            {a.status === "screening" && (
+              <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => void decide(a.id, "select")}>Select</button>
+            )}
+            {a.status === "selected" && (
+              <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => void decide(a.id, "disburse")}>Disburse 1,500</button>
+            )}
+            {a.status !== "disbursed" && a.status !== "rejected" && (
+              <button type="button" className="btn btn--underline-link press" style={{ minHeight: 36 }} onClick={() => void decide(a.id, "reject")}>Reject</button>
+            )}
+          </span>
+        </div>
+      ))}
     </section>
   );
 }

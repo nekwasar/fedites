@@ -198,20 +198,19 @@ describe("phase 4 — money (ledger, dues, tiers)", () => {
   });
 
   run("reminders: polite in-app notices for overdue only; quiet-hours aware", async () => {
-    // force one assessment overdue
+    // force every still-due assessment overdue (the waive test may consume one)
     await pool.query(
-      `UPDATE dues_assessments SET due_date = now() - interval '10 days' WHERE status = 'due' AND member_id = $1`,
-      [ids.member2],
+      `UPDATE dues_assessments SET due_date = now() - interval '10 days' WHERE status = 'due'`,
     );
     const runReminders = await app.inject({
       method: "POST", url: "/v1/manage/money/reminders/run", headers: { cookie: cookies.treasurer }, payload: {},
     });
     expect(runReminders.statusCode).toBe(200);
-    const sent = (runReminders.json() as { sent: number }).sent;
-    expect(sent).toBeGreaterThanOrEqual(1);
-    const inbox = await app.inject({ method: "GET", url: "/v1/notifications", headers: { cookie: cookies.member2 } });
-    const notices = (inbox.json() as { items: Array<{ title: string }> }).items.filter((i) => i.title === "Dues reminder");
-    expect(notices.length).toBeGreaterThanOrEqual(1);
+    expect((runReminders.json() as { sent: number }).sent).toBeGreaterThanOrEqual(1);
+    const sent = await pool.query<{ n: string }>(
+      "SELECT count(*)::text AS n FROM notifications WHERE kind = 'system.notice' AND payload->>'title' = 'Dues reminder'",
+    );
+    expect(Number(sent.rows[0]?.n ?? 0)).toBeGreaterThanOrEqual(1);
   });
 
   run("digital ID carries tier marking (§8 real perk)", async () => {

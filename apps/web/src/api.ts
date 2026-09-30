@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -199,6 +199,33 @@ export const Api = {
   moneyIntents: (): Promise<{ intents: Array<{ id: string; memberName: string; amountMinor: number; currency: string; purpose: string; campaign: string | null }> }> => call("/v1/manage/money/intents"),
   schedules: (): Promise<{ schedules: DonationSchedule[] }> => call("/v1/money/schedules"),
   confirmIntent: (id: string, reference?: string): Promise<{ receiptNo: string; ledgerId: string }> => post(`/v1/manage/money/intents/${id}/confirm`, { reference }),
+
+  /* structured giving (4.4) */
+  createP2p: (b: { title: string; story?: string; goalMinor: number; currency: string }): Promise<{ id: string }> => post("/v1/money/p2p", b),
+  listP2p: (): Promise<{ fundraisers: P2pView[] }> => call("/v1/money/p2p"),
+  giveP2p: (id: string, b: { amountMinor: number; currency: string }): Promise<{ intentId: string }> => post(`/v1/money/p2p/${id}/donate`, b),
+  p2pQueue: (): Promise<{ pending: Array<{ id: string; title: string; story: string | null; goal_minor: string; currency: string; creator_name: string }> }> => call("/v1/manage/money/p2p"),
+  decideP2p: (id: string, decision: "approve" | "reject"): Promise<{ ok: boolean }> => post(`/v1/manage/money/p2p/${id}`, { decision }),
+  createPledge: (b: { amountMinor: number; currency: string; dueDate?: string }): Promise<{ id: string }> => post("/v1/money/pledges", b),
+  myPledges: (): Promise<{ pledges: PledgeView[] }> => call("/v1/money/pledges"),
+  fulfilPledge: (id: string): Promise<{ intentId: string }> => post(`/v1/money/pledges/${id}/fulfil`, {}),
+  nudgePledges: (): Promise<{ sent: number }> => post("/v1/manage/money/pledges/nudge-run", {}),
+  submitReimbursement: (b: { amountMinor: number; currency: string; memo: string; receiptMediaId?: string }): Promise<{ id: string }> => post("/v1/money/reimbursements", b),
+  myReimbursements: (): Promise<{ claims: ReimbView[] }> => call("/v1/money/reimbursements"),
+  reimbursementQueue: (): Promise<{ claims: Array<{ id: string; member_name: string; amount_minor: string; currency: string; memo: string; receipt_media: string | null }> }> => call("/v1/manage/money/reimbursements"),
+  decideReimbursement: (id: string, decision: "approve" | "reject"): Promise<{ ok: boolean }> => post(`/v1/manage/money/reimbursements/${id}`, { decision }),
+  sponsors: (): Promise<{ sponsors: SponsorView[] }> => call("/v1/money/sponsors"),
+  recordSponsorship: (b: { sponsorName: string; tier: string; amountMinor: number; currency: string; recognition?: string }): Promise<{ id: string }> => post("/v1/manage/money/sponsorships", b),
+  confirmSponsorship: (id: string): Promise<{ ok: boolean }> => post(`/v1/manage/money/sponsorships/${id}/confirm`, {}),
+  listScholarships: (): Promise<{ scholarships: ScholarshipView[] }> => call("/v1/money/scholarships"),
+  createScholarship: (b: { name: string; description?: string; endowedMinor: number; currency: string }): Promise<{ id: string }> => post("/v1/manage/money/scholarships", b),
+  applyScholarship: (id: string, b: { studentName: string; studentClass?: string; statement: string }): Promise<{ id: string }> => post(`/v1/money/scholarships/${id}/apply`, b),
+  scholarshipApplications: (id: string): Promise<{ applications: Array<{ id: string; student_name: string; student_class: string | null; statement: string; submitted_by_name: string; status: string }> }> => call(`/v1/manage/money/scholarships/${id}/applications`),
+  decideApplication: (id: string, decision: "screen" | "select" | "reject" | "disburse", amountMinor?: number): Promise<{ ok: boolean }> => post(`/v1/manage/money/applications/${id}`, { decision, amountMinor }),
+  publishLedger: (period: string): Promise<{ id: string }> => post("/v1/manage/money/ledger/publish", { period }),
+  publications: (): Promise<{ publications: Publication[] }> => call("/v1/money/publications"),
+  tribute: (b: { amountMinor: number; currency: string; tributeName: string; tributeKind: "memory" | "honor" | "birthday"; anonymous: boolean }): Promise<{ intentId: string }> => post("/v1/money/tribute", b),
+  tributeQueue: (): Promise<{ intents: Array<{ id: string }> }> => call("/v1/manage/money/intents"),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),
