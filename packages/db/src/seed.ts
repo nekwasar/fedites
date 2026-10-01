@@ -161,6 +161,11 @@ async function seedTx(tx: Tx): Promise<SeedResult> {
     );
   }
 
+  // Nostalgia: birthdays for the birthday-reminder view (set-visible).
+  await tx.query(`UPDATE members SET birthday = '1980-03-15' WHERE email = 'member1@example.test'`);
+  await tx.query(`UPDATE members SET birthday = '1980-07-02' WHERE email = 'member2@example.test'`);
+  await tx.query(`UPDATE members SET visibility = '{"contact":"private","birthday":"set"}' WHERE email IN ('member1@example.test','member2@example.test')`);
+
   // Phase 3 demo events: a Set '98 mini-reunion (group-owned) + school AGM.
   await tx.query(
     `INSERT INTO events (id, instance_id, group_id, created_by, title, description, starts_at, venue, city)

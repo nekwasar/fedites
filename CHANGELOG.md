@@ -20,6 +20,20 @@
 - Long-form articles: member-written (essays, memoirs, tributes) with admin screening before publication.
 - Migration 0012; PG suite phase5-knowledge.pg.test.ts (6 tests).
 
+## Phase 5 — Memory & School, batch 3: Nostalgia bundle (complete)
+
+### Session 5.3
+- Remember-when threads: weekly prompts auto-created on first story; stories collect under each week.
+- Recipe exchange: tuck-shop/dining-hall classics with the story behind them.
+- Nostalgia radio: collaborative era playlists (links or uploaded recordings).
+- Anthem player + school bell: admin-uploaded instance audio (nostalgia_config slots) streamed by every member; bell doubles as the optional notification chime source.
+- Crest stickers/frames: admin inventory; members take them for profiles/celebrations.
+- Time capsules: sealed until the open date — server-enforced gate (early open 403, sealed body never returned), open-once marker.
+- Letters to future self: future-delivery gate (sealed until deliver_on).
+- Birthday reminders: private list of own + setmates with set-visible birthdays; memorial members never appear (§P); gentle copy (K5).
+- Achievement awards: admin ceremony awards with citations, audited (N2).
+- Migration 0013; PG suite phase5-nostalgia.pg.test.ts (8 tests).
+
 ## Phase 4 — Money, batch 1: Ledger + Dues (complete)
 
 ### Sessions 4.1 + 4.2

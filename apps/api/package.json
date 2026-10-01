@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude '**/*pg.test.ts'",
-    "test:pg": "vitest run --no-file-parallelism src/phase1.pg.test.ts src/phase2.pg.test.ts src/phase2-ws.pg.test.ts src/phase3-events.pg.test.ts src/phase3-photos.pg.test.ts src/phase3-recognition.pg.test.ts src/phase4-money.pg.test.ts src/phase4-giving.pg.test.ts src/phase4-structured.pg.test.ts src/phase5-memory.pg.test.ts src/phase5-knowledge.pg.test.ts",
+    "test:pg": "vitest run --no-file-parallelism src/phase1.pg.test.ts src/phase2.pg.test.ts src/phase2-ws.pg.test.ts src/phase3-events.pg.test.ts src/phase3-photos.pg.test.ts src/phase3-recognition.pg.test.ts src/phase4-money.pg.test.ts src/phase4-giving.pg.test.ts src/phase4-structured.pg.test.ts src/phase5-memory.pg.test.ts src/phase5-knowledge.pg.test.ts src/phase5-nostalgia.pg.test.ts",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {

@@ -265,6 +265,26 @@ export const Api = {
   slangQueue: (): Promise<{ pending: Array<{ id: string; term: string; meaning: string; submitted_by_name: string }> }> => call("/v1/manage/slang"),
   decideSlang: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/slang/${id}`, { decision }),
 
+  /* nostalgia (5.3) */
+  rememberWhen: (): Promise<{ threads: Array<{ id: string; prompt: string; week: string; posts: number }> }> => call("/v1/nostalgia/remember-when"),
+  rememberWhenThread: (id: string): Promise<{ thread: { prompt: string; week: string }; stories: Array<{ id: string; story: string; author: string }> }> => call(`/v1/nostalgia/remember-when/${id}`),
+  rememberWhenPost: (b: { story: string; prompt?: string }): Promise<{ threadId: string; postId: string }> => post("/v1/nostalgia/remember-when", b),
+  recipes: (): Promise<{ recipes: Array<{ id: string; title: string; ingredients: string; steps: string; story: string | null; submitted_by_name: string }> }> => call("/v1/nostalgia/recipes"),
+  submitRecipe: (b: { title: string; ingredients: string; steps: string; story?: string }): Promise<{ id: string }> => post("/v1/nostalgia/recipes", b),
+  radio: (): Promise<{ tracks: Array<{ id: string; title: string; artist: string | null; year: number | null; external_url: string | null; added_by_name: string }> }> => call("/v1/nostalgia/radio"),
+  addTrack: (b: { title: string; artist?: string; year?: number; externalUrl?: string }): Promise<{ id: string }> => post("/v1/nostalgia/radio", b),
+  anthemBell: (): Promise<{ anthemMediaId: string | null; bellMediaId: string | null }> => call("/v1/nostalgia/anthem"),
+  setAnthem: (mediaId: string): Promise<{ ok: boolean }> => post("/v1/manage/nostalgia/anthem", { mediaId }),
+  setBell: (mediaId: string): Promise<{ ok: boolean }> => post("/v1/manage/nostalgia/bell", { mediaId }),
+  capsules: (): Promise<{ capsules: Array<{ id: string; title: string; openAt: string; sealed: boolean; opened: boolean; body: string | null }> }> => call("/v1/nostalgia/capsules"),
+  sealCapsule: (b: { title: string; body: string; openAt: string }): Promise<{ id: string }> => post("/v1/nostalgia/capsules", b),
+  openCapsule: (id: string): Promise<{ ok: boolean }> => post(`/v1/nostalgia/capsules/${id}/open`, {}),
+  letters: (): Promise<{ letters: Array<{ id: string; deliverOn: string; sealed: boolean; delivered: boolean; body: string | null }> }> => call("/v1/nostalgia/letters"),
+  writeLetter: (b: { body: string; deliverOn: string }): Promise<{ id: string }> => post("/v1/nostalgia/letters", b),
+  birthdays: (): Promise<{ birthdays: Array<{ name: string; setYear: number | null; inDays: number }> }> => call("/v1/nostalgia/birthdays"),
+  awards: (): Promise<{ awards: Array<{ id: string; member_name: string; title: string; citation: string | null; awarded_at: string }> }> => call("/v1/recognition/awards"),
+  awardMember: (memberId: string, b: { title: string; citation?: string }): Promise<{ id: string }> => post("/v1/manage/recognition/awards", { memberId, ...b }),
+
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),
   reports: (): Promise<{ reports: ReportItem[] }> => call("/v1/reports"),
