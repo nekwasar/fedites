@@ -67,7 +67,7 @@ export function GivingSection(): React.ReactElement {
       <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="Amount (naira)" aria-label="Donation amount"
         style={{ width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)" }} />
       <label style={{ font: "13px var(--font-ui)", display: "flex", gap: 8, alignItems: "center", margin: "8px 0" }}>
-        <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} /> Give anonymously (§P toggle)
+        <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} /> Give anonymously
       </label>
       <label style={{ font: "13px var(--font-ui)", display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
         <input type="checkbox" checked={recurring} onChange={(e) => setRecurring(e.target.checked)} /> Make it monthly
@@ -197,7 +197,7 @@ export function TransparentLedgerScreen(): React.ReactElement {
     <main style={{ paddingBottom: 96 }}>
       <h1 className="screen-title">Transparent ledger</h1>
       <div className="micro" style={{ padding: "0 16px 8px" }}>
-        Every confirmed gift and spend — how each penny moved. Dues stay private (§P).
+        Every confirmed gift and spend — how each penny moved. Dues stay private.
       </div>
       <div style={{ padding: "0 16px 12px" }}>
         {Object.entries(data.totals).map(([currency, minor]) => (

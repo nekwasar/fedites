@@ -18,7 +18,12 @@ export function applyTheme(
 
 export function applyFamily(
   target: HTMLElement,
-  family: { typePairing: { ui: string; mono: string; masthead: string }; radius: { sm: string; md: string; lg: string } },
+  family: {
+    typePairing: { ui: string; mono: string; masthead: string };
+    radius: { sm: string; md: string; lg: string };
+    density?: "compact" | "regular" | "roomy";
+    surface?: "hairline" | "tonal" | "glass";
+  },
 ): void {
   target.style.setProperty("--family-font-ui", family.typePairing.ui);
   target.style.setProperty("--family-font-mono", family.typePairing.mono);
@@ -26,4 +31,23 @@ export function applyFamily(
   target.style.setProperty("--family-radius-sm", family.radius.sm);
   target.style.setProperty("--family-radius-md", family.radius.md);
   target.style.setProperty("--family-radius-lg", family.radius.lg);
+  // Density (configuration.md §3): rhythm per family.
+  const density = family.density ?? "compact";
+  const rhythm = density === "compact"
+    ? { row: "56px", padX: "16px", padY: "12px", gap: "12px" }
+    : density === "regular"
+      ? { row: "64px", padX: "20px", padY: "16px", gap: "16px" }
+      : { row: "72px", padX: "24px", padY: "20px", gap: "20px" };
+  target.style.setProperty("--density-row-h", rhythm.row);
+  target.style.setProperty("--density-pad-x", rhythm.padX);
+  target.style.setProperty("--density-pad-y", rhythm.padY);
+  target.style.setProperty("--density-gap", rhythm.gap);
+  // Surface treatment: tonal families raise alternate surfaces.
+  if (family.surface === "tonal") {
+    target.style.setProperty("--surface-alt", "var(--c-neutral-100)");
+    target.style.setProperty("--surface-raised", "var(--c-neutral-50)");
+  } else {
+    target.style.setProperty("--surface-alt", "var(--c-neutral-50)");
+    target.style.setProperty("--surface-raised", "var(--c-base)");
+  }
 }

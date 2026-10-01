@@ -17,7 +17,7 @@ const fieldStyle: React.CSSProperties = {
   background: "transparent", color: "var(--c-base-contrast)", font: "15px var(--font-ui)",
 };
 
-export function ProfileScreen({ member, onNavigate }: { member: SessionMember; onNavigate: (to: string) => void }): React.ReactElement {
+export function ProfileScreen({ member, onNavigate, dark, onDark }: { member: SessionMember; onNavigate: (to: string) => void; dark?: boolean; onDark?: (v: boolean) => void }): React.ReactElement {
   const [status, setStatus] = useState<VerificationStatus | null>(null);
   const [city, setCity] = useState("");
   const [profession, setProfession] = useState("");
@@ -161,6 +161,13 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
           )}
         </Section>
       ) : null}
+
+      <Section label="Appearance">
+        <label style={{ display: "flex", gap: "var(--space-3)", alignItems: "center", font: "var(--type-body) var(--font-ui)" }}>
+          <input type="checkbox" checked={dark === true} onChange={(e) => onDark?.(e.target.checked)} />
+          Dark mode (designed for both, light-first)
+        </label>
+      </Section>
 
       <Section label="Session">
         <button type="button" className="btn btn--outlined press" onClick={() => void Api.logout().then(() => { window.location.href = "/auth"; })}>Sign out</button>

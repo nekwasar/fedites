@@ -10,6 +10,7 @@ import React from "react";
 import { cssVarName } from "@fedites/tokens";
 
 export { applyTheme, applyFamily } from "./theme.js";
+export * from "./components.js";
 
 /** The one-true color source used by inline SVG icon strokes. */
 export function accentVar(): string {

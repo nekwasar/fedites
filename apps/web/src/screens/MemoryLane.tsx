@@ -366,7 +366,7 @@ export function MemoryAdmin(): React.ReactElement {
 
       <Section label="Memorial page requests">
         {memorialReqs === null ? <div className="skeleton" style={{ height: 32 }} /> : memorialReqs.length === 0 ? (
-          <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No requests. Approval puts the member into memorial state (§P).</p>
+          <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No requests. Approval puts the member into memorial state.</p>
         ) : memorialReqs.map((m) => (
           <div key={m.id} className="row" style={{ padding: "8px 0" }}>
             <span style={{ flex: 1, font: "500 14px var(--font-ui)" }}>

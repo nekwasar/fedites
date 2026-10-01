@@ -170,7 +170,7 @@ export function MoneyAdminSection(): React.ReactElement {
 
   return (
     <section style={{ padding: "0 16px 24px" }}>
-      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Money — dues (private, §P)</div>
+      <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Money — dues (private)</div>
       {note !== null && <p style={{ font: "13px var(--font-ui)", color: "var(--c-accent)", margin: "0 0 8px" }}>{note}</p>}
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>

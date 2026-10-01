@@ -2,10 +2,11 @@
  * Groups home (2.1, spec §4.1): adaptive by density — "Find your people" for
  * new members, "My groups" rows with unseen-activity tags for established
  * ones. Pinned first, then latest unseen activity. Discovery never disappears.
+ * Library components only (M2).
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Row, Button, Avatar, Badge, Empty, Skeleton, SectionHead } from "@fedites/ui";
 import type { GroupsHome, GroupSummary } from "../phase2-types.js";
 
 export function GroupsHomeScreen({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
@@ -14,33 +15,29 @@ export function GroupsHomeScreen({ onNavigate }: { onNavigate: (to: string) => v
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Api.groupsHome().then(setHome).catch((e: Error) => setError(e.message));
+    Api.groupsHome().then((v) => setHome(v)).catch((e: Error) => setError(e.message));
     Api.browseGroups().then((r) => setBrowse(r.groups.filter((g) => g.enabled && !g.joined && (g.type === "interest" || g.type === "guild")))).catch(() => undefined);
   }, []);
 
   if (error !== null) return <Empty title="Could not load groups" body={error} />;
-  if (home === null) return <SkeletonList />;
+  if (home === null) return <Skeleton height="var(--lh-headline)" />;
 
   const established = home.myGroups.length > 0;
 
   return (
-    <main style={{ paddingBottom: 96 }}>
+    <main className="screen-pad">
       <h1 className="screen-title">{established ? "My groups" : "Find your people"}</h1>
       {!established && (
-        <p style={{ padding: "0 16px 16px", font: "15px var(--font-ui)", color: "var(--c-neutral-500)" }}>
+        <p style={{ padding: "0 var(--density-pad-x) var(--space-4)", font: "var(--type-body) var(--font-ui)", color: "var(--c-neutral-500)" }}>
           Your set group and house join automatically once you are verified.
         </p>
       )}
 
       {established && home.myGroups.map((g) => (
-        <button key={g.id} type="button" className="row press" onClick={() => onNavigate(`/groups/${g.id}`)} style={{ cursor: "pointer" }}>
-          <span aria-hidden="true" style={{ width: 40, height: 40, background: "var(--c-accent)", color: "var(--c-accent-contrast)", display: "flex", alignItems: "center", justifyContent: "center", font: "700 18px var(--font-masthead)", flexShrink: 0 }}>
-            {g.name.slice(0, 1)}
-          </span>
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", font: "600 15px var(--font-ui)", color: "var(--c-base-contrast)" }}>
-              {g.pinned ? "Pinned · " : ""}{g.name}
-            </span>
+        <Row key={g.id} as="button" onClick={() => onNavigate(`/groups/${g.id}`)} active={g.pinned}>
+          <Avatar name={g.name} />
+          <span className="row-main">
+            <span style={{ font: "var(--weight-semibold) var(--type-body) var(--font-ui)", color: "var(--c-base-contrast)" }}>{g.name}</span>
             <span className="micro tabular">
               {g.unseen.chatUnread > 0 && `${g.unseen.chatUnread} new messages · `}
               {g.unseen.newPosts > 0 && `${g.unseen.newPosts} new posts · `}
@@ -48,34 +45,37 @@ export function GroupsHomeScreen({ onNavigate }: { onNavigate: (to: string) => v
               {g.memberCount} members
             </span>
           </span>
-        </button>
+        </Row>
       ))}
 
-      <div style={{ padding: "24px 16px 8px" }} className="micro">Discover more</div>
+      <SectionHead label="Discover more" />
 
       {home.discovery.map((g) => (
-        <button key={g.id} type="button" className="row press" onClick={() => onNavigate(`/groups/${g.id}`)} style={{ cursor: "pointer" }}>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: "block", font: "500 15px var(--font-ui)", color: "var(--c-base-contrast)" }}>{g.name}</span>
+        <Row key={g.id} as="button" onClick={() => onNavigate(`/groups/${g.id}`)}>
+          <span className="row-main">
+            <span style={{ font: "var(--weight-medium) var(--type-body) var(--font-ui)", color: "var(--c-base-contrast)" }}>{g.name}</span>
             <span className="micro tabular">
               {g.citySuggested ? "Near your city · " : ""}{g.postsThisWeek} posts this week · {g.memberCount} members
             </span>
           </span>
-          <span className="micro" style={{ color: "var(--c-accent)" }}>View</span>
-        </button>
+          <Badge variant="dot">View</Badge>
+        </Row>
       ))}
 
-      {browse !== null && browse.slice(0, 3).map((g) => (
-        <button key={g.id} type="button" className="row press" onClick={() => onNavigate(`/groups/${g.id}`)} style={{ cursor: "pointer" }}>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: "block", font: "500 15px var(--font-ui)", color: "var(--c-base-contrast)" }}>{g.name}</span>
+      {browse !== null && browse
+        .filter((g) => !home.discovery.some((d) => d.id === g.id))
+        .slice(0, 3)
+        .map((g) => (
+        <Row key={g.id} as="button" onClick={() => onNavigate(`/groups/${g.id}`)}>
+          <span className="row-main">
+            <span style={{ font: "var(--weight-medium) var(--type-body) var(--font-ui)", color: "var(--c-base-contrast)" }}>{g.name}</span>
             <span className="micro tabular">{g.postsThisWeek} posts this week · {g.memberCount} members</span>
           </span>
-        </button>
+        </Row>
       ))}
 
-      <div style={{ padding: "24px 16px" }}>
-        <button type="button" className="btn btn--outlined press" onClick={() => onNavigate("/groups/new")}>Propose a group</button>
+      <div style={{ padding: "var(--space-6) var(--density-pad-x)" }}>
+        <Button kind="outlined" onClick={() => onNavigate("/groups/new")}>Propose a group</Button>
       </div>
     </main>
   );
