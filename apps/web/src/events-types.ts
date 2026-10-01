@@ -53,3 +53,9 @@ export interface Honouree { id: string; display_name: string; citation: string; 
 export interface MemorialView { id: string; memberName: string; setYear: number | null; tribute: string | null; status: string; funeralDate: string | null }
 
 export interface WikiPage { id: string; slug: string; title: string; locked: boolean; updated_at: string }
+
+export interface JobRow { id: string; title: string; companyName: string; industry: string | null; city: string | null; country: string | null; employmentType: string; workMode: string; salary: { minMinor: number; maxMinor: number | null; currency: string } | null; applyBy: string | null; createdAt: string; poster: string; mine: boolean }
+export interface BizRow { id: string; name: string; industry: string; description: string | null; city: string | null; promoOffer: string | null; owner: string; rating: number | null; reviewCount: number }
+export interface MentorRow { memberId: string; name: string; expertise: string; bio: string | null; hasStandingLink: boolean; openSlots: number }
+export interface ReferralRow { sent: Array<{ id: string; to: string; company: string; role: string; status: string; createdAt: string }>; received: Array<{ id: string; from: string; company: string; role: string; note: string | null; status: string; createdAt: string }> }
+export interface EndorsementRow { skills: Array<{ skill: string; count: number; endorsers: string }> }

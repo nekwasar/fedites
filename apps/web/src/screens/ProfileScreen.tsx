@@ -72,6 +72,13 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
 
       <AssociationSection />
 
+      <Section label="Careers & networking">
+        <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
+          The job board (fresh graduates first), the alumni business directory, mentor office hours, referrals and endorsements.
+        </p>
+        <button type="button" className="btn btn--filled press" onClick={() => onNavigate("/careers")}>Open Careers</button>
+      </Section>
+
       <Section label="The School Bridge">
         <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
           Wishlist, adopt-a-project, past questions bank, teacher tributes, facility booking, and records verification.

@@ -30,6 +30,7 @@ import { MemoryLaneScreen } from "./screens/MemoryLane.js";
 import { KnowledgeScreen } from "./screens/Knowledge.js";
 import { NostalgiaScreen } from "./screens/Nostalgia.js";
 import { SchoolBridgeScreen } from "./screens/SchoolBridge.js";
+import { CareerScreen } from "./screens/Career.js";
 import { useRealtime } from "./realtime.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
@@ -293,6 +294,7 @@ export default function App(): React.ReactElement {
       case "/bridge": return authed
         ? <SchoolBridgeScreen isAdmin={member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} />
         : <Empty title="Sign in first" body="The School Bridge is for members." />;
+      case "/careers": return authed ? <CareerScreen /> : <Empty title="Sign in first" body="Careers unlock with a member account." />;
       case "/notifications": return <InboxScreen onNavigate={go} />;
       case "/me": return <ProfileScreen member={member} onNavigate={go} />;
       case "/id": return <IdScreen />;

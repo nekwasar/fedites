@@ -36,6 +36,7 @@ import { memoryRoutes } from "./memory.js";
 import { knowledgeRoutes } from "./knowledge.js";
 import { nostalgiaRoutes } from "./nostalgia.js";
 import { schoolBridgeRoutes } from "./schoolbridge.js";
+import { careerRoutes } from "./career.js";
 import { photoRoutes } from "./photos.js";
 import { Hub } from "./ws.js";
 
@@ -160,6 +161,7 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(knowledgeRoutes, { pool });
   await app.register(nostalgiaRoutes, { pool });
   await app.register(schoolBridgeRoutes, { pool, loadConfigByInstance });
+  await app.register(careerRoutes, { pool, loadConfigByInstance, hub });
   await app.register(photoRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 

@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication, Era, MemoryItem, Yearbook, YearbookDetail, MemorialView, WikiPage } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication, Era, MemoryItem, Yearbook, YearbookDetail, MemorialView, WikiPage, JobRow, BizRow, MentorRow, ReferralRow } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -301,6 +301,36 @@ export const Api = {
   recordsRequests: (): Promise<{ requests: Array<{ id: string; employerName: string; employerEmail: string; status: string }> }> => call("/v1/bridge/records"),
   requestRecordsVerification: (b: { employerName: string; employerEmail: string }): Promise<{ id: string }> => post("/v1/bridge/records", b),
   decideRecordsRequest: (id: string, decision: "verify" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/bridge/records/${id}`, { decision }),
+
+  /* career (5.4b) */
+  jobs: (q: { text?: string; mode?: string; type?: string }): Promise<{ jobs: JobRow[] }> => call(`/v1/career/jobs?${Object.entries(q).filter(([, v]) => v !== undefined && v !== "").map(([k, v]) => `${k}=${encodeURIComponent(v as string)}`).join("&")}`),
+  jobDetail: (id: string): Promise<{ job: JobRow & { myApplicationId: string | null; saved: boolean } }> => call(`/v1/career/jobs/${id}`),
+  postJob: (b: { title: string; companyName: string; description: string; industry?: string; city?: string; employmentType?: string; workMode?: string; salaryMinMinor?: number; salaryMaxMinor?: number; salaryCurrency?: string; salaryPeriod?: string }): Promise<{ id: string }> => post("/v1/career/jobs", b),
+  closeJob: (id: string): Promise<{ ok: boolean }> => patch(`/v1/career/jobs/${id}`, { status: "closed" }),
+  applyToJob: (id: string, b: { coverNote?: string }): Promise<{ id: string; status: string }> => post(`/v1/career/jobs/${id}/apply`, b),
+  myApplications: (): Promise<{ applications: Array<{ id: string; title: string; companyName: string; status: string; createdAt: string }> }> => call("/v1/career/my-applications"),
+  withdrawApplication: (id: string): Promise<{ ok: boolean }> => post(`/v1/career/applications/${id}/withdraw`, {}),
+  saveJob: (id: string): Promise<{ ok: boolean }> => post(`/v1/career/jobs/${id}/save`, {}),
+  unsaveJob: (id: string): Promise<{ ok: boolean }> => del(`/v1/career/jobs/${id}/save`),
+  savedJobs: (): Promise<{ jobs: Array<{ id: string; title: string; company_name: string; status: string }> }> => call("/v1/career/saved"),
+
+  businesses: (q?: string): Promise<{ businesses: BizRow[] }> => call(`/v1/career/businesses${q ? `?${q}` : ""}`),
+  businessDetail: (id: string): Promise<{ business: { id: string; name: string; industry: string; description: string | null; services: string | null; contactPhone: string | null; contactEmail: string | null; openingHours: string | null; promoOffer: string | null; owner: string; mine: boolean }; reviews: Array<{ id: string; rating: number; comment: string | null; reviewer: string }> }> => call(`/v1/career/businesses/${id}`),
+  createBusiness: (b: { name: string; industry: string; services?: string; promoOffer?: string }): Promise<{ id: string }> => post("/v1/career/businesses", b),
+  reviewBusiness: (id: string, b: { rating: number; comment?: string }): Promise<{ id: string }> => post(`/v1/career/businesses/${id}/reviews`, b),
+
+  mentors: (): Promise<{ mentors: MentorRow[] }> => call("/v1/career/mentors"),
+  becomeMentor: (b: { expertise: string; defaultLink?: string }): Promise<{ id: string }> => post("/v1/career/mentor-profile", b),
+  mentorSlots: (memberId: string): Promise<{ slots: Array<{ id: string; startsAt: string; endsAt: string }> }> => call(`/v1/career/mentors/${memberId}/slots`),
+  addMentorSlot: (b: { startsAt: string; endsAt: string }): Promise<{ id: string }> => post("/v1/career/mentor-slots", b),
+  bookMentorSlot: (id: string, b: { note?: string }): Promise<{ id: string; meetingUrl: string | null; status: string }> => post(`/v1/career/mentor-slots/${id}/book`, b),
+  myMentoring: (): Promise<{ asMentor: Array<{ id: string; with: string; at: string; meetingUrl: string | null; status: string }>; asMentee: Array<{ id: string; with: string; at: string; meetingUrl: string | null; status: string }> }> => call("/v1/career/my-mentoring"),
+
+  referrals: (): Promise<ReferralRow> => call("/v1/career/referrals"),
+  askReferral: (b: { targetMemberId: string; company: string; role: string; note?: string }): Promise<{ id: string }> => post("/v1/career/referrals", b),
+  respondReferral: (id: string, action: "accepted" | "declined" | "fulfilled"): Promise<{ ok: boolean }> => post(`/v1/career/referrals/${id}`, { action }),
+  endorseSkill: (b: { memberId: string; skill: string }): Promise<{ ok: boolean }> => post("/v1/career/endorsements", b),
+  endorsements: (memberId: string): Promise<{ skills: Array<{ skill: string; count: number; endorsers: string }> }> => call(`/v1/career/endorsements/${memberId}`),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

@@ -34,7 +34,7 @@ pnpm dev               # api :8787 + web :5173
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
 
-## Phase 5 — Memory & School (batches 1–4 of 5 complete)
+## Phase 5 — Memory & School (complete)
 
 | Session | Deliverable | Where |
 |---|---|---|
@@ -42,7 +42,7 @@ pnpm dev               # api :8787 + web :5173
 | 5.2 | Wiki (revisions/lock/revert), slang dictionary, timeline, spotlights, articles | `apps/api/src/knowledge.ts`, web `Knowledge.tsx` + Manage queues |
 | 5.3 | Nostalgia bundle: remember-when, recipes, radio, anthem/bell, stickers, capsules, letters, birthdays, awards | `apps/api/src/nostalgia.ts`, migration 0013, web `Nostalgia.tsx` |
 | 5.4a | School Bridge: wishlist (fund/fulfil), adopt-a-project (ledger progress), past questions, tributes, bookings, records | `apps/api/src/schoolbridge.ts`, migration 0014, web `SchoolBridge.tsx` |
-| 5.4b | Career: job board, business directory, mentor hours, referrals | next batch |
+| 5.4b | Career: job board (fresh-grad priority), hiring pipeline, business directory + reviews, mentor office hours, referrals, endorsements | `apps/api/src/career.ts`, migration 0015, web `Career.tsx` |
 
 ## Phase 4 — Money (complete)
 

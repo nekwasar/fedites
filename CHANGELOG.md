@@ -45,6 +45,17 @@
 - Records verification: member-initiated employer requests; admins verify/decline; requests private to the member (tested); invalid input → 400 (error handler globalized at the app level).
 - Migration 0014; PG suite phase5-schoolbridge.pg.test.ts (6 tests).
 
+## Phase 5 — Memory & School, batch 5: Career Rails (complete)
+
+### Session 5.4b (enterprise-grade)
+- Job board: verified alumni post openings (title/company/industry/city/mode/type, salary ranges in minor units, apply-by); board search + filters; FRESH-GRADUATE PRIORITY (internship + graduate-trainee roles rank above regular openings, mvp §2).
+- Hiring pipeline: applications move submitted → screening → interview → offer → hired with poster-only decisions, one application per member per job, withdrawal, and pipeline notifications to the applicant (J3-legit).
+- Saved jobs for later application.
+- Alumni business directory: listings with services/hours/promo offers/contacts; verified-member reviews (rating 1-5, one per member per business) with aggregate ratings; search by industry/city/text.
+- Mentor office hours: mentor profiles with standing external meeting rooms (Meet/Zoom per v6.1 — no native WebRTC); bookable slots (one booking per slot); booking resolves the mentor's room; mentor notified; confirm/complete/cancel with participant-only gates.
+- Referral requests between alumni (ask → accepted/declined/fulfilled with notifications) and skill endorsements (dedup per member+skill+endorser, aggregated profile counts).
+- Migration 0015; PG suite phase5-career.pg.test.ts (7 tests).
+
 ## Phase 4 — Money, batch 1: Ledger + Dues (complete)
 
 ### Sessions 4.1 + 4.2
