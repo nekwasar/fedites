@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication, Era, MemoryItem, Yearbook, YearbookDetail, MemorialView } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -226,6 +226,26 @@ export const Api = {
   publications: (): Promise<{ publications: Publication[] }> => call("/v1/money/publications"),
   tribute: (b: { amountMinor: number; currency: string; tributeName: string; tributeKind: "memory" | "honor" | "birthday"; anonymous: boolean }): Promise<{ intentId: string }> => post("/v1/money/tribute", b),
   tributeQueue: (): Promise<{ intents: Array<{ id: string }> }> => call("/v1/manage/money/intents"),
+
+  /* memory lane (5.1) */
+  memoryEras: (): Promise<{ eras: Era[] }> => call("/v1/memory/eras"),
+  throwbacks: (eraId?: string): Promise<{ items: MemoryItem[] }> => call(`/v1/memory/throwbacks${eraId ? `?eraId=${eraId}` : ""}`),
+  addThrowback: (b: { mediaId: string; eraId?: string; year?: number; caption?: string }): Promise<{ id: string; status: string }> => post("/v1/memory/throwbacks", b),
+  yearbooks: (): Promise<{ yearbooks: Yearbook[] }> => call("/v1/memory/yearbooks"),
+  yearbook: (id: string, q: string): Promise<YearbookDetail> => call(`/v1/memory/yearbooks/${id}?q=${encodeURIComponent(q)}`),
+  createYearbook: (b: { year: number; title?: string }): Promise<{ id: string }> => post("/v1/manage/memory/yearbooks", b),
+  importYearbookNames: (id: string, csv: string): Promise<{ imported: number }> => post(`/v1/manage/memory/yearbooks/${id}/names-csv`, { csv }),
+  hallOfFame: (): Promise<{ honourees: Array<{ id: string; display_name: string; citation: string; year: number | null }> }> => call("/v1/memory/hall-of-fame"),
+  addHonouree: (b: { name: string; citation: string; year?: number; memberId?: string }): Promise<{ id: string }> => post("/v1/manage/memory/hall-of-fame", b),
+  onThisDay: (): Promise<{ memories: Array<{ id: string; kind: string; body: string | null; caption: string | null; year: number | null; mediaId: string | null }> }> => call("/v1/memory/on-this-day"),
+  memorials: (): Promise<{ memorials: MemorialView[] }> => call("/v1/memory/memorials"),
+  memorialCondolences: (id: string): Promise<{ condolences: Array<{ id: string; message: string; attending: boolean; name: string }> }> => call(`/v1/memory/memorials/${id}`),
+  leaveCondolence: (id: string, message: string, attending: boolean): Promise<{ id: string }> => post(`/v1/memory/memorials/${id}/condolences`, { message, attending }),
+  memoryQueue: (): Promise<{ pending: Array<{ id: string; media_id: string; caption: string | null; uploader_name: string }> }> => call("/v1/manage/memory/queue"),
+  decideMemoryItem: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/memory/queue/${id}`, { decision }),
+  memorialRequests: (): Promise<{ requests: Array<{ id: string; member_name: string; requested_by_name: string }> }> => call("/v1/manage/memory/memorials"),
+  decideMemorial: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/memory/memorials/${id}`, { decision }),
+  createEra: (b: { name: string; yearFrom?: number; yearTo?: number }): Promise<{ id: string }> => post("/v1/manage/memory/eras", b),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

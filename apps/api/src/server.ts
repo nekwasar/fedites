@@ -4,6 +4,7 @@
  * moderation v1. Enforcement stays at the API (M5); realtime only notifies.
  */
 import Fastify, { type FastifyInstance } from "fastify";
+import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
 import { Pool } from "pg";
 import {
@@ -30,6 +31,7 @@ import { recognitionRoutes } from "./recognition-routes.js";
 import { moneyRoutes } from "./money.js";
 import { givingRoutes } from "./giving.js";
 import { structuredRoutes } from "./structured.js";
+import { memoryRoutes } from "./memory.js";
 import { photoRoutes } from "./photos.js";
 import { Hub } from "./ws.js";
 
@@ -45,6 +47,14 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: (process.env.CORS_ORIGINS ?? "*").split(","),
     credentials: true,
+  });
+  // Top-level so every route context (media, memory bulk) accepts multipart.
+  await app.register(multipart, {
+    attachFieldsToBody: true,
+    limits: { fileSize: 25 * 1024 * 1024 },
+    // Consume the file stream once here; routes read part.value (buffer).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- plugin part type lacks the buffer slot
+    onFile: async (part: any) => { part.value = await part.toBuffer(); },
   });
 
   async function loadConfigByInstance(instanceId: string): Promise<InstanceConfig> {
@@ -130,6 +140,7 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(moneyRoutes, { pool, loadConfigByInstance, hub });
   await app.register(givingRoutes, { pool, loadConfigByInstance, hub });
   await app.register(structuredRoutes, { pool, loadConfigByInstance, hub });
+  await app.register(memoryRoutes, { pool, loadConfigByInstance });
   await app.register(photoRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 

@@ -44,3 +44,10 @@ export interface ReimbView { id: string; amountMinor: number; currency: string; 
 export interface SponsorView { sponsor_name: string; tier: string; recognition: string | null }
 export interface ScholarshipView { id: string; name: string; description: string | null; endowedMinor: number; currency: string; status: string }
 export interface Publication { id: string; period: string; totals: Record<string, { minor: number; count: number }>; row_count: number; published_at: string; published_by_name: string }
+
+export interface Era { id: string; name: string; year_from: number | null; year_to: number | null }
+export interface MemoryItem { id: string; mediaId: string; year: number | null; caption: string | null; status: string; era: string | null; uploader: string; mine: boolean }
+export interface Yearbook { id: string; year: number; title: string | null; mediaId: string | null; entryCount: number }
+export interface YearbookDetail { yearbook: { id: string; year: number; title: string | null; mediaId: string | null }; entries: Array<{ id: string; full_name: string; section: string | null }> }
+export interface Honouree { id: string; display_name: string; citation: string; year: number | null }
+export interface MemorialView { id: string; memberName: string; setYear: number | null; tribute: string | null; status: string; funeralDate: string | null }

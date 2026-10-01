@@ -26,6 +26,7 @@ import { ChatListScreen, ChatThreadScreen } from "./screens/ChatThread.js";
 import { NewsScreen, FeedScreen } from "./screens/NewsFeed.js";
 import { EventsScreen, EventDetailScreen } from "./screens/EventsScreen.js";
 import { GivingSection, CampaignScreen, TransparentLedgerScreen } from "./screens/Giving.js";
+import { MemoryLaneScreen } from "./screens/MemoryLane.js";
 import { useRealtime } from "./realtime.js";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
@@ -283,6 +284,7 @@ export default function App(): React.ReactElement {
           ? <CampaignScreen campaignId={route.param} onNavigate={go} />
           : <GivingSection />;
       case "/money/ledger": return <TransparentLedgerScreen />;
+      case "/memory": return authed ? <MemoryLaneScreen member={member} /> : <Empty title="Sign in first" body="Memory Lane is for members." />;
       case "/notifications": return <InboxScreen onNavigate={go} />;
       case "/me": return <ProfileScreen member={member} onNavigate={go} />;
       case "/id": return <IdScreen />;

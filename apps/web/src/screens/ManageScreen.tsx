@@ -8,6 +8,7 @@ import { Api } from "../api.js";
 import { Empty } from "./InboxScreen.js";
 import { MoneyAdminSection, CampaignAdmin } from "./Money.js";
 import { PublicationsSection } from "./Structured.js";
+import { MemoryAdmin } from "./MemoryLane.js";
 import { money } from "./Money.js";
 import type { ScholarshipView } from "../events-types.js";
 import type { ManageOverview, QueueItem, SessionMember } from "@fedites/config";
@@ -69,6 +70,8 @@ export function ManageScreen({ member, onNavigate }: { member: SessionMember; on
       <ScholarshipAdmin />
 
       <PublicationsSection />
+
+      <MemoryAdmin />
 
       <section style={{ padding: "0 16px 24px" }}>
         <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Events</div>

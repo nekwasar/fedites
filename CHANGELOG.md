@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 5 — Memory & School, batch 1: Memory Lane core (complete)
+
+### Session 5.1
+- Throwback archive: era-organized (admin eras CRUD), year/caption metadata; member uploads pending until admin approval (§P); admin multi-file BULK upload in one request (enterprise seeding path).
+- Yearbook digitization: per-year books, scanned covers, CSV name import (bulk, hundreds of names), name/section search.
+- On this day: approved memories + group posts from this month/day in past years resurface.
+- Hall of fame: admin-curated honourees with citations, member-linked or standalone.
+- Memorial pages (§P locked): member request → admin approval (family confirmed) → memorial state (no logins, sessions revoked, no birthday pushes, content read-only); condolence book + funeral attendance coordination; moderation via archived (N1).
+- Migration 0011; PG suite phase5-memory.pg.test.ts (6 tests). Fixed @fastify/multipart encapsulation (top-level registration, onFile buffer pattern).
+
 ## Phase 4 — Money, batch 1: Ledger + Dues (complete)
 
 ### Sessions 4.1 + 4.2
