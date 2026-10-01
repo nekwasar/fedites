@@ -103,6 +103,22 @@ body {
 }
 .btn--tonal { background: var(--c-neutral-100); color: var(--c-base-contrast); }
 
+/* Section headers: hairline + short accent tick — the print rhythm. */
+.rule-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-2, 8px);
+  border-bottom: var(--hairline, 1px) solid var(--c-hairline);
+}
+.rule-head::before {
+  content: "";
+  width: 24px;
+  height: 4px;
+  background: var(--c-accent);
+  flex-shrink: 0;
+}
+
 /* Typographic empty states (G4): headline, invitation, action. no images. */
 .empty {
   display: flex;
@@ -111,21 +127,40 @@ body {
   padding: var(--space-12, 48px) var(--space-4, 16px);
   text-align: center;
 }
-.empty h2 { margin: 0; font-size: var(--type-title, 22px); line-height: var(--lh-title, 28px); }
+.empty h2 { margin: 0; font-size: var(--type-headline, 32px); line-height: var(--lh-headline, 38px); letter-spacing: -0.01em; }
 .empty p { margin: 0; color: var(--c-neutral-500); font-size: var(--type-body, 15px); }
 
-/* Masthead (Classic: hairline, flat, no photo headers — A12). */
+/* Masthead (Classic: hairline, flat, no photo headers — A12).
+   The crest block carries the identity; the name sits beside it. */
 .masthead {
   display: flex;
   align-items: center;
   gap: var(--space-3, 12px);
-  min-height: var(--tap, 44px);
-  padding: var(--space-2, 8px) var(--space-4, 16px);
+  min-height: 64px;
+  padding: var(--space-3, 12px) var(--space-4, 16px);
   border-bottom: var(--hairline, 1px) solid var(--c-hairline);
   font-family: var(--font-masthead);
   font-weight: 700;
   font-size: var(--type-title, 22px);
   color: var(--c-accent);
+  letter-spacing: -0.01em;
+}
+.crest-block {
+  width: 40px;
+  height: 40px;
+  background: var(--c-accent);
+  color: var(--c-accent-contrast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 20px var(--font-masthead);
+  flex-shrink: 0;
+}
+.masthead-sub {
+  font: 500 11px var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-neutral-500);
 }
 
 /* Skeletons, never spinners (F7). */
@@ -152,9 +187,10 @@ body {
 /* Screen header: title + one job (I-rules). */
 .screen-title {
   margin: 0;
-  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-2, 8px);
+  padding: var(--space-6, 24px) var(--space-4, 16px) var(--space-2, 8px);
   font-size: var(--type-headline, 32px);
   line-height: var(--lh-headline, 38px);
   font-weight: 700;
   color: var(--c-base-contrast);
+  letter-spacing: -0.02em;
 }

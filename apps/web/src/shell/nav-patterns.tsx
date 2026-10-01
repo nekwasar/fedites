@@ -67,7 +67,12 @@ export function MobileTabBar({ items, route, onNavigate }: { items: NavItemView[
       }}
     >
       {items.map((i) => (
-        <NavButton key={i.item} item={i} active={route === i.route} onClick={onNavigate} />
+        <span key={i.item} style={{ flex: 1, display: "flex", justifyContent: "center", position: "relative" }}>
+          {route === i.route && (
+            <span aria-hidden="true" style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 3, background: "var(--c-accent)" }} />
+          )}
+          <NavButton item={i} active={route === i.route} onClick={onNavigate} />
+        </span>
       ))}
     </nav>
   );

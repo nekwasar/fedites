@@ -5,8 +5,8 @@
 import React, { useState } from "react";
 import { Api, ApiError } from "../api.js";
 
-export function AuthScreen({ onDone }: { onDone: () => void }): React.ReactElement {
-  const [mode, setMode] = useState<"signin" | "join">("signin");
+export function AuthScreen({ onDone, initial }: { onDone: () => void; initial?: "signin" | "join" }): React.ReactElement {
+  const [mode, setMode] = useState<"signin" | "join">(initial ?? "signin");
 
   return (
     <main style={{ maxWidth: 480, margin: "0 auto", paddingBottom: 96 }}>

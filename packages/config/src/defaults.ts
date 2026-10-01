@@ -69,6 +69,7 @@ export const defaultConfig: InstanceConfig = {
       chapter: "Chapter",
     },
     copy: {
+      "landing.about": "One school, one community. Reconnect, belong, and give back.",
       "tab.groups.job": "All your spaces and discovery",
       "tab.feed.job": "Personalized latest activity",
       "tab.chat.job": "Group chats and private chats",

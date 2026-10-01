@@ -32,12 +32,13 @@ import { NostalgiaScreen } from "./screens/Nostalgia.js";
 import { SchoolBridgeScreen } from "./screens/SchoolBridge.js";
 import { CareerScreen } from "./screens/Career.js";
 import { useRealtime } from "./realtime.js";
+import { LandingScreen, AppChoiceSheet } from "./screens/Landing.js";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8787";
+const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 /** Studio preview scaffolding (0.4): device frames + live config switchers. */
 function StudioPreview({
-  boot, device, onDevice, onPattern, onTheme, onFamily,
+  boot, device, onDevice, onPattern, onTheme, onFamily, canPreview,
 }: {
   boot: BootState;
   device: "mobile" | "desktop";
@@ -45,8 +46,10 @@ function StudioPreview({
   onPattern: (p: NavPatternId) => void;
   onTheme: (id: string) => void;
   onFamily: (id: (typeof families)[number]["id"]) => void;
+  canPreview: boolean;
 }): React.ReactElement | null {
   const [open, setOpen] = useState(false);
+  if (!canPreview) return null;
   if (!boot.session.config.instance.flags.some((f) => f.key === "demo.previewSession" && f.enabled)) return null;
   return (
     <aside
@@ -310,6 +313,21 @@ export default function App(): React.ReactElement {
     }
   };
 
+  if (!authed) {
+    return (
+      <>
+        <LandingScreen
+          boot={{
+            brand: boot.session.config.instance.shortName,
+            about: boot.session.config.instance.copy["landing.about"] ?? "One school, one community. Reconnect, belong, and give back.",
+          }}
+          onSignedIn={(pending) => { refreshSession(); navigate(pending === "/" ? "/" : pending); }}
+        />
+        <AppChoiceSheet />
+      </>
+    );
+  }
+
   const patterns: Record<string, React.ReactElement> = {
     "tab-bar": <MobileTabBar items={items} route={route.path} onNavigate={go} />,
     "top-tabs": <MobileTopTabs items={items} route={route.path} onNavigate={go} />,
@@ -326,13 +344,17 @@ export default function App(): React.ReactElement {
     <>
       <header className="masthead" style={{ marginLeft: contentMargin, marginTop: pattern === "top-nav" || pattern === "top+side" ? 56 : 0, position: "relative" }}>
         <span
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}
           onClick={() => go("/")}
           role="link"
           tabIndex={0}
           onKeyDown={(e) => { if (e.key === "Enter") go("/"); }}
         >
-          {boot.session.config.instance.shortName}
+          <span className="crest-block" aria-hidden="true">{boot.session.config.instance.shortName.slice(0, 1)}</span>
+          <span style={{ display: "flex", flexDirection: "column" }}>
+            <span>{boot.session.config.instance.shortName}</span>
+            <span className="masthead-sub">alumni community</span>
+          </span>
         </span>
         <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4 }}>
           <button type="button" className="press" aria-label="News" onClick={() => { setNewsUnread(0); go("/news"); }} style={{ position: "relative", minHeight: 44, minWidth: 44, background: "transparent", border: "none", cursor: "pointer", color: "var(--c-base-contrast)" }}>
@@ -362,6 +384,7 @@ export default function App(): React.ReactElement {
       {patterns[pattern]}
       <StudioPreview
         boot={boot}
+        canPreview={dutyRoles}
         device={device}
         onDevice={setDevice}
         onPattern={(p) => {

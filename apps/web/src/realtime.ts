@@ -27,8 +27,11 @@ export function useRealtime(apiUrl: string, signedIn: boolean, rooms: string[]):
     let closed = false;
     let retry = 0;
 
+    const wsUrl = apiUrl === ""
+      ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`
+      : `${apiUrl.replace(/^http/, "ws")}/ws`;
     const connect = (): void => {
-      const ws = new WebSocket(`${apiUrl.replace(/^http/, "ws")}/ws`);
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       ws.onopen = () => {
         retry = 0;
