@@ -5,6 +5,7 @@
  */
 import Fastify, { type FastifyInstance } from "fastify";
 import multipart from "@fastify/multipart";
+import { z } from "zod";
 import cors from "@fastify/cors";
 import { Pool } from "pg";
 import {
@@ -34,6 +35,7 @@ import { structuredRoutes } from "./structured.js";
 import { memoryRoutes } from "./memory.js";
 import { knowledgeRoutes } from "./knowledge.js";
 import { nostalgiaRoutes } from "./nostalgia.js";
+import { schoolBridgeRoutes } from "./schoolbridge.js";
 import { photoRoutes } from "./photos.js";
 import { Hub } from "./ws.js";
 
@@ -45,6 +47,18 @@ export interface ApiDeps {
 export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   const app = Fastify({ logger: true });
   app.decorate("pg", deps.pool);
+
+  app.setErrorHandler((err, request, reply) => {
+    if (err instanceof z.ZodError) {
+      return reply.status(400).send({
+        error: "Check the highlighted fields, then try again.",
+        details: err.issues.map((i: { path: (string | number)[]; message: string }) => ({ path: i.path.join("."), message: i.message })),
+      });
+    }
+    const status = (err as { statusCode?: number }).statusCode ?? 500;
+    if (status >= 500) request.log.error(err);
+    return reply.status(status).send({ error: status >= 500 ? "Something went wrong on our side. Try again shortly." : err.message });
+  });
 
   await app.register(cors, {
     origin: (process.env.CORS_ORIGINS ?? "*").split(","),
@@ -145,6 +159,7 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(memoryRoutes, { pool, loadConfigByInstance });
   await app.register(knowledgeRoutes, { pool });
   await app.register(nostalgiaRoutes, { pool });
+  await app.register(schoolBridgeRoutes, { pool, loadConfigByInstance });
   await app.register(photoRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 

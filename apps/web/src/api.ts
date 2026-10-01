@@ -285,6 +285,23 @@ export const Api = {
   awards: (): Promise<{ awards: Array<{ id: string; member_name: string; title: string; citation: string | null; awarded_at: string }> }> => call("/v1/recognition/awards"),
   awardMember: (memberId: string, b: { title: string; citation?: string }): Promise<{ id: string }> => post("/v1/manage/recognition/awards", { memberId, ...b }),
 
+  /* school bridge (5.4a) */
+  wishlist: (): Promise<{ items: Array<{ id: string; title: string; details: string | null; estCostMinor: number | null; currency: string | null; status: string; fulfilNote: string | null }> }> => call("/v1/bridge/wishlist"),
+  postWishlistItem: (b: { title: string; details?: string; estCostMinor?: number; currency?: string }): Promise<{ id: string }> => post("/v1/manage/bridge/wishlist", b),
+  fulfilWishlistItem: (id: string, physical: boolean): Promise<{ ok: boolean }> => post(`/v1/bridge/wishlist/${id}/fulfil`, { physical }),
+  projects: (): Promise<{ projects: Array<{ id: string; title: string; story: string | null; goalMinor: number; currency: string; sponsoredBy: string | null; status: string; progressNotes: string | null; raisedMinor: number }> }> => call("/v1/bridge/projects"),
+  postProject: (b: { title: string; story?: string; goalMinor: number; currency: string; sponsoredBy?: string }): Promise<{ id: string }> => post("/v1/manage/bridge/projects", b),
+  pastQuestions: (subject?: string): Promise<{ questions: Array<{ id: string; subject: string; year: number | null; title: string | null; media_id: string }> }> => call(`/v1/bridge/past-questions${subject ? `?subject=${encodeURIComponent(subject)}` : ""}`),
+  postPastQuestion: (b: { subject: string; year?: number; title?: string; mediaId: string }): Promise<{ id: string }> => post("/v1/manage/bridge/past-questions", b),
+  teacherTributes: (): Promise<{ tributes: Array<{ teacher_name: string; story: string; submitted_by_name: string }> }> => call("/v1/bridge/teacher-tributes"),
+  postTeacherTribute: (b: { teacherName: string; story: string }): Promise<{ id: string }> => post("/v1/bridge/teacher-tributes", b),
+  bookings: (): Promise<{ bookings: Array<{ id: string; memberName: string; facility: string; startsAt: string; status: string }> }> => call("/v1/bridge/bookings"),
+  requestBooking: (b: { facility: string; startsAt: string; endsAt: string; purpose?: string }): Promise<{ id: string }> => post("/v1/bridge/bookings", b),
+  decideBooking: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/bridge/bookings/${id}`, { decision }),
+  recordsRequests: (): Promise<{ requests: Array<{ id: string; employerName: string; employerEmail: string; status: string }> }> => call("/v1/bridge/records"),
+  requestRecordsVerification: (b: { employerName: string; employerEmail: string }): Promise<{ id: string }> => post("/v1/bridge/records", b),
+  decideRecordsRequest: (id: string, decision: "verify" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/bridge/records/${id}`, { decision }),
+
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),
   reports: (): Promise<{ reports: ReportItem[] }> => call("/v1/reports"),

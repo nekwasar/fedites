@@ -34,6 +34,17 @@
 - Achievement awards: admin ceremony awards with citations, audited (N2).
 - Migration 0013; PG suite phase5-nostalgia.pg.test.ts (8 tests).
 
+## Phase 5 — Memory & School, batch 4: School Bridge (complete)
+
+### Session 5.4a
+- Wishlist: duty admins post the school's needs; alumni either FUND or physically FULFIL (mvp §9) — both paths recorded with notes.
+- Adopt-a-project: sets/classes sponsor specific renovations, labs or libraries; progress is ledger-backed (confirmed gifts attributed to the project raise the bar) with admin progress notes; status flow open → in_progress → completed.
+- Past questions bank: admin uploads exam files; members browse by subject/year with direct open links.
+- Teacher tributes: members honor beloved retired and deceased teachers (one tribute per member per teacher).
+- Facility booking: verified alumni request halls/fields; admins approve/decline; other members never see others' bookings (§P privacy, tested).
+- Records verification: member-initiated employer requests; admins verify/decline; requests private to the member (tested); invalid input → 400 (error handler globalized at the app level).
+- Migration 0014; PG suite phase5-schoolbridge.pg.test.ts (6 tests).
+
 ## Phase 4 — Money, batch 1: Ledger + Dues (complete)
 
 ### Sessions 4.1 + 4.2

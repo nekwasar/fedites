@@ -72,6 +72,13 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
 
       <AssociationSection />
 
+      <Section label="The School Bridge">
+        <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
+          Wishlist, adopt-a-project, past questions bank, teacher tributes, facility booking, and records verification.
+        </p>
+        <button type="button" className="btn btn--filled press" onClick={() => onNavigate("/bridge")}>Open the School Bridge</button>
+      </Section>
+
       <Section label="Nostalgia corner">
         <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
           Remember-when prompts, recipes, the radio, anthem and bell, time capsules, letters to your future self, birthdays, and awards.

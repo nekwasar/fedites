@@ -23,18 +23,6 @@ export async function authRoutes(
 ): Promise<void> {
   const { pool } = opts;
 
-  app.setErrorHandler((err, _request, reply) => {
-    if (err instanceof z.ZodError) {
-      return reply.status(400).send({
-        error: "Check the highlighted fields, then try again.",
-        details: err.issues.map((i: { path: (string | number)[]; message: string }) => ({ path: i.path.join("."), message: i.message })),
-      });
-    }
-    const status = (err as { statusCode?: number }).statusCode ?? 500;
-    if (status >= 500) app.log.error(err);
-    return reply.status(status).send({ error: status >= 500 ? "Something went wrong on our side. Try again shortly." : err.message });
-  });
-
   app.decorate("pg", pool);
 
   /* ---------------- signup: invite code -> pending member ---------------- */
