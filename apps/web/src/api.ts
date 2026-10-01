@@ -4,7 +4,7 @@
  * cookie (credentials: include).
  */
 import type { GroupSummary, GroupsHome, GroupProfile, JoinRequest, ActivityFeed, CommentItem, ChatThread, ChatMessage, MemberHit, NewsResponse, FeedResponse, ReportItem, RecognitionMe } from "./phase2-types.js";
-import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication, Era, MemoryItem, Yearbook, YearbookDetail, MemorialView } from "./events-types.js";
+import type { EventListItem, EventCreateBody, EventUpdateBody, Ticket, EventTask, BudgetItem, PhotoWallItem, MoneyOverview, ReceiptView, TierView, TierCreateBody, AdminDuesRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, P2pView, PledgeView, ReimbView, SponsorView, ScholarshipView, Publication, Era, MemoryItem, Yearbook, YearbookDetail, MemorialView, WikiPage } from "./events-types.js";
 import type {
   SignupBody,
   LoginBody,
@@ -48,6 +48,8 @@ const post = <T>(path: string, payload?: unknown): Promise<T> =>
   call<T>(path, { method: "POST", body: JSON.stringify(payload ?? {}) });
 const patch = <T>(path: string, payload: unknown): Promise<T> =>
   call<T>(path, { method: "PATCH", body: JSON.stringify(payload) });
+const put = <T>(path: string, payload: unknown): Promise<T> =>
+  call<T>(path, { method: "PUT", body: JSON.stringify(payload) });
 const del = <T>(path: string): Promise<T> => call<T>(path, { method: "DELETE" });
 
 export const Api = {
@@ -246,6 +248,22 @@ export const Api = {
   memorialRequests: (): Promise<{ requests: Array<{ id: string; member_name: string; requested_by_name: string }> }> => call("/v1/manage/memory/memorials"),
   decideMemorial: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/memory/memorials/${id}`, { decision }),
   createEra: (b: { name: string; yearFrom?: number; yearTo?: number }): Promise<{ id: string }> => post("/v1/manage/memory/eras", b),
+
+  /* knowledge (5.2) */
+  wikiPages: (q: string): Promise<{ pages: WikiPage[] }> => call(`/v1/wiki/pages${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  wikiPage: (slug: string): Promise<{ page: { id: string; slug: string; title: string; locked: boolean; body: string; lastAuthor: string; updatedAt: string }; history: Array<{ id: string; author_name: string; note: string | null; created_at: string }> }> => call(`/v1/wiki/pages/${encodeURIComponent(slug)}`),
+  saveWikiPage: (slug: string, b: { body: string; note?: string }): Promise<{ ok: boolean }> => put(`/v1/wiki/pages/${encodeURIComponent(slug)}`, b),
+  revertWikiPage: (slug: string, revisionId: string): Promise<{ ok: boolean }> => post(`/v1/wiki/pages/${encodeURIComponent(slug)}/revert/${revisionId}`, {}),
+  slang: (q: string): Promise<{ terms: Array<{ id: string; term: string; meaning: string; example: string | null }> }> => call(`/v1/slang${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  submitSlang: (b: { term: string; meaning: string; example?: string }): Promise<{ id: string; status: string }> => post("/v1/slang", b),
+  timeline: (): Promise<{ events: Array<{ id: string; year: number; title: string; story: string | null }> }> => call("/v1/timeline"),
+  spotlights: (): Promise<{ spotlights: Array<{ id: string; member_name: string; interview: string; published_at: string }> }> => call("/v1/spotlights"),
+  articles: (): Promise<{ articles: Array<{ id: string; title: string; body: string; author_name: string; published_at: string }> }> => call("/v1/articles"),
+  submitArticle: (b: { title: string; body: string }): Promise<{ id: string; status: string }> => post("/v1/articles", b),
+  articleQueue: (): Promise<{ submitted: Array<{ id: string; title: string; author_name: string }> }> => call("/v1/manage/articles"),
+  decideArticle: (id: string, decision: "publish" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/articles/${id}`, { decision }),
+  slangQueue: (): Promise<{ pending: Array<{ id: string; term: string; meaning: string; submitted_by_name: string }> }> => call("/v1/manage/slang"),
+  decideSlang: (id: string, decision: "approve" | "decline"): Promise<{ ok: boolean }> => post(`/v1/manage/slang/${id}`, { decision }),
 
   /* moderation (2.6) */
   report: (b: { postId?: string; messageId?: string; reason: string }): Promise<{ id: string }> => post("/v1/reports", b),

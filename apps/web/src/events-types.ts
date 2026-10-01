@@ -51,3 +51,5 @@ export interface Yearbook { id: string; year: number; title: string | null; medi
 export interface YearbookDetail { yearbook: { id: string; year: number; title: string | null; mediaId: string | null }; entries: Array<{ id: string; full_name: string; section: string | null }> }
 export interface Honouree { id: string; display_name: string; citation: string; year: number | null }
 export interface MemorialView { id: string; memberName: string; setYear: number | null; tribute: string | null; status: string; funeralDate: string | null }
+
+export interface WikiPage { id: string; slug: string; title: string; locked: boolean; updated_at: string }

@@ -72,6 +72,13 @@ export function ProfileScreen({ member, onNavigate }: { member: SessionMember; o
 
       <AssociationSection />
 
+      <Section label="School knowledge">
+        <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
+          The wiki, slang dictionary, history timeline, spotlights, and member articles.
+        </p>
+        <button type="button" className="btn btn--filled press" onClick={() => onNavigate("/knowledge")}>Open School knowledge</button>
+      </Section>
+
       <Section label="Memory Lane">
         <p style={{ font: "15px var(--font-ui)", margin: "0 0 12px" }}>
           The archive, yearbooks, on-this-day, hall of fame, and memorials.

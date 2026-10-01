@@ -10,6 +10,16 @@
 - Memorial pages (§P locked): member request → admin approval (family confirmed) → memorial state (no logins, sessions revoked, no birthday pushes, content read-only); condolence book + funeral attendance coordination; moderation via archived (N1).
 - Migration 0011; PG suite phase5-memory.pg.test.ts (6 tests). Fixed @fastify/multipart encapsulation (top-level registration, onFile buffer pattern).
 
+## Phase 5 — Memory & School, batch 2: Knowledge & Voices (complete)
+
+### Session 5.2
+- School wiki: collaborative pages (slug-addressed, searchable), every save a revision, full revision history, revert-to-earlier (new revision — nothing lost, N1), admin page locks.
+- Slang dictionary: member submissions pending → admin approval into the crowd-sourced glossary; searchable.
+- History timeline: admin-curated milestones, chronological.
+- Alumni spotlights: admin-published interview features celebrating members.
+- Long-form articles: member-written (essays, memoirs, tributes) with admin screening before publication.
+- Migration 0012; PG suite phase5-knowledge.pg.test.ts (6 tests).
+
 ## Phase 4 — Money, batch 1: Ledger + Dues (complete)
 
 ### Sessions 4.1 + 4.2

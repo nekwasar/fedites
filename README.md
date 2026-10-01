@@ -34,12 +34,12 @@ pnpm dev               # api :8787 + web :5173
 | 0.4 | Design system part 2: config-driven shell — nav patterns, placeholder tabs from nav schema, Studio preview scaffolding | `apps/web/src/App.tsx`, `apps/web/src/shell/nav-patterns.tsx` |
 | ↳ parallel | Payment provider + WhatsApp business verification kick-off, privacy policy draft | external tracks — not code; see phases.md |
 
-## Phase 5 — Memory & School (batch 1 of 5 complete)
+## Phase 5 — Memory & School (batches 1–2 of 5 complete)
 
 | Session | Deliverable | Where |
 |---|---|---|
 | 5.1 | Memory Lane core: throwback archive (era bulk upload), yearbooks + CSV search, on-this-day, hall of fame, memorials (§P state) | `apps/api/src/memory.ts`, migration 0011, web `MemoryLane.tsx` + Manage workbench |
-| 5.2 | Wiki, slang dictionary, history timeline, spotlights, long-form | next batch |
+| 5.2 | Wiki (revisions/lock/revert), slang dictionary, timeline, spotlights, articles | `apps/api/src/knowledge.ts`, web `Knowledge.tsx` + Manage queues |
 | 5.3 | Nostalgia bundle: bell chime, anthem, stickers, remember-when, recipes, radio, letters, time capsules | next batch |
 | 5.4a | School Bridge: wishlist, adopt-a-project, past questions, teacher tributes, facility booking, records verification | next batch |
 | 5.4b | Career: job board, business directory, mentor hours, referrals | next batch |
