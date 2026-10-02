@@ -1,34 +1,20 @@
 /**
- * Session boot client (configuration.md §8): the API returns config at
- * session boot; the shell renders entirely from it — schema-driven shell.
+ * Session boot derivation (configuration.md §8): the shell renders entirely
+ * from the boot payload. Derivation is pure so the Fastify server can run
+ * it during server-side rendering with a device guess from the user agent.
  */
-import type { SessionBoot, NavItemView } from "@fedites/config";
+import type { SessionBoot } from "@fedites/config";
 import { visibleItems, patternFor } from "@fedites/config";
+import type { BootState } from "./page-types.js";
 
-export interface BootState {
-  session: SessionBoot;
-  navItems: NavItemView[];
-  pattern: string;
-}
+export type { BootState };
 
-export async function fetchSessionBoot(apiUrl: string, params: URLSearchParams): Promise<BootState> {
-  const query = params.toString();
-  const res = await fetch(`${apiUrl}/v1/config${query ? `?${query}` : ""}`);
-  if (!res.ok) throw new Error(`session boot failed: ${res.status}`);
-  const session = (await res.json()) as SessionBoot;
-
+export function deriveBootState(session: SessionBoot, device: "mobile" | "desktop"): BootState {
   const member = session.member;
   const hasDutyRole = member !== null && member.roles.some((r) => r !== "member");
-  const navItems = visibleItems(session.config.nav, hasDutyRole);
-  const device =
-    params.get("device") === "mobile" || params.get("device") === "desktop"
-      ? (params.get("device") as "mobile" | "desktop")
-      : window.innerWidth < 1024
-        ? "mobile"
-        : "desktop";
   return {
     session,
-    navItems,
+    navItems: visibleItems(session.config.nav, hasDutyRole),
     pattern: patternFor(
       {
         family: session.resolved.family,
@@ -40,4 +26,8 @@ export async function fetchSessionBoot(apiUrl: string, params: URLSearchParams):
       device,
     ),
   };
+}
+
+export function deviceFromUserAgent(ua: string | undefined): "mobile" | "desktop" {
+  return /Mobile|Android|iPhone/i.test(ua ?? "") ? "mobile" : "desktop";
 }

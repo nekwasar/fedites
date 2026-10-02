@@ -6,14 +6,22 @@
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import type { WikiPage } from "../events-types.js";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)",
 };
 
-export function KnowledgeScreen(): React.ReactElement {
+export interface KnowledgeSsrData {
+  wiki?: { pages: WikiPage[] };
+  slang?: { terms: Array<{ id: string; term: string; meaning: string; example: string | null }> };
+  timeline?: { events: Array<{ id: string; year: number; title: string; story: string | null }> };
+  spotlights?: { spotlights: Array<{ id: string; member_name: string; interview: string; published_at: string }> };
+  articles?: { articles: Array<{ id: string; title: string; body: string; author_name: string; published_at: string }> };
+}
+
+export function KnowledgeScreen({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
   const [tab, setTab] = useState<"wiki" | "slang" | "timeline" | "spotlights" | "articles">("wiki");
   return (
     <main style={{ paddingBottom: 96 }}>
@@ -26,24 +34,25 @@ export function KnowledgeScreen(): React.ReactElement {
           </button>
         ))}
       </div>
-      {tab === "wiki" && <WikiTab />}
-      {tab === "slang" && <SlangTab />}
-      {tab === "timeline" && <TimelineTab />}
-      {tab === "spotlights" && <SpotlightsTab />}
-      {tab === "articles" && <ArticlesTab />}
+      {tab === "wiki" && <WikiTab ssrData={ssrData} />}
+      {tab === "slang" && <SlangTab ssrData={ssrData} />}
+      {tab === "timeline" && <TimelineTab ssrData={ssrData} />}
+      {tab === "spotlights" && <SpotlightsTab ssrData={ssrData} />}
+      {tab === "articles" && <ArticlesTab ssrData={ssrData} />}
     </main>
   );
 }
 
-function WikiTab(): React.ReactElement {
+function WikiTab({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
   const [note, setNote] = useState<string | null>(null);
-  const [pages, setPages] = useState<WikiPage[] | null>(null);
+  const [pages, setPages] = useState<WikiPage[] | null>(ssrData?.wiki?.pages ?? null);
   const [open, setOpen] = useState<{ slug: string; title: string; body: string; locked: boolean; history: Array<{ id: string; author_name: string; note: string | null; created_at: string }> } | null>(null);
   const [editBody, setEditBody] = useState("");
   const [query, setQuery] = useState("");
 
   const load = (): void => { Api.wikiPages(query).then((r) => setPages(r.pages)).catch(() => undefined); };
-  useEffect(load, [query]);
+  useEffect(() => { if (ssrData?.wiki === undefined && query === "") load(); else if (query !== "") load();
+  }, [query]);
 
   const openPage = (slug: string): void => {
     Api.wikiPage(slug).then((r) => { setOpen(r as never); setEditBody((r as { page: { body: string } }).page.body); }).catch(() => undefined);
@@ -102,7 +111,7 @@ function WikiTab(): React.ReactElement {
           Open or create "{query.trim()}"
         </button>
       </div>
-      {pages === null ? <SkeletonList /> : pages.length === 0 ? (
+      {pages === null ? null : pages.length === 0 ? (
         <Empty title="The wiki is empty" body="Start the encyclopedia of houses, traditions and legends." />
       ) : pages.map((p) => (
         <button key={p.id} type="button" className="row press" style={{ cursor: "pointer" }} onClick={() => openPage(p.slug)}>
@@ -116,8 +125,8 @@ function WikiTab(): React.ReactElement {
   );
 }
 
-function SlangTab(): React.ReactElement {
-  const [terms, setTerms] = useState<Array<{ id: string; term: string; meaning: string; example: string | null }> | null>(null);
+function SlangTab({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
+  const [terms, setTerms] = useState<Array<{ id: string; term: string; meaning: string; example: string | null }> | null>(ssrData?.slang?.terms ?? null);
   const [term, setTerm] = useState("");
   const [meaning, setMeaning] = useState("");
   const [query, setQuery] = useState("");
@@ -144,7 +153,7 @@ function SlangTab(): React.ReactElement {
         <button type="button" className="btn btn--outlined press" style={{ margin: "8px 0" }} onClick={() => void submit()} disabled={term.trim() === "" || meaning.trim() === ""}>Submit term</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {terms === null ? <SkeletonList /> : terms.length === 0 ? (
+      {terms === null ? null : terms.length === 0 ? (
         <Empty title="The dictionary awaits" body="Crowd-source the school's vocabulary — admins review each term." />
       ) : terms.map((t) => (
         <div key={t.id} style={{ borderBottom: "1px solid var(--c-hairline)", padding: "12px 16px" }}>
@@ -157,10 +166,9 @@ function SlangTab(): React.ReactElement {
   );
 }
 
-function TimelineTab(): React.ReactElement {
-  const [events, setEvents] = useState<Array<{ id: string; year: number; title: string; story: string | null }> | null>(null);
-  useEffect(() => { Api.timeline().then((r) => setEvents(r.events)).catch(() => undefined); }, []);
-  if (events === null) return <SkeletonList />;
+function TimelineTab({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
+  const events = ssrData?.timeline?.events ?? null;
+  if (events === null) return <main className="screen-pad" />;
   if (events.length === 0) return <Empty title="The timeline is empty" body="Milestones from the founding to today, curated by the admins." />;
   return (
     <div style={{ padding: 16 }}>
@@ -177,10 +185,9 @@ function TimelineTab(): React.ReactElement {
   );
 }
 
-function SpotlightsTab(): React.ReactElement {
-  const [spotlights, setSpotlights] = useState<Array<{ id: string; member_name: string; interview: string; published_at: string }> | null>(null);
-  useEffect(() => { Api.spotlights().then((r) => setSpotlights(r.spotlights)).catch(() => undefined); }, []);
-  if (spotlights === null) return <SkeletonList />;
+function SpotlightsTab({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
+  const spotlights = ssrData?.spotlights?.spotlights ?? null;
+  if (spotlights === null) return <main className="screen-pad" />;
   if (spotlights.length === 0) return <Empty title="No spotlights yet" body="Regular interviews celebrating inspiring members." />;
   return (
     <div style={{ padding: 16 }}>
@@ -197,8 +204,8 @@ function SpotlightsTab(): React.ReactElement {
   );
 }
 
-function ArticlesTab(): React.ReactElement {
-  const [articles, setArticles] = useState<Array<{ id: string; title: string; body: string; author_name: string; published_at: string }> | null>(null);
+function ArticlesTab({ ssrData }: { ssrData?: KnowledgeSsrData }): React.ReactElement {
+  const [articles, setArticles] = useState<Array<{ id: string; title: string; body: string; author_name: string; published_at: string }> | null>(ssrData?.articles?.articles ?? null);
   const [writing, setWriting] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -230,7 +237,7 @@ function ArticlesTab(): React.ReactElement {
         )}
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {articles === null ? <SkeletonList /> : articles.length === 0 ? (
+      {articles === null ? null : articles.length === 0 ? (
         <Empty title="No published articles" body="Essays, memoirs and tributes appear here after admin screening." />
       ) : articles.map((a) => (
         <div key={a.id} style={{ borderBottom: "1px solid var(--c-hairline)", padding: "16px" }}>
@@ -285,7 +292,7 @@ export function KnowledgeQueues(): React.ReactElement {
       </section>
       <section style={{ padding: "0 16px 24px" }}>
         <div className="micro" style={{ paddingBottom: 8, borderBottom: "1px solid var(--c-hairline)", marginBottom: 12 }}>Articles for screening</div>
-        {articles === null ? <div className="skeleton" style={{ height: 32 }} /> : articles.length === 0 ? (
+        {articles === null ? null : articles.length === 0 ? (
           <p style={{ font: "14px var(--font-ui)", color: "var(--c-neutral-500)" }}>No articles awaiting screening.</p>
         ) : articles.map((a) => (
           <div key={a.id} className="row" style={{ padding: "8px 0", flexWrap: "wrap" }}>

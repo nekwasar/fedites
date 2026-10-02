@@ -6,18 +6,20 @@
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import { Section } from "./ProfileScreen.js";
 import { Confetti } from "../components/Confetti.js";
-import type { CampaignView, DonorWall, TransparentLedger, DonationSchedule } from "../events-types.js";
+import type { CampaignView, DonorWall, TransparentLedger, DonationSchedule, MoneyOverview } from "../events-types.js";
 
 const money = (minor: number, currency: string): string =>
   `${(minor / 100).toLocaleString()} ${currency}`;
 
+export interface GivingSsrData { campaigns?: { campaigns: CampaignView[] }; schedules?: { schedules: DonationSchedule[] }; overview?: MoneyOverview }
+
 /** Menu → Association: give back — campaigns, donate, schedules. */
-export function GivingSection(): React.ReactElement {
-  const [campaigns, setCampaigns] = useState<CampaignView[] | null>(null);
-  const [schedules, setSchedules] = useState<DonationSchedule[] | null>(null);
+export function GivingSection({ ssrData }: { ssrData?: GivingSsrData }): React.ReactElement {
+  const [campaigns, setCampaigns] = useState<CampaignView[] | null>(ssrData?.campaigns?.campaigns ?? null);
+  const [schedules, setSchedules] = useState<DonationSchedule[] | null>(ssrData?.schedules?.schedules ?? null);
   const [amount, setAmount] = useState("5000");
   const [anonymous, setAnonymous] = useState(false);
   const [recurring, setRecurring] = useState(false);
@@ -37,7 +39,14 @@ export function GivingSection(): React.ReactElement {
       }
     }).catch(() => undefined);
   };
-  useEffect(load, []);
+  // F6 seed from the SSR payload (a just-confirmed payment celebrates once).
+  useEffect(() => {
+    const latest = ssrData?.overview?.ledger[0];
+    if (latest !== undefined && latest.status === "confirmed" && Date.now() - new Date(latest.createdAt).getTime() < 60_000) {
+      setCelebrate(true);
+      setPaymentCelebrated(true);
+    }
+  }, []);
 
   const donate = async (campaignId: string | null): Promise<void> => {
     const amt = Number(amount);
@@ -111,9 +120,9 @@ export function GivingSection(): React.ReactElement {
 }
 
 /** One campaign: progress, F6 confetti on goal, donor wall (K2: names only). */
-export function CampaignScreen({ campaignId, onNavigate }: { campaignId: string; onNavigate: (to: string) => void }): React.ReactElement {
-  const [campaigns, setCampaigns] = useState<CampaignView[] | null>(null);
-  const [wall, setWall] = useState<DonorWall | null>(null);
+export function CampaignScreen({ campaignId, onNavigate, ssrData }: { campaignId: string; onNavigate: (to: string) => void; ssrData?: { campaigns?: { campaigns: CampaignView[] }; wall?: DonorWall } }): React.ReactElement {
+  const [campaigns, setCampaigns] = useState<CampaignView[] | null>(ssrData?.campaigns?.campaigns ?? null);
+  const [wall, setWall] = useState<DonorWall | null>(ssrData?.wall ?? null);
   const [amount, setAmount] = useState("5000");
   const [anonymous, setAnonymous] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -123,7 +132,6 @@ export function CampaignScreen({ campaignId, onNavigate }: { campaignId: string;
     Api.campaigns().then((r) => setCampaigns(r.campaigns)).catch(() => undefined);
     Api.campaignDonors(campaignId).then(setWall).catch(() => undefined);
   };
-  useEffect(load, [campaignId]);
 
   const campaign = campaigns?.find((c) => c.id === campaignId) ?? null;
   useEffect(() => {
@@ -139,7 +147,7 @@ export function CampaignScreen({ campaignId, onNavigate }: { campaignId: string;
     } catch (e) { setNote((e as Error).message); }
   };
 
-  if (campaigns === null) return <SkeletonList />;
+  if (campaigns === null) return <main className="screen-pad" />;
   if (campaign === null) return <Empty title="Campaign unavailable" body="It may be closed or the link is wrong." />;
 
   return (
@@ -189,10 +197,9 @@ export function CampaignScreen({ campaignId, onNavigate }: { campaignId: string;
 }
 
 /** Transparent ledger (rail 5 view): browsable + downloadable CSV. */
-export function TransparentLedgerScreen(): React.ReactElement {
-  const [data, setData] = useState<TransparentLedger | null>(null);
-  useEffect(() => { Api.transparentLedger().then((v) => setData(v)).catch(() => undefined); }, []);
-  if (data === null) return <SkeletonList />;
+export function TransparentLedgerScreen({ ssrData }: { ssrData?: { ledger?: TransparentLedger } }): React.ReactElement {
+  const data = ssrData?.ledger ?? null;
+  if (data === null) return <main className="screen-pad" />;
   return (
     <main style={{ paddingBottom: 96 }}>
       <h1 className="screen-title">Transparent ledger</h1>

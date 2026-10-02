@@ -3,23 +3,23 @@
  * business logic, no styling constants — just factory wiring from config.
  */
 import React from "react";
-import { useChatPage } from "../hooks/useChatPage.js";
+import { useChatPage, type ChatListSsrData } from "../hooks/useChatPage.js";
 import { ChatHeaderRegistry, ChatItemRegistry, ChatFilterChips, ChatFab } from "../chat/ChatRegistries.js";
-import { Row, Avatar, Skeleton, Empty as EmptyState } from "@fedites/ui";
+import { Row, Avatar, Empty as EmptyState } from "@fedites/ui";
 import type { ChatThread } from "../phase2-types.js";
 
-export function ChatListScreen({ config, onNavigate }: {
+export function ChatListScreen({ config, onNavigate, ssrData }: {
   config: import("@fedites/config").ChatPageConfig;
   onNavigate: (to: string) => void;
+  ssrData?: ChatListSsrData;
 }): React.ReactElement {
-  const state = useChatPage(config, (type, id) => onNavigate(`/chats/${type}/${id}`));
+  const state = useChatPage(config, (type, id) => onNavigate(`/chats/${type}/${id}`), ssrData);
 
   return (
     <main className="screen-pad">
       <ChatHeaderRegistry variant={state.config.headerVariant} state={state} />
       <ChatFilterChips state={state} />
 
-      {state.threads === null && <SkeletonList />}
       {state.threads !== null && state.threads.length === 0 && (
         <EmptyState
           title="No conversations yet"
@@ -66,16 +66,5 @@ export function ChatListScreen({ config, onNavigate }: {
         </div>
       )}
     </main>
-  );
-}
-
-function SkeletonList(): React.ReactElement {
-  return (
-    <div style={{ padding: "var(--density-pad-x)", display: "grid", gap: "var(--space-2)" }}>
-      <Skeleton />
-      <Skeleton />
-      <Skeleton />
-      <Skeleton />
-    </div>
   );
 }

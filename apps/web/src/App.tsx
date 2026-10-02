@@ -9,10 +9,10 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { applyTheme, applyFamily, UiProvider, type UiConfig } from "@fedites/ui";
-import { themePresets, families, mobilePatterns, desktopPatterns, type NavPatternId, type SessionMember as ContractMember } from "@fedites/config";
-import { fetchSessionBoot, type BootState } from "./boot.js";
+import { themePresets, families, mobilePatterns, desktopPatterns, type NavPatternId, type Inbox, type VerificationStatus, type Invite, type IdCard, type MemberPublic, type ManageOverview } from "@fedites/config";
+import type { AppProps, BootState } from "./page-types.js";
+import { parseRoute } from "./router.js";
 import { Api, ApiError } from "./api.js";
-import { useRoute } from "./router.js";
 import { AuthScreen } from "./screens/AuthScreen.js";
 import { InboxScreen, Empty } from "./screens/InboxScreen.js";
 import { ProfileScreen } from "./screens/ProfileScreen.js";
@@ -23,7 +23,14 @@ import {
   MobileTabBar, MobileTopTabs, MobileHybrid, MobileDrawer, MobileFloatingDock,
   DesktopSideRail, DesktopTopNav, DesktopTopSide, DesktopCommandFirst,
 } from "./shell/nav-patterns.js";
-import { GroupsHomeScreen } from "./screens/GroupsHomeScreen.js";
+import { GroupsHomeScreen, type GroupsHomeData } from "./screens/GroupsHomeScreen.js";
+import type { NewsResponse, FeedResponse, ChatMessage, ChatThread, GroupProfile, ActivityFeed } from "./phase2-types.js";
+import type { EventListItem, EventTask, BudgetItem, JobRow, CampaignView, DonorWall, TransparentLedger, DonationSchedule, MoneyOverview } from "./events-types.js";
+import type { MemorySsrData } from "./screens/MemoryLane.js";
+import type { KnowledgeSsrData } from "./screens/Knowledge.js";
+import type { NostalgiaSsrData } from "./screens/Nostalgia.js";
+import type { BridgeSsrData } from "./screens/SchoolBridge.js";
+import type { ProfileSsrData } from "./screens/ProfileScreen.js";
 import { GroupScreen } from "./screens/GroupScreen.js";
 import { ChatThreadScreen } from "./screens/ChatThread.js";
 import { ChatListScreen } from "./screens/ChatScreen.js";
@@ -145,18 +152,32 @@ function NewProposal({ onNavigate }: { onNavigate: (to: string) => void }): Reac
   );
 }
 
-export default function App(): React.ReactElement {
-  const [boot, setBoot] = useState<BootState | null>(null);
-  const [bootError, setBootError] = useState<string | null>(null);
-  const [member, setMember] = useState<ContractMember | null>(null);
-  const [sessionLoaded, setSessionLoaded] = useState(false);
-  const [unread, setUnread] = useState(0);
-  const [route, navigate] = useRoute();
-  const [dark, setDark] = useState(window.localStorage.getItem("fedites.dark") === "1");
+/** App props — the Fastify server renders every page with boot, chrome and
+ *  screen data already resolved; navigation is real document navigation. */
+export default function App({ boot, member, unread: initialUnread, routeData, ssrPath, ssrDevice }: AppProps): React.ReactElement {
+  const [unread, setUnread] = useState(initialUnread);
+  const [dark, setDark] = useState(
+    typeof window !== "undefined" && window.localStorage.getItem("fedites.dark") === "1",
+  );
   const [studioOpen, setStudioOpen] = useState(false);
   const [device, setDevice] = useState<"mobile" | "desktop">(
-    window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop",
+    ssrDevice ?? (typeof window !== "undefined" && window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop"),
   );
+  // Hydrate with the server's device guess, then correct pre-paint from the
+  // real viewport (layout effect never paints the wrong frame).
+  const IsoLayout = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
+  IsoLayout(() => {
+    if (typeof window === "undefined") return;
+    const real: "mobile" | "desktop" = window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop";
+    setDevice(real);
+  }, []);
+  // Keep the device frame in sync with viewport changes (client-only).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = (): void => setDevice(window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop");
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const realtime = useRealtime(API_URL, member !== null, member !== null ? ["member:" + member.id] : []);
   const [newsUnread, setNewsUnread] = useState(0);
   const [overrides, setOverrides] = useState<{
@@ -166,43 +187,30 @@ export default function App(): React.ReactElement {
     desktopPattern?: (typeof desktopPatterns)[number];
   }>({});
 
-  const params = useCallback(() => {
-    const p = new URLSearchParams();
-    p.set("device", window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop");
-    return p;
+  // Route is derived once per document; navigation is a real page load.
+  const route = useMemo(
+    () => parseRoute(typeof window !== "undefined" ? window.location.pathname : ssrPath ?? "/"),
+    [ssrPath],
+  );
+
+  // Full-page navigation: every link is a server request; the server
+  // renders the complete next page (data included). No client routing.
+  const go = useCallback((to: string): void => {
+    if (to === "__drawer") { setStudioOpen(true); return; }
+    if (typeof window !== "undefined") window.location.assign(to);
   }, []);
-
-  useEffect(() => {
-    fetchSessionBoot(API_URL, params())
-      .then(setBoot)
-      .catch((e: unknown) => setBootError(String(e)));
-  }, [params]);
-
-  const refreshSession = useCallback((): void => {
-    Api.session()
-      .then((s) => { setMember(s.member); })
-      .catch(() => setMember(null))
-      .finally(() => setSessionLoaded(true));
-  }, []);
-
-  useEffect(refreshSession, [refreshSession, route]);
 
   const refreshUnread = useCallback((): void => {
     if (member === null) { setUnread(0); return; }
     Api.inbox().then((i) => setUnread(i.unread)).catch(() => undefined);
   }, [member]);
 
-  useEffect(refreshUnread, [refreshUnread]);
-
   // Realtime (2.3): WS events wake the UI; counts always come from the API
   // (I5 — badges never disagree). A "news.new" bumps the News badge.
   useEffect(() => {
     if (realtime === null) return;
     if (realtime.type === "news.new") setNewsUnread((n) => n + 1);
-    if (realtime.type === "message.new" || realtime.type === "read") {
-      Api.chatThreads().catch(() => undefined);
-      refreshUnread();
-    }
+    if (realtime.type === "message.new" || realtime.type === "read") refreshUnread();
     if (realtime.type === "post.new") refreshUnread();
   }, [realtime, refreshUnread]);
 
@@ -226,8 +234,7 @@ export default function App(): React.ReactElement {
     if (family) applyFamily(document.documentElement, family);
   }, [boot, overrides, dark]);
 
-  const uiConfig: UiConfig | null = useMemo(() => {
-    if (boot === null) return null;
+  const uiConfig: UiConfig = useMemo(() => {
     const family = boot.session.resolved.family;
     return {
       variants: boot.session.resolved.variants as Record<string, string>,
@@ -237,44 +244,19 @@ export default function App(): React.ReactElement {
     };
   }, [boot]);
 
-  if (bootError !== null) {
-    return (
-      <Empty
-        title="Could not reach the platform"
-        body="Check that the API is running, then try again."
-        action={<button type="button" className="btn btn--filled press" onClick={() => location.reload()}>Retry</button>}
-      />
-    );
-  }
-  if (boot === null || !sessionLoaded || uiConfig === null) {
-    return (
-      <div style={{ padding: "var(--space-4)", display: "grid", gap: "var(--space-2)" }}>
-        <div className="skeleton" style={{ height: "var(--type-headline)", maxWidth: 240 }} />
-        <div className="skeleton" />
-        <div className="skeleton" />
-        <div className="skeleton" style={{ maxWidth: 320 }} />
-      </div>
-    );
-  }
-
   const nav = boot.session.config.nav;
   const effNav = {
     ...nav,
     mobile: overrides.mobilePattern ?? nav.mobile,
     desktop: overrides.desktopPattern ?? nav.desktop,
   };
-  const isDesktopViewport = window.innerWidth >= DESKTOP_MIN;
+  const isDesktopViewport = device === "desktop";
   const pattern = (isDesktopViewport ? effNav.desktop : effNav.mobile);
   const items = boot.navItems;
   const contentMargin =
     isDesktopViewport && (pattern === "side-rail" || pattern === "top+side") ? 220 : 0;
   const studioWidth = studioOpen && isDesktopViewport ? 300 : 0;
   const topOffset = pattern === "top-tabs" || pattern === "top-nav" || pattern === "top+side" ? 48 : 0;
-
-  const go = (r: string): void => {
-    if (r === "__drawer") { setStudioOpen(true); return; }
-    navigate(r);
-  };
 
   const authed = member !== null;
   const dutyRoles = authed && member.roles.some((r) => r !== "member");
@@ -283,7 +265,7 @@ export default function App(): React.ReactElement {
     if (route.path === "/auth") {
       return authed
         ? <Empty title="You are signed in" body="Your account is active on this device." action={<button type="button" className="btn btn--filled press" onClick={() => go("/")}>Go home</button>} />
-        : <AuthScreen onDone={() => { refreshSession(); navigate("/"); }} />;
+        : <AuthScreen onDone={() => go("/")} />;
     }
     if (!authed) {
       return (
@@ -295,40 +277,64 @@ export default function App(): React.ReactElement {
       );
     }
     switch (route.path) {
-      case "/": return <GroupsHomeScreen onNavigate={go} />;
-      case "/feed": return <FeedScreen onNavigate={go} />;
-      case "/chat": return <ChatListScreen config={boot.session.config.chatPage} onNavigate={go} />;
-      case "/news": return <NewsScreen signedIn={authed} onNavigate={go} />;
-      case "/groups":
+      case "/": return <GroupsHomeScreen onNavigate={go} ssrData={routeData.home as GroupsHomeData} />;
+      case "/feed": return <FeedScreen onNavigate={go} ssrData={{ feed: (routeData.feed as { feed?: FeedResponse } | undefined)?.feed }} />;
+      case "/chat": {
+        const chatList = routeData["chat.list"] as { threads?: { threads: ChatThread[] }; presence?: { online: string[] } } | undefined;
+        return <ChatListScreen config={boot.session.config.chatPage} onNavigate={go} ssrData={{ threads: chatList?.threads?.threads, presence: chatList?.presence }} />;
+      }
+      case "/news": return <NewsScreen signedIn={authed} onNavigate={go} ssrData={{ news: (routeData.news as { news?: NewsResponse } | undefined)?.news }} />;
+      case "/groups": {
+        const groupData = routeData.group as { profile?: GroupProfile; activity?: ActivityFeed; requests?: { requests: Array<{ id: string; display_name: string }> } } | undefined;
         return route.param !== undefined
-          ? <GroupScreen groupId={route.param} onNavigate={go} signedIn={authed} onOpenChat={(g) => go(`/chats/group/${g}`)} />
+          ? <GroupScreen groupId={route.param} onNavigate={go} signedIn={authed} onOpenChat={(g) => go(`/chats/group/${g}`)} ssrData={groupData} />
           : <Empty title="Group not found" body="The link may be wrong." />;
-      case "/chats":
+      }
+      case "/chats": {
+        const threadData = routeData["chat.thread"] as { messages?: { messages: ChatMessage[] } } | undefined;
         return route.param !== undefined && route.path === "/chats"
-          ? <ChatThreadScreen type={(window.location.pathname.split("/")[2] === "dm" ? "dm" : "group")} id={route.param} onNavigate={go} />
+          ? <ChatThreadScreen type={(route.seg === "dm" ? "dm" : "group")} id={route.param} onNavigate={go} ssrData={{ messages: threadData?.messages }} />
           : <ChatListScreen config={boot.session.config.chatPage} onNavigate={go} />;
+      }
       case "/groups/new": return <NewProposal onNavigate={go} />;
-      case "/money/campaigns":
+      case "/money/campaigns": {
+        const givingData = routeData.giving as { campaigns?: { campaigns: CampaignView[] }; schedules?: { schedules: DonationSchedule[] }; overview?: MoneyOverview } | undefined;
+        const campaignData = routeData.campaign as { campaigns?: { campaigns: CampaignView[] }; wall?: DonorWall } | undefined;
         return route.param !== undefined && route.path === "/money/campaigns"
-          ? <CampaignScreen campaignId={route.param} onNavigate={go} />
-          : <GivingSection />;
-      case "/money/ledger": return <TransparentLedgerScreen />;
-      case "/memory": return <MemoryLaneScreen member={member} />;
-      case "/knowledge": return <KnowledgeScreen />;
-      case "/nostalgia": return <NostalgiaScreen />;
+          ? <CampaignScreen campaignId={route.param} onNavigate={go} ssrData={campaignData} />
+          : <GivingSection ssrData={givingData} />;
+      }
+      case "/money/ledger": return <TransparentLedgerScreen ssrData={{ ledger: (routeData.ledger as { ledger?: TransparentLedger } | undefined)?.ledger }} />;
+      case "/memory": return <MemoryLaneScreen member={member} ssrData={routeData.memory as MemorySsrData} />;
+      case "/knowledge": return <KnowledgeScreen ssrData={routeData.knowledge as KnowledgeSsrData} />;
+      case "/nostalgia": return <NostalgiaScreen ssrData={routeData.nostalgia as NostalgiaSsrData} />;
       case "/bridge":
-        return <SchoolBridgeScreen isAdmin={member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} />;
-      case "/careers": return <CareerScreen careersConfig={boot.session.config.careersPage} />;
-      case "/notifications": return <InboxScreen onNavigate={go} />;
-      case "/me": return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} />;
-      case "/id": return <IdScreen />;
-      case "/members": return route.param !== undefined ? <MemberScreen id={route.param} /> : <Empty title="Member not found" body="The link may be wrong." />;
-      case "/manage": return dutyRoles ? <ManageScreen member={member} onNavigate={go} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
-      case "/menu": return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} />;
-      case "/events":
+        return <SchoolBridgeScreen isAdmin={member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} ssrData={routeData.bridge as BridgeSsrData} />;
+      case "/careers": {
+        const careerData = routeData.career as { jobs?: { jobs: JobRow[] }; saved?: { jobs: Array<{ id: string; title: string; company_name: string }> }; applications?: { applications: Array<{ id: string; title: string; companyName: string; status: string; createdAt: string }> } } | undefined;
+        return <CareerScreen careersConfig={boot.session.config.careersPage} ssrData={{ jobs: careerData?.jobs?.jobs, saved: careerData?.saved?.jobs, apps: careerData?.applications?.applications }} />;
+      }
+      case "/notifications": return <InboxScreen onNavigate={go} ssrData={{ inbox: (routeData.inbox as { inbox?: Inbox | undefined } | undefined)?.inbox }} />;
+      case "/me": {
+        const profileData = routeData.profile as { status?: VerificationStatus; invites?: { invites: Invite[] }; recognition?: NonNullable<ProfileSsrData["recognition"]>; intents?: { intents: string[]; options: string[] }; prefs?: { prefs: { mentions: string; events: string; news: string } } } | undefined;
+        return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} ssrData={profileData} />;
+      }
+      case "/id": return <IdScreen ssrData={{ card: (routeData.id as { card?: IdCard } | undefined)?.card }} />;
+      case "/members": {
+        const memberData = routeData.member as { member?: MemberPublic; badges?: { badges: Array<{ badge: string; title: string; awardedAt: string }> } } | undefined;
+        return route.param !== undefined ? <MemberScreen id={route.param} ssrData={memberData} /> : <Empty title="Member not found" body="The link may be wrong." />;
+      }
+      case "/manage": return dutyRoles ? <ManageScreen member={member} onNavigate={go} ssrData={{ overview: (routeData.manage as { overview?: ManageOverview } | undefined)?.overview }} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
+      case "/menu": {
+        const profileData2 = routeData.profile as { status?: VerificationStatus; invites?: { invites: Invite[] }; recognition?: NonNullable<ProfileSsrData["recognition"]>; intents?: { intents: string[]; options: string[] }; prefs?: { prefs: { mentions: string; events: string; news: string } } } | undefined;
+        return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} ssrData={profileData2} />;
+      }
+      case "/events": {
+        const eventData = routeData.event as { event?: EventListItem; tasks?: { tasks: EventTask[]; budget: BudgetItem[] }; attendees?: { attendees: Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> }; live?: { counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } } | undefined;
         return route.param !== undefined && route.path === "/events"
-          ? <EventDetailScreen eventId={route.param} onNavigate={go} member={member} />
-          : <EventsScreen onNavigate={go} isAdmin={authed && member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} />;
+          ? <EventDetailScreen eventId={route.param} onNavigate={go} member={member} ssrData={{ event: eventData?.event, tasks: eventData?.tasks, attendees: eventData?.attendees, live: eventData?.live }} />
+          : <EventsScreen onNavigate={go} isAdmin={authed && member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} ssrData={{ events: (routeData.events as { events?: { upcoming: EventListItem[]; past: EventListItem[] } } | undefined)?.events }} />;
+      }
       default: return <GroupsHomeScreen onNavigate={go} />;
     }
   };
@@ -341,7 +347,7 @@ export default function App(): React.ReactElement {
             brand: boot.session.config.instance.shortName,
             about: boot.session.config.instance.copy["landing.about"] ?? "One school, one community. Reconnect, belong, and give back.",
           }}
-          onSignedIn={(pending) => { refreshSession(); navigate(pending === "/" ? "/" : pending); }}
+          onSignedIn={(pending) => go(pending === "/" ? "/" : pending)}
         />
         <AppChoiceSheet />
       </UiProvider>

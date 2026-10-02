@@ -7,7 +7,7 @@
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import type { BizRow, MentorRow, ReferralRow } from "../events-types.js";
 import { Button } from "@fedites/ui";
 import { defaultConfig, type CareersPageConfig } from "@fedites/config";
@@ -21,8 +21,8 @@ const fieldStyle: React.CSSProperties = {
   flex: 1, minWidth: 140, minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)",
 };
 
-export function CareerScreen({ careersConfig }: { careersConfig?: CareersPageConfig }): React.ReactElement {
-  const state = useCareersPage(careersConfig ?? defaultConfig.careersPage);
+export function CareerScreen({ careersConfig, ssrData }: { careersConfig?: CareersPageConfig; ssrData?: import("../hooks/useCareersPage.js").CareerSsrData }): React.ReactElement {
+  const state = useCareersPage(careersConfig ?? defaultConfig.careersPage, ssrData);
   const [tab, setTab] = useState<"jobs" | "business" | "mentors" | "referrals">("jobs");
   return (
     <main className="screen-pad">
@@ -66,7 +66,7 @@ function JobsView({ state }: { state: CareersPageState }): React.ReactElement {
           ))}
         </div>
       )}
-      {state.jobs === null ? <SkeletonList /> : state.jobs.length === 0 ? (
+      {state.jobs === null ? null : state.jobs.length === 0 ? (
         <Empty title="No open roles" body="Alumni post openings and internships here — fresh graduates always prioritized." />
       ) : state.jobs.map((j) => (
         <JobCardRegistry key={j.id} variant={state.config.jobCardVariant} data={j} state={state} />
@@ -228,7 +228,7 @@ function Business(): React.ReactElement {
         <button type="button" className="btn btn--filled press" style={{ margin: "8px 0" }} onClick={() => void create()} disabled={name.trim() === "" || industry.trim() === ""}>List business</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {list === null ? <SkeletonList /> : list.length === 0 ? (
+      {list === null ? null : list.length === 0 ? (
         <Empty title="The directory awaits" body="Showcase alumni-owned businesses — services, hours, offers, reviews." />
       ) : list.map((b) => (
         <button key={b.id} type="button" className="row press" style={{ cursor: "pointer", flexWrap: "wrap" }} onClick={() => openBiz(b.id)}>
@@ -300,7 +300,7 @@ function Mentors(): React.ReactElement {
         <button type="button" className="btn btn--outlined press" style={{ margin: "8px 0" }} onClick={() => void addSlot()} disabled={slotStart === "" || slotEnd === ""}>Publish slot</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {mentors === null ? <SkeletonList /> : mentors.length === 0 ? (
+      {mentors === null ? null : mentors.length === 0 ? (
         <Empty title="No mentors yet" body="Senior professionals offer one-on-one office hours right here." />
       ) : mentors.map((m) => (
         <div key={m.memberId} className="row" style={{ padding: "8px 16px", flexWrap: "wrap" }}>
@@ -402,7 +402,7 @@ function Referrals(): React.ReactElement {
         <button type="button" className="btn btn--outlined press" style={{ margin: "8px 0" }} onClick={() => void endorse()} disabled={endorseTarget.trim() === "" || skill.trim() === ""}>Endorse</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "0 16px 8px" }}>{note}</p>}
-      {data === null ? <SkeletonList /> : (
+      {data === null ? null : (
         <>
           {data.received.length > 0 && (
             <div style={{ padding: 16 }}>

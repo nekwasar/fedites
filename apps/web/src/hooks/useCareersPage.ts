@@ -9,6 +9,13 @@ import { Api } from "../api.js";
 import type { JobRow } from "../events-types.js";
 import type { CareersPageConfig } from "@fedites/config";
 
+/** Data shipped with the server-rendered page (no client page loading). */
+export interface CareerSsrData {
+  jobs?: JobRow[];
+  saved?: Array<{ id: string; title: string; company_name: string }>;
+  apps?: Array<{ id: string; title: string; companyName: string; status: string; createdAt: string }>;
+}
+
 const FILTERS: Record<string, (j: JobRow) => boolean> = {
   "full-time": (j) => j.employmentType === "full_time",
   "remote": (j) => j.workMode === "remote",
@@ -16,10 +23,10 @@ const FILTERS: Record<string, (j: JobRow) => boolean> = {
   "graduate": (j) => j.employmentType === "graduate_trainee",
 };
 
-export function useCareersPage(config: CareersPageConfig) {
-  const [jobs, setJobs] = useState<JobRow[] | null>(null);
-  const [saved, setSaved] = useState<Array<{ id: string; title: string; company_name: string }>>([]);
-  const [apps, setApps] = useState<Array<{ id: string; title: string; companyName: string; status: string; createdAt: string }>>([]);
+export function useCareersPage(config: CareersPageConfig, ssrData?: CareerSsrData) {
+  const [jobs, setJobs] = useState<JobRow[] | null>(ssrData?.jobs ?? null);
+  const [saved, setSaved] = useState<Array<{ id: string; title: string; company_name: string }>>(ssrData?.saved ?? []);
+  const [apps, setApps] = useState<Array<{ id: string; title: string; companyName: string; status: string; createdAt: string }>>(ssrData?.apps ?? []);
   const [activeChips, setActiveChips] = useState<string[]>([]);
   const [keywords, setKeywords] = useState("");
   const [location, setLocation] = useState("");

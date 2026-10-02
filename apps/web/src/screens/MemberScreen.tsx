@@ -4,20 +4,20 @@
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import type { MemberPublic } from "@fedites/config";
 
-export function MemberScreen({ id }: { id: string }): React.ReactElement {
-  const [member, setMember] = useState<MemberPublic | null>(null);
+export function MemberScreen({ id, ssrData }: { id: string; ssrData?: { member?: MemberPublic; badges?: { badges: Array<{ badge: string; title: string; awardedAt: string }> } } }): React.ReactElement {
+  const [member, setMember] = useState<MemberPublic | null>(ssrData?.member ?? null);
   const [error, setError] = useState<string | null>(null);
   const [contact, setContact] = useState<{ email: string; phone: string | null } | null>(null);
 
   useEffect(() => {
-    Api.member(id).then(setMember).catch((e: Error) => setError(e.message));
+    if (ssrData?.member === undefined) Api.member(id).then(setMember).catch((e: Error) => setError(e.message));
   }, [id]);
 
   if (error !== null) return <Empty title="Member not found" body="The link may be wrong, or the profile is not available." />;
-  if (member === null) return <SkeletonList />;
+  if (member === null) return <main className="screen-pad" />;
 
   const reveal = (): void => {
     void Api.revealContact(member.id).then(setContact).catch((e: Error) => setError(e.message));

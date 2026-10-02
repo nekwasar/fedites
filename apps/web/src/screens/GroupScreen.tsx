@@ -4,33 +4,33 @@
  * panel: pin, promote-to-News, remove content via reports, join requests.
  * Lifecycle: archived groups render read-only (N1). Library components only.
  */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Api } from "../api.js";
-import { Row, Button, Badge, Empty, Skeleton, SectionHead, Tabs } from "@fedites/ui";
+import { Row, Button, Badge, Empty, SectionHead, Tabs } from "@fedites/ui";
 import type { GroupProfile, ActivityItem, ActivityFeed } from "../phase2-types.js";
 
-export function GroupScreen({ groupId, onNavigate, signedIn, onOpenChat }: {
+export function GroupScreen({ groupId, onNavigate, signedIn, onOpenChat, ssrData }: {
   groupId: string;
   onNavigate: (to: string) => void;
   signedIn: boolean;
   onOpenChat: (groupId: string) => void;
+  ssrData?: { profile?: GroupProfile; activity?: ActivityFeed; requests?: { requests: Array<{ id: string; display_name: string }> } };
 }): React.ReactElement {
-  const [profile, setProfile] = useState<GroupProfile | null>(null);
-  const [activity, setActivity] = useState<ActivityFeed | null>(null);
+  const [profile, setProfile] = useState<GroupProfile | null>(ssrData?.profile ?? null);
+  const [activity, setActivity] = useState<ActivityFeed | null>(ssrData?.activity ?? null);
   const [tab, setTab] = useState<string>("activity");
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const [requests, setRequests] = useState<Array<{ id: string; display_name: string }>>([]);
+  const [requests, setRequests] = useState<Array<{ id: string; display_name: string }>>(ssrData?.requests?.requests ?? []);
 
   const load = useCallback((): void => {
     Api.group(groupId).then((v) => setProfile(v)).catch((e: Error) => setError(e.message));
     Api.groupActivity(groupId).then((v) => setActivity(v)).catch((e: Error) => setError(e.message));
     Api.joinRequests(groupId).then((r) => setRequests(r.requests)).catch(() => undefined);
   }, [groupId]);
-  useEffect(() => { load(); }, [load]);
 
   if (error !== null) return <Empty title="Group unavailable" body={error} />;
-  if (profile === null || activity === null) return <Skeleton height="var(--lh-headline)" />;
+  if (profile === null || activity === null) return <main className="screen-pad" />;
 
   const join = async (): Promise<void> => {
     try {

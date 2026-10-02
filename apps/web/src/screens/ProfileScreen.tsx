@@ -17,19 +17,27 @@ const fieldStyle: React.CSSProperties = {
   background: "transparent", color: "var(--c-base-contrast)", font: "15px var(--font-ui)",
 };
 
-export function ProfileScreen({ member, onNavigate, dark, onDark }: { member: SessionMember; onNavigate: (to: string) => void; dark?: boolean; onDark?: (v: boolean) => void }): React.ReactElement {
-  const [status, setStatus] = useState<VerificationStatus | null>(null);
+export interface ProfileSsrData {
+  status?: VerificationStatus;
+  invites?: { invites: Invite[] };
+  recognition?: { points: number; badges: Array<{ badge: string; title: string; description: string; awardedAt: string; awardedBy: string | null }>; streak: { current: number; longest: number } };
+  intents?: { intents: string[]; options: string[] };
+  prefs?: { prefs: { mentions: string; events: string; news: string } };
+}
+
+export function ProfileScreen({ member, onNavigate, dark, onDark, ssrData }: { member: SessionMember; onNavigate: (to: string) => void; dark?: boolean; onDark?: (v: boolean) => void; ssrData?: ProfileSsrData }): React.ReactElement {
+  const [status, setStatus] = useState<VerificationStatus | null>(ssrData?.status ?? null);
   const [city, setCity] = useState("");
   const [profession, setProfession] = useState("");
   const [bio, setBio] = useState("");
   const [memory, setMemory] = useState("");
   const [saved, setSaved] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [invites, setInvites] = useState<Invite[] | null>(null);
+  const [invites, setInvites] = useState<Invite[] | null>(ssrData?.invites?.invites ?? null);
 
   useEffect(() => {
-    Api.verificationStatus().then(setStatus).catch(() => undefined);
-    Api.invites().then((r) => setInvites(r.invites)).catch(() => undefined);
+    if (ssrData?.status === undefined) Api.verificationStatus().then(setStatus).catch(() => undefined);
+    if (ssrData?.invites === undefined) Api.invites().then((r) => setInvites(r.invites)).catch(() => undefined);
   }, []);
 
   const save = async (): Promise<void> => {
@@ -121,12 +129,12 @@ export function ProfileScreen({ member, onNavigate, dark, onDark }: { member: Se
 
       <FaceSearch />
 
-      <RecognitionSection />
+      <RecognitionSection ssrData={ssrData} />
 
-      <IntentsSection />
+      <IntentsSection ssrData={ssrData} />
 
       <Section label="Notifications">
-        <NotifyPrefs />
+        <NotifyPrefs ssrData={ssrData} />
         <p style={{ font: "13px var(--font-ui)", color: "var(--c-neutral-500)" }}>
           Quiet hours still silence everything (J4).
         </p>
@@ -176,10 +184,11 @@ export function ProfileScreen({ member, onNavigate, dark, onDark }: { member: Se
   );
 }
 
-function RecognitionSection(): React.ReactElement {
-  const [data, setData] = useState<{ points: number; badges: Array<{ badge: string; title: string; description: string; awardedAt: string; awardedBy: string | null }>; streak: { current: number; longest: number } } | null>(null);
+function RecognitionSection({ ssrData }: { ssrData?: ProfileSsrData }): React.ReactElement {
+  const [data, setData] = useState<ProfileSsrData["recognition"] extends undefined ? never : NonNullable<ProfileSsrData["recognition"]> | null>(ssrData?.recognition ?? null);
 
-  useEffect(() => { Api.myRecognition().then((v: RecognitionMe) => setData(v)).catch(() => undefined); }, []);
+  useEffect(() => { if (ssrData?.recognition === undefined) Api.myRecognition().then((v: RecognitionMe) => setData(v)).catch(() => undefined);
+  }, []);
 
   return (
     <Section label="Recognition">
@@ -212,7 +221,7 @@ function RecognitionSection(): React.ReactElement {
   );
 }
 
-function IntentsSection(): React.ReactElement {
+function IntentsSection({ ssrData }: { ssrData?: ProfileSsrData }): React.ReactElement {
   const OPTIONS: Array<{ key: string; label: string }> = [
     { key: "reconnect", label: "Reconnect" },
     { key: "network", label: "Network & jobs" },
@@ -221,10 +230,11 @@ function IntentsSection(): React.ReactElement {
     { key: "business", label: "Grow my business" },
     { key: "mentor", label: "Mentor" },
   ];
-  const [selected, setSelected] = useState<string[] | null>(null);
+  const [selected, setSelected] = useState<string[] | null>(ssrData?.intents?.intents ?? null);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => { Api.getIntents().then((r) => setSelected(r.intents)).catch(() => setSelected([])); }, []);
+  useEffect(() => { if (ssrData?.intents === undefined) Api.getIntents().then((r) => setSelected(r.intents)).catch(() => setSelected([]));
+  }, []);
 
   const toggle = (key: string): void => {
     if (selected === null) return;
@@ -258,9 +268,10 @@ function IntentsSection(): React.ReactElement {
   );
 }
 
-function NotifyPrefs(): React.ReactElement {
-  const [prefs, setPrefs] = useState<{ mentions: string; events: string; news: string } | null>(null);
-  useEffect(() => { Api.getNotifyPrefs().then((r) => setPrefs(r.prefs)).catch(() => undefined); }, []);
+function NotifyPrefs({ ssrData }: { ssrData?: ProfileSsrData }): React.ReactElement {
+  const [prefs, setPrefs] = useState<{ mentions: string; events: string; news: string } | null>(ssrData?.prefs?.prefs ?? null);
+  useEffect(() => { if (ssrData?.prefs === undefined) Api.getNotifyPrefs().then((r) => setPrefs(r.prefs)).catch(() => undefined);
+  }, []);
   const flip = (key: "mentions" | "events" | "news"): void => {
     if (prefs === null) return;
     const next = { ...prefs, [key]: prefs[key] === "on" ? "off" : "on" };

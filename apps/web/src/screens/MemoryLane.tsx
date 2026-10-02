@@ -6,11 +6,13 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import { Section } from "./ProfileScreen.js";
 import type { MemoryItem, Era, Yearbook, YearbookDetail, MemorialView } from "../events-types.js";
 
-export function MemoryLaneScreen({ member }: { member: { id: string; roles: string[] } | null }): React.ReactElement {
+export interface MemorySsrData { throwbacks?: { items: MemoryItem[] }; eras?: { eras: Era[] }; yearbooks?: { yearbooks: Yearbook[] }; onThisDay?: { memories: Array<{ id: string; kind: string; body: string | null; caption: string | null; year: number | null; mediaId: string | null }> }; honourees?: { honourees: Array<{ id: string; display_name: string; citation: string; year: number | null }> }; memorials?: { memorials: MemorialView[] } }
+
+export function MemoryLaneScreen({ member, ssrData }: { member: { id: string; roles: string[] } | null; ssrData?: MemorySsrData }): React.ReactElement {
   const [tab, setTab] = useState<"throwbacks" | "yearbooks" | "onthisday" | "fame" | "memorials">("throwbacks");
   return (
     <main style={{ paddingBottom: 96 }}>
@@ -23,18 +25,18 @@ export function MemoryLaneScreen({ member }: { member: { id: string; roles: stri
           </button>
         ))}
       </div>
-      {tab === "throwbacks" && <Throwbacks member={member} />}
-      {tab === "yearbooks" && <Yearbooks />}
-      {tab === "onthisday" && <OnThisDay />}
-      {tab === "fame" && <HallOfFame />}
-      {tab === "memorials" && <Memorials member={member} />}
+      {tab === "throwbacks" && <Throwbacks member={member} ssrData={ssrData} />}
+      {tab === "yearbooks" && <Yearbooks ssrData={ssrData} />}
+      {tab === "onthisday" && <OnThisDay ssrData={ssrData} />}
+      {tab === "fame" && <HallOfFame ssrData={ssrData} />}
+      {tab === "memorials" && <Memorials member={member} ssrData={ssrData} />}
     </main>
   );
 }
 
-function Throwbacks({ member }: { member: { id: string; roles: string[] } | null }): React.ReactElement {
-  const [items, setItems] = useState<MemoryItem[] | null>(null);
-  const [eras, setEras] = useState<Era[]>([]);
+function Throwbacks({ member, ssrData }: { member: { id: string; roles: string[] } | null; ssrData?: MemorySsrData }): React.ReactElement {
+  const [items, setItems] = useState<MemoryItem[] | null>(ssrData?.throwbacks?.items ?? null);
+  const [eras, setEras] = useState<Era[]>(ssrData?.eras?.eras ?? []);
   const [eraFilter, setEraFilter] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -70,7 +72,7 @@ function Throwbacks({ member }: { member: { id: string; roles: string[] } | null
         )}
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {items === null ? <SkeletonList /> : items.length === 0 ? (
+      {items === null ? <main className="screen-pad" /> : items.length === 0 ? (
         <Empty title="The archive awaits" body="Old photos from the school years live here, organized by era." />
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: 16 }}>
@@ -90,12 +92,10 @@ function Throwbacks({ member }: { member: { id: string; roles: string[] } | null
   );
 }
 
-function Yearbooks(): React.ReactElement {
-  const [books, setBooks] = useState<Yearbook[] | null>(null);
+function Yearbooks({ ssrData }: { ssrData?: MemorySsrData }): React.ReactElement {
+  const books = ssrData?.yearbooks?.yearbooks ?? null;
   const [open, setOpen] = useState<YearbookDetail | null>(null);
   const [query, setQuery] = useState("");
-
-  useEffect(() => { Api.yearbooks().then((r) => setBooks(r.yearbooks)).catch(() => undefined); }, []);
 
   const search = (id: string, q: string): void => {
     Api.yearbook(id, q).then((r) => { setOpen(r); setQuery(q); }).catch(() => undefined);
@@ -124,7 +124,7 @@ function Yearbooks(): React.ReactElement {
 
   return (
     <div>
-      {books === null ? <SkeletonList /> : books.length === 0 ? (
+      {books === null ? null : books.length === 0 ? (
         <Empty title="No yearbooks yet" body="Digitized yearbooks appear here, searchable by name." />
       ) : books.map((b) => (
         <button key={b.id} type="button" className="row press" style={{ cursor: "pointer" }} onClick={() => search(b.id, "")}>
@@ -138,10 +138,12 @@ function Yearbooks(): React.ReactElement {
   );
 }
 
-function OnThisDay(): React.ReactElement {
-  const [memories, setMemories] = useState<Array<{ id: string; kind: string; body: string | null; caption: string | null; year: number | null; mediaId: string | null }> | null>(null);
-  useEffect(() => { Api.onThisDay().then((r) => setMemories(r.memories)).catch(() => undefined); }, []);
-  if (memories === null) return <SkeletonList />;
+function OnThisDay({ ssrData }: { ssrData?: MemorySsrData }): React.ReactElement {
+  const [memories, setMemories] = useState<NonNullable<MemorySsrData["onThisDay"]>["memories"] | null>(ssrData?.onThisDay?.memories ?? null);
+  const load = (): void => { Api.onThisDay().then((r) => setMemories(r.memories)).catch(() => undefined); };
+  useEffect(() => { if (ssrData?.onThisDay === undefined) load();
+  }, []);
+  if (memories === null) return <main className="screen-pad" />;
   if (memories.length === 0) return <Empty title="Nothing from this day — yet" body="Memories from past years resurface every morning." />;
   return (
     <div style={{ padding: 16 }}>
@@ -158,10 +160,12 @@ function OnThisDay(): React.ReactElement {
   );
 }
 
-function HallOfFame(): React.ReactElement {
-  const [honourees, setHonourees] = useState<Array<{ id: string; display_name: string; citation: string; year: number | null }> | null>(null);
-  useEffect(() => { Api.hallOfFame().then((r) => setHonourees(r.honourees)).catch(() => undefined); }, []);
-  if (honourees === null) return <SkeletonList />;
+function HallOfFame({ ssrData }: { ssrData?: MemorySsrData }): React.ReactElement {
+  const [honourees, setHonourees] = useState<Array<{ id: string; display_name: string; citation: string; year: number | null }> | null>(ssrData?.honourees?.honourees ?? null);
+  const load = (): void => { Api.hallOfFame().then((r) => setHonourees(r.honourees)).catch(() => undefined); };
+  useEffect(() => { if (ssrData?.honourees === undefined) load();
+  }, []);
+  if (honourees === null) return <main className="screen-pad" />;
   if (honourees.length === 0) return <Empty title="The hall is being furnished" body="Distinguished members are honoured here by the admins." />;
   return (
     <div style={{ padding: 16 }}>
@@ -178,16 +182,16 @@ function HallOfFame(): React.ReactElement {
   );
 }
 
-function Memorials({ member }: { member: { id: string; roles: string[] } | null }): React.ReactElement {
-  const [list, setList] = useState<MemorialView[] | null>(null);
+function Memorials({ member, ssrData }: { member: { id: string; roles: string[] } | null; ssrData?: MemorySsrData }): React.ReactElement {
+  const [list, setList] = useState<MemorialView[] | null>(ssrData?.memorials?.memorials ?? null);
   const [open, setOpen] = useState<MemorialView | null>(null);
   const [condolences, setCondolences] = useState<Array<{ id: string; message: string; attending: boolean; name: string }> | null>(null);
   const [message, setMessage] = useState("");
   const [attending, setAttending] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const load = (): void => { Api.memorials().then((r) => setList(r.memorials)).catch(() => undefined); };
-  useEffect(load, []);
-
+  useEffect(() => { if (ssrData?.memorials === undefined) load();
+  }, []);
   const openPage = (m: MemorialView): void => {
     setOpen(m);
     Api.memorialCondolences(m.id).then((r) => setCondolences(r.condolences)).catch(() => undefined);
@@ -202,7 +206,7 @@ function Memorials({ member }: { member: { id: string; roles: string[] } | null 
     } catch (e) { setNote((e as Error).message); }
   };
 
-  if (list === null) return <SkeletonList />;
+  if (list === null) return <main className="screen-pad" />;
   if (open !== null) {
     return (
       <div style={{ padding: 16 }}>

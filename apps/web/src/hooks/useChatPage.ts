@@ -9,6 +9,9 @@ import { Api } from "../api.js";
 import type { ChatThread, MemberHit } from "../phase2-types.js";
 import type { ChatPageConfig } from "@fedites/config";
 
+/** Data shipped with the server-rendered page (no client page loading). */
+export interface ChatListSsrData { threads?: ChatThread[]; presence?: { online: string[] } }
+
 export interface ChatFilters {
   all: (t: ChatThread) => boolean;
   unread: (t: ChatThread) => boolean;
@@ -23,8 +26,8 @@ const FILTERS: ChatFilters = {
   favorites: (t) => t.pinned,
 };
 
-export function useChatPage(config: ChatPageConfig, onOpenThread: (type: "group" | "dm", id: string) => void) {
-  const [threads, setThreads] = useState<ChatThread[] | null>(null);
+export function useChatPage(config: ChatPageConfig, onOpenThread: (type: "group" | "dm", id: string) => void, ssrData?: ChatListSsrData) {
+  const [threads, setThreads] = useState<ChatThread[] | null>(ssrData?.threads ?? null);
   const [filter, setFilter] = useState<string>(config.filterChips.options[0] ?? "all");
   const [query, setQuery] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -34,11 +37,11 @@ export function useChatPage(config: ChatPageConfig, onOpenThread: (type: "group"
     Api.chatThreads().then((r) => setThreads(r.threads)).catch(() => setThreads([]));
   }, []);
 
-  useEffect(() => { load(); }, [load]);
-
   // Presence: who is connected right now (WS hub, server-side truth).
+  // Seeded from the SSR payload, then kept fresh by polling.
   useEffect(() => {
     let alive = true;
+    if (ssrData?.presence !== undefined) setOnlineIds(new Set(ssrData.presence.online));
     const tick = (): void => {
       Api.chatPresence().then((r) => { if (alive) setOnlineIds(new Set(r.online)); }).catch(() => undefined);
     };

@@ -6,12 +6,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
 import { PhotoWall } from "./PhotoWall.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import { Section } from "./ProfileScreen.js";
 import type { EventListItem, Ticket, EventTask, BudgetItem } from "../events-types.js";
 
-export function EventsScreen({ onNavigate, isAdmin }: { onNavigate: (to: string) => void; isAdmin: boolean }): React.ReactElement {
-  const [data, setData] = useState<{ upcoming: EventListItem[]; past: EventListItem[] } | null>(null);
+export function EventsScreen({ onNavigate, isAdmin, ssrData }: {
+  onNavigate: (to: string) => void; isAdmin: boolean; ssrData?: { events?: { upcoming: EventListItem[]; past: EventListItem[] } };
+}): React.ReactElement {
+  const [data, setData] = useState<{ upcoming: EventListItem[]; past: EventListItem[] } | null>(ssrData?.events ?? null);
   const [mine, setMine] = useState(false);
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
@@ -24,7 +26,6 @@ export function EventsScreen({ onNavigate, isAdmin }: { onNavigate: (to: string)
   const load = (): void => {
     Api.eventsList().then((d: { upcoming: EventListItem[]; past: EventListItem[] }) => setData(d)).catch((e: Error) => setError(e.message));
   };
-  useEffect(load, []);
 
   const openCreate = (): void => {
     setCreating(true);
@@ -49,7 +50,7 @@ export function EventsScreen({ onNavigate, isAdmin }: { onNavigate: (to: string)
   };
 
   if (error !== null) return <Empty title="Could not load events" body={error} />;
-  if (data === null) return <SkeletonList />;
+  if (data === null) return <main className="screen-pad" />;
 
   const list = (mine ? data.upcoming.filter((e) => e.myResponse !== null) : data.upcoming);
 
@@ -121,10 +122,11 @@ export function EventsScreen({ onNavigate, isAdmin }: { onNavigate: (to: string)
   );
 }
 
-export function EventDetailScreen({ eventId, onNavigate, member }: {
+export function EventDetailScreen({ eventId, onNavigate, member, ssrData }: {
   eventId: string; onNavigate: (to: string) => void; member: { id: string; roles: string[]; verification: string } | null;
+  ssrData?: { event?: EventListItem; ticket?: Ticket | { error: string }; tasks?: { tasks: EventTask[]; budget: BudgetItem[] }; attendees?: { attendees: Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> }; live?: { counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } };
 }): React.ReactElement {
-  const [event, setEvent] = useState<EventListItem | null>(null);
+  const [event, setEvent] = useState<EventListItem | null>(ssrData?.event ?? null);
   const [error, setError] = useState<string | null>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,10 +134,9 @@ export function EventDetailScreen({ eventId, onNavigate, member }: {
   const load = (): void => {
     Api.eventDetail(eventId).then((v: EventListItem) => setEvent(v)).catch((e: Error) => setError(e.message));
   };
-  useEffect(load, [eventId]);
 
   if (error !== null) return <Empty title="Event unavailable" body={error} />;
-  if (event === null) return <SkeletonList />;
+  if (event === null) return <main className="screen-pad" />;
 
   const rsvp = async (response: "going" | "maybe" | "no"): Promise<void> => {
     if (member === null) { onNavigate("/auth"); return; }
@@ -219,7 +220,7 @@ export function EventDetailScreen({ eventId, onNavigate, member }: {
         </div>
       )}
 
-      {event.organizer && <OrganizerSuite eventId={eventId} member={member} />}
+      {event.organizer && <OrganizerSuite eventId={eventId} member={member} ssrData={ssrData} />}
 
       {ticket !== null && (
         <div role="dialog" aria-modal="true" aria-label="My QR ticket" onClick={() => setTicket(null)}
@@ -238,11 +239,11 @@ export function EventDetailScreen({ eventId, onNavigate, member }: {
   );
 }
 
-function OrganizerSuite({ eventId, member }: { eventId: string; member: { id: string; roles: string[] } | null }): React.ReactElement {
-  const [tasks, setTasks] = useState<EventTask[] | null>(null);
-  const [budget, setBudget] = useState<BudgetItem[] | null>(null);
-  const [attendees, setAttendees] = useState<Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> | null>(null);
-  const [live, setLive] = useState<{ counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } | null>(null);
+function OrganizerSuite({ eventId, member, ssrData }: { eventId: string; member: { id: string; roles: string[] } | null; ssrData?: { tasks?: { tasks: EventTask[]; budget: BudgetItem[] }; attendees?: { attendees: Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> }; live?: { counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } } }): React.ReactElement {
+  const [tasks, setTasks] = useState<EventTask[] | null>(ssrData?.tasks?.tasks ?? null);
+  const [budget, setBudget] = useState<BudgetItem[] | null>(ssrData?.tasks?.budget ?? null);
+  const [attendees, setAttendees] = useState<Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> | null>(ssrData?.attendees?.attendees ?? null);
+  const [live, setLive] = useState<{ counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } | null>(ssrData?.live ?? null);
   const [taskTitle, setTaskTitle] = useState("");
   const [budgetLabel, setBudgetLabel] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");

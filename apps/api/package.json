@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude '**/*pg.test.ts'",
-    "test:pg": "vitest run --no-file-parallelism src/phase1.pg.test.ts src/phase2.pg.test.ts src/phase2-ws.pg.test.ts src/phase3-events.pg.test.ts src/phase3-photos.pg.test.ts src/phase3-recognition.pg.test.ts src/phase4-money.pg.test.ts src/phase4-giving.pg.test.ts src/phase4-structured.pg.test.ts src/phase5-memory.pg.test.ts src/phase5-knowledge.pg.test.ts src/phase5-nostalgia.pg.test.ts src/phase5-schoolbridge.pg.test.ts src/phase5-career.pg.test.ts",
+    "test:pg": "vitest run --no-file-parallelism src/phase1.pg.test.ts src/phase2-ws.pg.test.ts src/phase2.pg.test.ts src/phase3-events.pg.test.ts src/phase3-photos.pg.test.ts src/phase3-recognition.pg.test.ts src/phase4-giving.pg.test.ts src/phase4-money.pg.test.ts src/phase4-structured.pg.test.ts src/phase5-career.pg.test.ts src/phase5-knowledge.pg.test.ts src/phase5-memory.pg.test.ts src/phase5-nostalgia.pg.test.ts src/phase5-schoolbridge.pg.test.ts src/ssr.pg.test.ts",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
@@ -21,7 +21,8 @@
     "pg": "^8.12.0",
     "qrcode": "^1.5.4",
     "ws": "^8.22.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@fastify/static": "^7.0.4"
   },
   "devDependencies": {
     "@types/pg": "^8.11.6",
@@ -33,6 +34,7 @@
     "tsx": "^4.17.0",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.2.0",
+    "vite": "^5.4.2",
     "vitest": "^2.0.5"
   }
 }

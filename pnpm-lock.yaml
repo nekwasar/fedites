@@ -29,6 +29,9 @@ importers:
       '@fastify/multipart':
         specifier: '7'
         version: 7.7.3
+      '@fastify/static':
+        specifier: ^7.0.4
+        version: 7.0.4
       '@fedites/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -78,6 +81,9 @@ importers:
       typescript-eslint:
         specifier: ^8.2.0
         version: 8.71.0(eslint@9.39.5)(typescript@5.9.3)
+      vite:
+        specifier: ^5.4.2
+        version: 5.4.21(@types/node@20.19.43)(terser@5.51.2)
       vitest:
         specifier: ^2.0.5
         version: 2.1.9(@types/node@20.19.43)(terser@5.51.2)
@@ -1474,6 +1480,9 @@ packages:
 
   '@fastify/static@6.12.0':
     resolution: {integrity: sha512-KK1B84E6QD/FcQWxDI2aiUCwHxMJBI1KeCUzm1BwYpPY1b742+jeKruGHP2uOluuM6OkBPI8CIANrXcCRtC2oQ==}
+
+  '@fastify/static@7.0.4':
+    resolution: {integrity: sha512-p2uKtaf8BMOZWLs6wu+Ihg7bWNBdjNgCwDza4MJtTqg+5ovKmcbgbR9Xs5/smZ1YISfzKOCNYmZV8LaCj+eJ1Q==}
 
   '@fastify/swagger-ui@1.10.2':
     resolution: {integrity: sha512-f2mRqtblm6eRAFQ3e8zSngxVNEtiYY7rISKQVjPA++ZsWc5WYlPVTb6Bx0G/zy0BIoucNqDr/Q2Vb/kTYkOq1A==}
@@ -6954,6 +6963,15 @@ snapshots:
       fastify-plugin: 4.5.1
       glob: 8.1.0
       p-limit: 3.1.0
+
+  '@fastify/static@7.0.4':
+    dependencies:
+      '@fastify/accept-negotiator': 1.1.0
+      '@fastify/send': 2.1.0
+      content-disposition: 0.5.4
+      fastify-plugin: 4.5.1
+      fastq: 1.20.3
+      glob: 10.5.0
 
   '@fastify/swagger-ui@1.10.2':
     dependencies:

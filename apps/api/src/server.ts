@@ -165,6 +165,19 @@ export async function buildApp(deps: ApiDeps): Promise<FastifyInstance> {
   await app.register(photoRoutes, { pool, loadConfigByInstance, hub });
   await app.register(policyRoutes, { loadConfig: loadConfigByInstance });
 
+  // Full-page server-side rendering (MPA mode): every page request renders
+  // complete HTML with boot + route data inlined. Enabled explicitly so
+  // tests/CI only exercise it when asked (SSR_ENABLED=1).
+  if (process.env.SSR_ENABLED === "1") {
+    const { registerSsr } = await import("./ssr.js");
+    await registerSsr(app, {
+      pool,
+      loadConfigByInstance,
+      defaultInstanceId: deps.defaultInstanceId,
+      mode: process.env.SSR_MODE === "prod" ? "prod" : "dev",
+    });
+  }
+
   // Realtime hub attaches when the underlying server starts (start() below
   // or the host app calling listen). Expose for tests.
   app.decorate("hub", hub);

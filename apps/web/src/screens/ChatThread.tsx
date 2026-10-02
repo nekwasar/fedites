@@ -7,104 +7,19 @@
  */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
-import { Row, Button, Avatar, Badge, Empty, Skeleton, Fab } from "@fedites/ui";
-import type { ChatThread, ChatMessage } from "../phase2-types.js";
-import type { MemberHit } from "../phase2-types.js";
+import { Button, Badge } from "@fedites/ui";
+import type { ChatMessage } from "../phase2-types.js";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--hairline-color)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)",
 };
 
-export function ChatListScreen({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
-  const [threads, setThreads] = useState<ChatThread[] | null>(null);
-  const [picker, setPicker] = useState(false);
-  const [hits, setHits] = useState<MemberHit[]>([]);
-  const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    Api.chatThreads().then((r) => setThreads(r.threads)).catch(() => setThreads([]));
-  }, []);
-
-  const search = useCallback((q: string): void => {
-    setQuery(q);
-    Api.searchMembers(q).then((r) => setHits(r.members)).catch(() => undefined);
-  }, []);
-
-  if (threads === null) return <Skeleton height="var(--lh-headline)" />;
-
-  return (
-    <main className="screen-pad">
-      <h1 className="screen-title">Chat</h1>
-      {threads.length === 0 && (
-        <Empty
-          title="No conversations yet"
-          body="Group chats appear with your groups; use the new-chat button for DMs."
-        />
-      )}
-      {threads.map((t) => (
-        <Row
-          key={`${t.type}:${t.id}`}
-          as="button"
-          onClick={() => onNavigate(`/chats/${t.type}/${t.id}`)}
-          active={t.pinned}
-        >
-          <Avatar name={t.name} />
-          <span className="row-main">
-            <span style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-2)" }}>
-              <span style={{ font: "var(--weight-semibold) var(--type-body) var(--font-ui)", color: "var(--c-base-contrast)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {t.name}
-              </span>
-              <span className="micro tabular">{t.lastAt !== null ? new Date(t.lastAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>
-            </span>
-            <span style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-2)" }}>
-              <span className="micro tabular" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.preview}</span>
-              {t.unread > 0 && <Badge variant="solid">{t.unread}</Badge>}
-            </span>
-          </span>
-        </Row>
-      ))}
-
-      <Fab label="New chat" onClick={() => setPicker(true)} />
-
-      {picker && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="New chat"
-          onClick={() => setPicker(false)}
-          className="overlay"
-          style={{ alignItems: "flex-end" }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ width: "100%", maxHeight: "70%", overflowY: "auto", background: "var(--c-base)", borderTop: "2px solid var(--c-accent)", padding: "var(--space-4)" }}
-          >
-            <div className="micro" style={{ paddingBottom: "var(--space-2)" }}>New chat</div>
-            <input
-              value={query} onChange={(e) => search(e.target.value)} placeholder="Search members by name or city" aria-label="Search members"
-              style={inputStyle}
-            />
-            {hits.map((m) => (
-              <Row key={m.id} as="button" onClick={() => onNavigate(`/chats/dm/${m.id}`)}>
-                <Avatar name={m.display_name} />
-                <span className="row-main">
-                  <span style={{ font: "var(--weight-medium) var(--type-body) var(--font-ui)" }}>{m.display_name}</span>
-                  <span className="micro tabular">{m.set_year !== null ? `Set '${String(m.set_year).slice(-2)}` : ""} · {m.verification}</span>
-                </span>
-              </Row>
-            ))}
-          </div>
-        </div>
-      )}
-    </main>
-  );
-}
-
-export function ChatThreadScreen({ type, id, onNavigate, remoteTyping = null }: {
+export function ChatThreadScreen({ type, id, onNavigate, remoteTyping = null, ssrData }: {
   type: "group" | "dm"; id: string; onNavigate: (to: string) => void;
   remoteTyping?: { threadId: string; name: string } | null;
+  ssrData?: { messages?: { messages: ChatMessage[] } };
 }): React.ReactElement {
-  const [messages, setMessages] = useState<ChatMessage[] | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[] | null>(ssrData?.messages?.messages ?? null);
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -114,8 +29,6 @@ export function ChatThreadScreen({ type, id, onNavigate, remoteTyping = null }: 
   const load = useCallback((): void => {
     Api.threadMessages(type, id).then((r) => setMessages(r.messages)).catch(() => setMessages([]));
   }, [type, id]);
-  useEffect(() => { load(); }, [load]);
-
   // Read receipt on open (I5: watermark moves; badges agree).
   useEffect(() => {
     void Api.markThreadRead(type, id).catch(() => undefined);
@@ -174,7 +87,7 @@ export function ChatThreadScreen({ type, id, onNavigate, remoteTyping = null }: 
     onNavigate(`/groups/${id}`);
   };
 
-  if (messages === null) return <Skeleton height="var(--lh-headline)" />;
+  if (messages === null) return <main className="screen-pad" />;
 
   return (
     <main className="screen-pad" style={{ paddingBottom: 140 }}>

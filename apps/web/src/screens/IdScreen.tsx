@@ -4,19 +4,19 @@
  */
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import type { IdCard } from "@fedites/config";
 
-export function IdScreen(): React.ReactElement {
-  const [card, setCard] = useState<IdCard | null>(null);
+export function IdScreen({ ssrData }: { ssrData?: { card?: IdCard } }): React.ReactElement {
+  const [card, setCard] = useState<IdCard | null>(ssrData?.card ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Api.idCard().then(setCard).catch((e: Error) => setError(e.message));
+    if (ssrData?.card === undefined) Api.idCard().then(setCard).catch((e: Error) => setError(e.message));
   }, []);
 
   if (error !== null) return <Empty title="Sign in to see your ID" body="Your alumni ID appears after you sign in." />;
-  if (card === null) return <SkeletonList />;
+  if (card === null) return <main className="screen-pad" />;
 
   return (
     <main style={{ paddingBottom: 96 }}>

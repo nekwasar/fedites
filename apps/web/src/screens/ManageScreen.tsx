@@ -27,12 +27,12 @@ const EMPTY_SECTIONS = [
 const ALL_ROLES = ["president", "treasurer", "secretary", "moderator", "editor", "member"] as const;
 type RoleKey = (typeof ALL_ROLES)[number];
 
-export function ManageScreen({ member, onNavigate }: { member: SessionMember; onNavigate: (to: string) => void }): React.ReactElement {
-  const [overview, setOverview] = useState<ManageOverview | null>(null);
+export function ManageScreen({ member, onNavigate, ssrData }: { member: SessionMember; onNavigate: (to: string) => void; ssrData?: { overview?: ManageOverview } }): React.ReactElement {
+  const [overview, setOverview] = useState<ManageOverview | null>(ssrData?.overview ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Api.manageOverview().then(setOverview).catch((e: Error) => setError(e.message));
+    if (ssrData?.overview === undefined) Api.manageOverview().then(setOverview).catch((e: Error) => setError(e.message));
   }, []);
 
   if (error !== null) return <Empty title="Admins only" body="The Manage panel is for role-holders. Ask an admin if you need access." />;

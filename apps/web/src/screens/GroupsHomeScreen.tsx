@@ -2,25 +2,26 @@
  * Groups home (2.1, spec §4.1): adaptive by density — "Find your people" for
  * new members, "My groups" rows with unseen-activity tags for established
  * ones. Pinned first, then latest unseen activity. Discovery never disappears.
- * Library components only (M2).
+ * Library components only (M2). Server-rendered: data arrives with the page.
  */
-import React, { useEffect, useState } from "react";
-import { Api } from "../api.js";
-import { Row, Button, Avatar, Badge, Empty, Skeleton, SectionHead } from "@fedites/ui";
+import React, { useState } from "react";
+import { Row, Button, Avatar, Badge, Empty, SectionHead } from "@fedites/ui";
 import type { GroupsHome, GroupSummary } from "../phase2-types.js";
 
-export function GroupsHomeScreen({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
-  const [home, setHome] = useState<GroupsHome | null>(null);
-  const [browse, setBrowse] = useState<GroupSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export interface GroupsHomeData { home?: GroupsHome; browse?: { groups: GroupSummary[] } }
 
-  useEffect(() => {
-    Api.groupsHome().then((v) => setHome(v)).catch((e: Error) => setError(e.message));
-    Api.browseGroups().then((r) => setBrowse(r.groups.filter((g) => g.enabled && !g.joined && (g.type === "interest" || g.type === "guild")))).catch(() => undefined);
-  }, []);
+export function GroupsHomeScreen({ onNavigate, ssrData }: {
+  onNavigate: (to: string) => void;
+  ssrData?: GroupsHomeData;
+}): React.ReactElement {
+  const [home] = useState<GroupsHome | null>(ssrData?.home ?? null);
+  const [browse] = useState<GroupSummary[] | null>(
+    ssrData?.browse?.groups?.filter((g) => g.enabled && !g.joined && (g.type === "interest" || g.type === "guild")) ?? null,
+  );
+  const [error] = useState<string | null>(ssrData?.home === undefined ? "Could not load groups" : null);
 
   if (error !== null) return <Empty title="Could not load groups" body={error} />;
-  if (home === null) return <Skeleton height="var(--lh-headline)" />;
+  if (home === null) return <main className="screen-pad" />;
 
   const established = home.myGroups.length > 0;
 

@@ -6,14 +6,21 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import { Section } from "./ProfileScreen.js";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)",
 };
 
-export function NostalgiaScreen(): React.ReactElement {
+export interface NostalgiaSsrData {
+  threads?: { threads: Array<{ id: string; prompt: string; week: string; posts: number }> };
+  recipes?: { recipes: Array<{ id: string; title: string; ingredients: string; steps: string; story: string | null; submitted_by_name: string }> };
+  tracks?: { tracks: Array<{ id: string; title: string; artist: string | null; year: number | null; external_url: string | null; added_by_name: string }> };
+  anthem?: { anthemMediaId: string | null; bellMediaId: string | null };
+}
+
+export function NostalgiaScreen({ ssrData }: { ssrData?: NostalgiaSsrData }): React.ReactElement {
   const [tab, setTab] = useState<"remember" | "recipes" | "radio" | "anthem" | "capsules" | "letters" | "birthdays" | "awards">("remember");
   return (
     <main style={{ paddingBottom: 96 }}>
@@ -26,10 +33,10 @@ export function NostalgiaScreen(): React.ReactElement {
           </button>
         ))}
       </div>
-      {tab === "remember" && <RememberWhen />}
-      {tab === "recipes" && <Recipes />}
-      {tab === "radio" && <Radio />}
-      {tab === "anthem" && <AnthemAndBell />}
+      {tab === "remember" && <RememberWhen ssrData={ssrData} />}
+      {tab === "recipes" && <Recipes ssrData={ssrData} />}
+      {tab === "radio" && <Radio ssrData={ssrData} />}
+      {tab === "anthem" && <AnthemAndBell ssrData={ssrData} />}
       {tab === "capsules" && <Capsules />}
       {tab === "letters" && <FutureLetters />}
       {tab === "birthdays" && <Birthdays />}
@@ -38,14 +45,15 @@ export function NostalgiaScreen(): React.ReactElement {
   );
 }
 
-function RememberWhen(): React.ReactElement {
-  const [threads, setThreads] = useState<Array<{ id: string; prompt: string; week: string; posts: number }> | null>(null);
+function RememberWhen({ ssrData }: { ssrData?: NostalgiaSsrData }): React.ReactElement {
+  const [threads, setThreads] = useState<Array<{ id: string; prompt: string; week: string; posts: number }> | null>(ssrData?.threads?.threads ?? null);
   const [open, setOpen] = useState<{ thread: { prompt: string; week: string }; stories: Array<{ id: string; story: string; author: string }> } | null>(null);
   const [story, setStory] = useState("");
   const [note, setNote] = useState<string | null>(null);
 
   const load = (): void => { Api.rememberWhen().then((r) => setThreads(r.threads)).catch(() => undefined); };
-  useEffect(load, []);
+  useEffect(() => { if (ssrData?.threads === undefined) load();
+  }, []);
 
   const share = async (): Promise<void> => {
     if (story.trim().length < 4) return;
@@ -88,7 +96,7 @@ function RememberWhen(): React.ReactElement {
         <p className="micro" style={{ margin: 0 }}>This week's prompt is created automatically when the first memory lands.</p>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {threads === null ? <SkeletonList /> : threads.length === 0 ? (
+      {threads === null ? null : threads.length === 0 ? (
         <Empty title="No prompts yet" body="The first 'remember when' story starts the tradition." />
       ) : threads.map((t) => (
         <button key={t.id} type="button" className="row press" style={{ cursor: "pointer" }} onClick={() => void openThread(t.id)}>
@@ -102,15 +110,16 @@ function RememberWhen(): React.ReactElement {
   );
 }
 
-function Recipes(): React.ReactElement {
-  const [recipes, setRecipes] = useState<Array<{ id: string; title: string; ingredients: string; steps: string; story: string | null; submitted_by_name: string }> | null>(null);
+function Recipes({ ssrData }: { ssrData?: NostalgiaSsrData }): React.ReactElement {
+  const [recipes, setRecipes] = useState<NostalgiaSsrData["recipes"] extends undefined ? never : NonNullable<NostalgiaSsrData["recipes"]>["recipes"] | null>(ssrData?.recipes?.recipes ?? null);
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [steps, setSteps] = useState("");
   const [note, setNote] = useState<string | null>(null);
 
   const load = (): void => { Api.recipes().then((r) => setRecipes(r.recipes)).catch(() => undefined); };
-  useEffect(load, []);
+  useEffect(() => { if (ssrData?.recipes === undefined) load();
+  }, []);
 
   const submit = async (): Promise<void> => {
     try {
@@ -129,7 +138,7 @@ function Recipes(): React.ReactElement {
         <button type="button" className="btn btn--outlined press" style={{ margin: "8px 0" }} onClick={() => void submit()} disabled={title.trim() === ""}>Share recipe</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {recipes === null ? <SkeletonList /> : recipes.length === 0 ? (
+      {recipes === null ? null : recipes.length === 0 ? (
         <Empty title="No recipes yet" body="Recreate the tuck-shop and dining-hall classics together." />
       ) : recipes.map((r) => (
         <div key={r.id} style={{ borderBottom: "1px solid var(--c-hairline)", padding: "12px 16px" }}>
@@ -144,15 +153,16 @@ function Recipes(): React.ReactElement {
   );
 }
 
-function Radio(): React.ReactElement {
-  const [tracks, setTracks] = useState<Array<{ id: string; title: string; artist: string | null; year: number | null; external_url: string | null; added_by_name: string }> | null>(null);
+function Radio({ ssrData }: { ssrData?: NostalgiaSsrData }): React.ReactElement {
+  const [tracks, setTracks] = useState<NostalgiaSsrData["tracks"] extends undefined ? never : NonNullable<NostalgiaSsrData["tracks"]>["tracks"] | null>(ssrData?.tracks?.tracks ?? null);
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [url, setUrl] = useState("");
   const [note, setNote] = useState<string | null>(null);
 
   const load = (): void => { Api.radio().then((r) => setTracks(r.tracks)).catch(() => undefined); };
-  useEffect(load, []);
+  useEffect(() => { if (ssrData?.tracks === undefined) load();
+  }, []);
 
   const add = async (): Promise<void> => {
     try {
@@ -171,7 +181,7 @@ function Radio(): React.ReactElement {
         <button type="button" className="btn btn--outlined press" style={{ margin: "8px 0" }} onClick={() => void add()} disabled={title.trim() === ""}>Add to the playlist</button>
       </div>
       {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {tracks === null ? <SkeletonList /> : tracks.length === 0 ? (
+      {tracks === null ? null : tracks.length === 0 ? (
         <Empty title="The playlist is empty" body="Curate the era-defining songs of your school days together." />
       ) : tracks.map((t, i) => (
         <div key={t.id} className="row" style={{ padding: "8px 16px" }}>
@@ -189,13 +199,14 @@ function Radio(): React.ReactElement {
   );
 }
 
-function AnthemAndBell(): React.ReactElement {
-  const [audio, setAudio] = useState<{ anthemMediaId: string | null; bellMediaId: string | null } | null>(null);
+function AnthemAndBell({ ssrData }: { ssrData?: NostalgiaSsrData }): React.ReactElement {
+  const [audio, setAudio] = useState<{ anthemMediaId: string | null; bellMediaId: string | null } | null>(ssrData?.anthem ?? null);
   const anthemRef = useRef<HTMLInputElement | null>(null);
   const bellRef = useRef<HTMLInputElement | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
-  useEffect(() => { Api.anthemBell().then((r) => setAudio(r as { anthemMediaId: string | null; bellMediaId: string | null })).catch(() => undefined); }, []);
+  useEffect(() => { if (ssrData?.anthem === undefined) Api.anthemBell().then((r) => setAudio(r as { anthemMediaId: string | null; bellMediaId: string | null })).catch(() => undefined);
+  }, []);
 
   const upload = async (file: File, target: "anthem" | "bell"): Promise<void> => {
     try {
@@ -274,7 +285,7 @@ function Capsules(): React.ReactElement {
         <button type="button" className="btn btn--filled press" style={{ margin: "8px 0" }} onClick={() => void seal()} disabled={title.trim() === "" || body.trim() === "" || openAt === ""}>Seal it</button>
       </Section>
       {note !== null && <p className="micro" style={{ color: "var(--c-danger)" }}>{note}</p>}
-      {capsules === null ? <SkeletonList /> : capsules.length === 0 ? (
+      {capsules === null ? null : capsules.length === 0 ? (
         <Empty title="No capsules yet" body="Seal messages and photos until the milestone reunion." />
       ) : capsules.map((c) => (
         <div key={c.id} className="row" style={{ padding: "8px 0", flexWrap: "wrap" }}>
@@ -318,7 +329,7 @@ function FutureLetters(): React.ReactElement {
         <button type="button" className="btn btn--filled press" style={{ margin: "8px 0" }} onClick={() => void write()} disabled={body.trim() === "" || deliverOn === ""}>Seal the letter</button>
       </Section>
       {note !== null && <p className="micro" style={{ color: "var(--c-danger)" }}>{note}</p>}
-      {letters === null ? <SkeletonList /> : letters.length === 0 ? (
+      {letters === null ? null : letters.length === 0 ? (
         <Empty title="No letters yet" body="Write now, and your future self reads it on the chosen day." />
       ) : letters.map((l) => (
         <div key={l.id} className="row" style={{ padding: "8px 0" }}>
@@ -337,7 +348,7 @@ function FutureLetters(): React.ReactElement {
 function Birthdays(): React.ReactElement {
   const [birthdays, setBirthdays] = useState<Array<{ name: string; setYear: number | null; inDays: number }> | null>(null);
   useEffect(() => { Api.birthdays().then((r) => setBirthdays(r.birthdays)).catch(() => undefined); }, []);
-  if (birthdays === null) return <SkeletonList />;
+  if (birthdays === null) return <main className="screen-pad" />;
   if (birthdays.length === 0) return <Empty title="No birthdays on your list" body="Setmates with visible birthdays appear here — gently." />;
   return (
     <div style={{ padding: 16 }}>
@@ -396,7 +407,7 @@ function Awards(): React.ReactElement {
         <button type="button" className="btn btn--filled press" style={{ margin: "8px 0" }} onClick={() => void award()} disabled={title.trim().length < 2}>Award</button>
       </Section>
       {note !== null && <p className="micro" style={{ color: "var(--c-accent)" }}>{note}</p>}
-      {awards === null ? <SkeletonList /> : awards.length === 0 ? (
+      {awards === null ? null : awards.length === 0 ? (
         <Empty title="No awards yet" body="The annual ceremony honours professional, charitable and lifetime service." />
       ) : awards.map((a) => (
         <div key={a.id} style={{ borderBottom: "1px solid var(--c-hairline)", padding: "12px 0" }}>

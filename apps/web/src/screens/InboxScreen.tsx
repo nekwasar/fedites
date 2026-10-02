@@ -2,20 +2,19 @@
  * Notification inbox (1.4): one notification center (rail 2). Vouch-request
  * items carry the identify action for setmates. Library components only (M2).
  */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Api } from "../api.js";
 import { Row, Button, Empty as EmptyState, Skeleton, Badge, useVariant } from "@fedites/ui";
 import type { Inbox, NotificationItem } from "@fedites/config";
 
-export function InboxScreen({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
+export function InboxScreen({ onNavigate, ssrData }: { onNavigate: (to: string) => void; ssrData?: { inbox?: Inbox } }): React.ReactElement {
   const variant = useVariant("row", "hairline");
-  const [inbox, setInbox] = useState<Inbox | null>(null);
+  const [inbox, setInbox] = useState<Inbox | null>(ssrData?.inbox ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const load = (): void => {
     Api.inbox().then((v) => setInbox(v)).catch((e: Error) => setError(e.message));
   };
-  useEffect(load, []);
 
   const open = async (item: NotificationItem): Promise<void> => {
     await Api.markRead(item.id).catch(() => undefined);
@@ -27,7 +26,7 @@ export function InboxScreen({ onNavigate }: { onNavigate: (to: string) => void }
   };
 
   if (error !== null) return <Empty title="Could not load notifications" body="Check your connection, then try again." />;
-  if (inbox === null) return <SkeletonList />;
+  if (inbox === null) return <main className="screen-pad" />;
   if (inbox.items.length === 0) return <Empty title="You are all caught up" body="Mentions, verification requests, and receipts land here." />;
 
   return (

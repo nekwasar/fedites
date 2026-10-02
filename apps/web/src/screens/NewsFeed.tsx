@@ -2,18 +2,19 @@
  * News bulletin (2.4) + Feed v1 (2.5) with the melt-into-group signature
  * motion (F5) and intent rails v0.
  */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Api } from "../api.js";
-import { Empty, SkeletonList } from "./InboxScreen.js";
+import { Empty } from "./InboxScreen.js";
 import type { NewsItem, NewsResponse, FeedResponse, FeedItem } from "../phase2-types.js";
 
-export function NewsScreen({ signedIn, onNavigate }: { signedIn: boolean; onNavigate: (to: string) => void }): React.ReactElement {
-  const [data, setData] = useState<NewsResponse | null>(null);
+export function NewsScreen({ signedIn, onNavigate, ssrData }: {
+  signedIn: boolean; onNavigate: (to: string) => void; ssrData?: { news?: NewsResponse };
+}): React.ReactElement {
+  const [data, setData] = useState<NewsResponse | null>(ssrData?.news ?? null);
   const [composer, setComposer] = useState("");
   const [commentsOn, setCommentsOn] = useState(false);
 
   const load = (): void => { Api.news().then(setData).catch(() => setData({ items: [], mySetGroup: null })); };
-  useEffect(load, []);
 
   const post = async (): Promise<void> => {
     if (composer.trim().length === 0) return;
@@ -22,7 +23,7 @@ export function NewsScreen({ signedIn, onNavigate }: { signedIn: boolean; onNavi
     load();
   };
 
-  if (data === null) return <SkeletonList />;
+  if (data === null) return <main className="screen-pad" />;
 
   return (
     <main style={{ paddingBottom: 96 }}>
@@ -114,12 +115,13 @@ function NewsRow({ item, mySetGroup, onNavigate, reload }: {
 
 /* ------------------------------ Feed v1 ------------------------------ */
 
-export function FeedScreen({ onNavigate }: { onNavigate: (to: string) => void }): React.ReactElement {
-  const [feed, setFeed] = useState<FeedResponse | null>(null);
+export function FeedScreen({ onNavigate, ssrData }: {
+  onNavigate: (to: string) => void; ssrData?: { feed?: FeedResponse };
+}): React.ReactElement {
+  const [feed, setFeed] = useState<FeedResponse | null>(ssrData?.feed ?? null);
   const [meltDismissed, setMeltDismissed] = useState(false);
 
   const load = (): void => { Api.feed().then(setFeed).catch(() => undefined); };
-  useEffect(load, []);
 
   // Melt-into-group (§4.2): three consecutive items from one group morph the
   // header into that group's space. Guardrails: groups only, never News.
@@ -135,7 +137,7 @@ export function FeedScreen({ onNavigate }: { onNavigate: (to: string) => void })
   }, [feed]);
   const meltTarget = meltDismissed ? null : meltTargetRaw;
 
-  if (feed === null) return <SkeletonList />;
+  if (feed === null) return <main className="screen-pad" />;
 
   return (
     <main style={{ paddingBottom: 96 }}>
