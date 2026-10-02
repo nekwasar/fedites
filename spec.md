@@ -1,4 +1,4 @@
-# Fedites — Platform Specification (v6)
+# Fedites — Platform Specification (v7)
 
 > Single-school alumni community platform. Master architecture spec.
 > Feature scope: the 112 MVP features in [mvp.md](mvp.md). Full catalog (156) in [features.md](features.md).
@@ -6,7 +6,8 @@
 > **v4 changelog:** navigation reworked — Groups is now the home page; Feed is a separate personalized scroll; Chat is its own tab; Menu replaces Explore/Network/Me; every group has Activity | Chat tabs; no global member feed.
 > **v5 changelog:** clarification decisions locked — trust-based onboarding (invite code + 3-setmate vouching, limited accounts), in-app calls (superseded in v6.1 by external meeting links), admin-settable governance, games & leaderboards removed, plus ~25 behavioral decisions recorded in [rules.md §P](rules.md) (binding).
 > **v6 changelog:** white-label template architecture — Style Families (structure/style, never color), Color Theme as its own layer with school presets, configurable navigation geometry per device, per-element style variants, the Studio, and the Platform Law vs Family Grammar split. Full catalog in [configuration.md](configuration.md).
-> **v6.1 changelog:** calls redirected to external meeting links (Meet/Zoom) — native WebRTC removed from scope. Tech stack locked: React+Vite web, Expo mobile, Node/TypeScript backend.
+> **v6.1 changelog:** calls redirected to external meeting links (Meet/Zoom) — native WebRTC removed from scope.
+> **v7 changelog:** **Web foundation rebuilt on the industry-standard stack:** Next.js (App Router, React Server Components), Tailwind CSS, shadcn/ui (Radix primitives), TanStack Query, zod contracts — Fastify API, PostgreSQL, Redis, WebSockets, MinIO, and Expo mobile unchanged. **One standard styling at MVP** (the config stack stays intact so families/variants scale later — §15). **Menu is a mobile-only slide-out sheet** of navigation items; the `/menu` page no longer exists (profile, settings, and the feature catalog live on the Profile page). **All pages load server-side with their data — no loaders, no skeletons on page load.** **Design mirrors (§4.0): every page copies the industry-standard competitor pattern for its surface — the Groups home is the one unique Fedites surface.**
 
 ---
 
@@ -36,14 +37,59 @@
 | **Feed** | Personalized latest activity; slides into group feeds | news |
 | **Chat** | WhatsApp-style: group chats + private chats | chat |
 | **Events** | Calendar, countdowns, my QR ticket | calendar |
-| **Menu** | Profile, settings, directory, full feature catalog | menu |
+| **Menu** *(mobile only — sheet)* | Slide-out sheet of navigation overflow items — not a page | menu |
 | **Manage** (locked) | Committee Panel — role-holders only | shield |
 
 **Top bar (all pages):** universal search · News (unread badge) · notification center.
 
-Each page has one clear job: **Groups = spaces · Feed = content · Chat = conversations · Events = time · Menu = self & catalog · Manage = duty.**
+**Menu is a slide-out, not a page.** On mobile, the bottom tabs show the primary items; everything else opens in the **Menu sheet** — a simple drawer containing navigation items only (the Gmail/Instagram drawer pattern). Desktop never renders a Menu: the side rail carries every item.
+
+Each page has one clear job: **Groups = spaces · Feed = content · Chat = conversations · Events = time · Profile = self & catalog · Manage = duty.**
+
+### 3.1 Design mirrors — every page copies the standard [LOCKED]
+
+**Every surface mirrors the industry-standard consumer app for that surface — modern, familiar, zero learning curve. The Groups home is the single unique Fedites surface.**
+
+| Surface | Mirrors (build to this standard) |
+|---|---|
+| Groups home | **Unique** — Fedites signature (adaptive density, activity pulse, discovery) |
+| Group Activity | Facebook Groups |
+| Group Chat + Chat tab | WhatsApp / Telegram / Messenger (desktop: WhatsApp Web split) |
+| Feed | X / LinkedIn feed grammar (melt-into-group mechanic kept) |
+| News bulletin | Facebook News tab |
+| Events calendar | Facebook Events / Eventbrite |
+| QR ticket | Apple/Google Wallet pass |
+| Dues, payments, receipts | Bank-app statement (tabular figures, statement rows) |
+| Campaigns & giving | GoFundMe campaign page |
+| Transparent ledger | Bank statement / Stripe dashboard |
+| Job board | LinkedIn Jobs / Indeed |
+| Business directory | Google Business / Yelp |
+| Mentor office hours | Calendly booking flow |
+| Referrals & endorsements | LinkedIn |
+| Member directory & search | LinkedIn people search |
+| Profile (/me) | LinkedIn profile |
+| Digital alumni ID | Wallet card |
+| Memory Lane archive | Google Photos / Facebook Memories |
+| Yearbook search | Searchable document viewer |
+| On this day | Facebook Memories |
+| Wiki | Wikipedia |
+| History timeline | Wikipedia life-events |
+| Nostalgia radio | Spotify (simplified) |
+| Recipe exchange | Recipe-card pattern |
+| Elections / motions / AGM | Clean ballot + Linear-style forms |
+| Manage console | Linear / Notion admin sidebar |
+| Notifications | iOS/Android notification center |
+| Settings | iOS Settings list |
+| Auth | Modern phone-first auth |
+| Menu sheet | Gmail / Instagram drawer |
+| Universal search | Command palette (mobile bar, desktop Cmd+K) |
+| Public landing | Modern SaaS landing |
+
+The Fedites Standard visual grammar (§15: flat, hairlines, wine-red accent) applies to every mirror; never clone logos, names, or assets.
 
 ## 4. Page Specifications
+
+**Every page below is built to the mirror standard of §3.1 — the layout, density, and interaction patterns of the reference app.**
 
 ### 4.1 Groups (home)
 - **Adaptive by membership density.**
@@ -75,7 +121,8 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 - Unified calendar, reunion planning suite, anniversary countdowns, my QR ticket, virtual attendance, event photo wall, AI photo finder. Group-owned events appear here badged with their group crest.
 - **Events are created by admins and group admins only.** Live location sharing is a temporary, explicit opt-in at events; everywhere else, location is city-level only.
 
-### 4.6 Menu
+### 4.6 Profile
+- Lives at `/me` (the `/menu` page no longer exists).
 - **Profile card at top** (photo, name, set, digital ID, roles) — then settings — then the **full feature catalog grid**:
   - **Memory Lane:** throwback archive, yearbook, history timeline, wiki, slang dictionary, media library, remember-when threads, recipe exchange, nostalgia radio, anthem player, crest stickers, hall of fame, memorial pages, condolence coordination
   - **School Bridge:** wishlist, adopt-a-project, student mentorship, career day, internship pipeline, past questions bank, teacher tributes, facility booking, records verification
@@ -86,11 +133,11 @@ Each page has one clear job: **Groups = spaces · Feed = content · Chat = conve
 
 ## 5. Personalization Engine ("built for me")
 
-- **Join-intent capture** at onboarding: Reconnect · Network & jobs · Give back to school · Events & reunions · Grow my business · Mentor (multi-select, editable in Menu).
+- **Join-intent capture** at onboarding: Reconnect · Network & jobs · Give back to school · Events & reunions · Grow my business · Mentor (multi-select, editable in Profile).
 - The engine powers three small, explainable things — no black box:
   1. **Feed ordering** (your groups → set → city → school-wide, plus intent rails).
   2. **Groups home sorting** (pinned + latest unseen activity) and **suggested groups** (intent + city + activity pulse).
-  3. **Menu/Explore card ranking** by intent and activity.
+  3. **Profile card ranking** by intent and activity.
 - **Smart defaults:** auto-join set group + sports house on day one; suggested city chapter; set reunion pre-pinned in Events. Nobody starts in an empty app.
 - **Personal moments:** QR ticket surfaces event morning, pledge progress on campaigns you gave to, time-capsule reminders, birthday prompts only for your set/close connections.
 - **Always tunable:** "tune my feed" more/less controls, per-category notification preferences with quiet hours, per-group notification defaults (big groups = mentions-only).
@@ -129,18 +176,18 @@ One gated tab, sections matching duties:
 | **Content** | Spotlight scheduling, yearbook/Memory Lane uploads, wishlist & adopt-a-project management, internship approvals |
 | **Oversight** | Analytics dashboard, audit logs, data export, integrations (Mailchimp, Zapier, accounting) |
 | **Settings** | Dues cycle & tiers config, emergency broadcast policy (any admin + second-admin approval by default, configurable), contact-reveal audit view |
-| **Studio** | The customization workbench: color themes, style families, nav patterns, element variants, terminology, copy tables, feature flags — with live preview, publish/versioning, export/import (§15) |
+| **Studio** | Post-MVP workbench. MVP ships **Instance settings**: color theme presets, terminology, copy tables, feature flags, nav labels — draft → publish with versioning/rollback (§15). Live device-frame preview, family gallery, and element variant panels arrive post-MVP. |
 
 ## 8. Money & Participation Without Pressure
 
-- **No public dues badge anywhere.** Dues status is **private** — the member sees only their own (Menu → Association); admins see it only in Manage → Members (filterable, audit-logged). Tiers still carry real perks: voting rights, event priority, digital ID marking.
+- **No public dues badge anywhere.** Dues status is **private** — the member sees only their own (Profile → Association); admins see it only in Manage → Members (filterable, audit-logged). Tiers still carry real perks: voting rights, event priority, digital ID marking.
 - **Giving is celebrated, opt-in:** confetti + recognition points + donor wall, with an **anonymous-giving toggle** on every payment.
 - **Outcomes loop back into the Feed:** wishlist items fulfilled and adopt-a-project progress posts show members their money becoming a renovated lab — the retention engine.
 - **Transparent ledger** browsable by all members, one tap from every campaign.
 - **Dues cycle, tiers, and reminders are admin-settable** configuration. Payments accept the **online gateway plus manual "mark as paid"** for cash/offline, every payment receipted.
 - **Donor wall is named by default**; the anonymous toggle remains per payment.
 - **Polite multi-channel reminders:** push → WhatsApp bridge → SMS fallback, respecting quiet hours.
-- **Low-friction civic entry:** one-tap polls and suggestion box in Menu; campaign and election cards appear in Feed and News.
+- **Low-friction civic entry:** one-tap polls and suggestion box in Profile; campaign and election cards appear in Feed and News.
 
 ## 9. The Seven Shared Rails
 
@@ -174,7 +221,7 @@ One gated tab, sections matching duties:
 - **Ongoing:** join groups from Discover, RSVP events, pay dues.
 - **Earned/unlocked:** badges and recognition points.
 - **Elected:** Manage tab appears for role-holders.
-- Menu remains the permanent catalog for everything else.
+- The Profile page remains the permanent catalog for everything else; the Menu sheet stays a pure navigation drawer.
 
 ## 12. Build Order (each slice shippable)
 
@@ -189,18 +236,18 @@ One gated tab, sections matching duties:
 
 | MVP section (mvp.md) | Where it lives |
 |---|---|
-| 1 Identity & Verification (8) | Onboarding + Menu (profile, ID, privacy) + Manage→Members |
-| 2 Networking & Careers (10) | Menu→People + Feed intent rails + chapter/ambassador flows |
+| 1 Identity & Verification (8) | Onboarding + Profile (profile, ID, privacy) + Manage→Members |
+| 2 Networking & Careers (10) | Profile→People + Feed intent rails + chapter/ambassador flows |
 | 3 Communication (10) | Chat tab + group Chat tabs + forums (threaded Activity in groups) + Manage→Speak |
-| 4 Feed, Content & Memory (13) | Feed + group Activity + News bulletin + Menu→Memory Lane |
+| 4 Feed, Content & Memory (13) | Feed + group Activity + News bulletin + Profile→Memory Lane |
 | 5 Events & Reunions (6) | Events tab + Manage→Events |
 | 6 Groups & Chapters (6) | Groups home + groups engine (§6) |
-| 7 Money & Giving (11) | Menu→Association + Feed/News cards + Manage→Money |
-| 8 Governance & Admin (12) | Manage panel (+ member-facing constitution & suggestion box in Menu) |
-| 9 The School Bridge (10) | Menu→School Bridge + Manage→Content |
-| 10 Milestones & Recognition (9) | Menu→Recognition + Feed moments + Events |
-| 12 Fun & Nostalgia (8) | Menu→Memory Lane + system-wide touches |
-| 13 Comfort, Trust & Craft (9) | Menu→Settings + platform defaults |
+| 7 Money & Giving (11) | Profile→Association + Feed/News cards + Manage→Money |
+| 8 Governance & Admin (12) | Manage panel (+ member-facing constitution & suggestion box in Profile) |
+| 9 The School Bridge (10) | Profile→School Bridge + Manage→Content |
+| 10 Milestones & Recognition (9) | Profile→Recognition + Feed moments + Events |
+| 12 Fun & Nostalgia (8) | Profile→Memory Lane + system-wide touches |
+| 13 Comfort, Trust & Craft (9) | Profile→Settings + platform defaults |
 
 **Excluded by design:** all of §11 (Care, Welfare & Support), §§14–15 (Growth & Platform, Marketplace), and every struck item from mvp.md — no Telegram bridge, no stories, no podcast & video channel, no merchandise store, no auctions & raffles, no investment club, no group savings circles, no welfare fund, no milestone celebrations, no legacy admission registry, no retired teachers' welfare, no digital business cards, no anonymous salary insights, no mentorship matching, no auto-translation, no public dues badge, **no global member feed**, no games (trivia, arcade, fantasy leagues), no leaderboards, no native in-app calls (external Meet/Zoom links only).
 
@@ -208,15 +255,18 @@ One gated tab, sections matching duties:
 
 All behavioral decisions from the clarification sessions are recorded in [rules.md §P](rules.md) and are **binding** on this spec: invite-code signup with 3-setmate vouching (read + group posts until vouched, invisible after), self-only face search, city-level location with event opt-in, logged contact reveals, admin-toggled news comments, chat delete-anytime/edit-15-minutes, external meeting-link calls (Meet/Zoom), online + manual payments, named-by-default donor wall, admin-settable dues cycle & emergency policy, all-verified voting, admin/group-admin event creation, always-anonymous suggestion box, member-upload archives with admin approval, memorial state for deceased members, Fedites-first branding, PWA + app-store distribution, English i18n-ready, in-app alumni ID, no games, no leaderboards.
 
+**Locked in v7:** the industry-standard web stack (Next.js App Router + Tailwind + shadcn/ui + TanStack Query + zod contracts; Fastify API unchanged); **one standard styling at MVP** (single family, single variant per element, one nav pattern per device — all registry/config-driven so they scale later); **server-first pages** (every page renders server-side with its data; no loaders); **design mirrors** (every page copies the industry-standard competitor pattern for its surface — Groups home is the one unique surface); **Menu = mobile-only slide-out sheet of nav items** (no `/menu` page).
+
 ## 15. White-Label & Configuration
 
 Fedites ships as a reusable template — any school, anywhere, anytime.
 
-- **Config stack (precedence):** element overrides > instance overrides > **Color Theme** > **Style Family** > Platform Law.
-- **Color Theme is its own layer** — never part of a family. Curated presets of popular school color combinations (wine red + white is the Fedites default), plus custom palettes gated by contrast validation.
-- **Style Families** define structure and style — surfaces, radius, density, icons, type pairing, motion, element defaults — **never color**. MVP: **Fedites Classic** (flat, sharp, hairline — the signature look), **Minimalist**, **Editorial**. Roadmap: Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism.
-- **Navigation geometry is configurable per device** — mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first. Items stay; geometry moves.
-- **Every element has multiple style variants** (nav bars, buttons, modals, toasts, tabs, badges, icons, tables, and more), grouped into families, with per-element overrides.
+- **Config stack (precedence):** element overrides > instance overrides > **Color Theme** > **Style Family** > Platform Law. The full precedence engine is built from day one so styling can scale later — but **at MVP every layer ships exactly one value**.
+- **One standard styling at MVP [LOCKED]:** a single style family — **Fedites Standard** (the flat, hairline, signature look: no cards, no shadows, radius 0, wine-red accent) — and **one standard variant per element**. There is no family switcher, no variant switcher, and no multi-pattern nav at MVP. Everything remains config-driven: the registry schema ships with the build, so adding families/variants/patterns later is configuration, not a rewrite.
+- **Color Theme is its own layer and stays active** — never part of a family. Curated presets of popular school color combinations (wine red + white is the Fedites default), plus custom palettes gated by contrast validation. Colors are cheap white-label value; structure stays standard.
+- **Style Families** define structure and style — surfaces, radius, density, icons, type pairing, motion, element defaults — **never color**. MVP: **Fedites Standard only**. Roadmap: Minimalist, Editorial, Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism.
+- **Navigation geometry:** MVP ships **tab-bar + menu sheet (mobile)** and **side-rail (desktop)**. The pattern registry remains in config (tab-bar, top-tabs, hybrid, drawer, floating dock; side-rail, top-nav, top+side, command-first) for later scale. Items stay; geometry moves.
+- **Every element's variant registry stays in schema** (nav bars, buttons, inputs, rows, headers, modals/sheets, toasts, tabs, badges, icons, avatars, tables, empty states, dividers, FABs, dropdowns, pagination, signature surfaces) — MVP ships the single standard variant of each.
 - **Platform Law stays fixed for every family and instance:** accessibility floors, performance budgets, press states, no emojis (chat messages, comments, and reactions only), copy/privacy/navigation rules, API-enforced permissions, archive-never-delete.
-- **The Studio** (Manage area): live preview in device frames, draft → preview → publish with versioning and rollback, validation gates that refuse to publish a11y/performance failures, terminology glossary, copy tables, feature flags, and export/import of full instance presets.
+- **The Studio** (post-MVP, Manage area): live preview in device frames, draft → preview → publish with versioning and rollback, validation gates, terminology glossary, copy tables, feature flags, export/import. **MVP ships Instance settings** in Manage: config editor with versioned publish/rollback (colors, terminology, copy, flags, structure) — no preview galleries.
 - Full catalog and schemas: [configuration.md](configuration.md).

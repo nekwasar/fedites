@@ -8,6 +8,9 @@ The features approved for the first build: **112 features** across sections 1–
 - **Newsletter builder** ships with **storable and uploadable templates**.
 - **Calls are external meeting links** (Google Meet / Zoom) — no native in-app calling.
 - **Struck by decision, never deferred:** stories, games (daily trivia, games arcade, fantasy leagues), leaderboards, milestone celebrations, and the Telegram bridge.
+- **One standard styling** — a single config-driven design system (Fedites Standard); families/variants scale later via configuration ([configuration.md](configuration.md)).
+- **Design mirrors** — every page mirrors the industry-standard competitor pattern for its surface (chat = WhatsApp/Messenger/Telegram, job board = LinkedIn/Indeed, and so on per [spec.md §3.1](spec.md)); **the Groups home is the one unique Fedites surface**.
+- **Server-first pages** — every page loads server-side with its data; no loaders anywhere ([rules.md M7/F7](rules.md)).
 
 ## 1. Identity & Verification (8)
 - **Alumni verification** — Confirm members truly attended using year groups, records, photos, and trusted peer vouching.
@@ -141,7 +144,7 @@ The features approved for the first build: **112 features** across sections 1–
 - **Accessibility** — Full screen-reader support, adjustable font sizes, and colorblind-friendly design choices throughout the app.
 - **Low-bandwidth mode** — A lightweight, data-friendly interface mode for members with genuinely poor, unstable internet connectivity.
 - **PWA & offline mode** — An installable progressive web app that functions offline on any modern phone anywhere.
-- **Multi-language interface** — An interface fully localized to every single member's preferred language, wherever they live.
+- **Multi-language interface** — English at launch with an i18n-ready structure; full localization arrives post-MVP.
 - **Privacy controls** — Granular visibility controls covering your own profile, contact details, and all activity information.
 - **Two-factor authentication** — An optional second verification step protecting all member accounts against any hostile takeover.
 - **Social share cards** — Beautiful share preview cards generated whenever posting alumni achievements to social media platforms.

@@ -2,24 +2,24 @@
 
 > Strict rules for building the platform in [spec.md](spec.md). Every rule is enforceable and checked at review.
 > **[LOCKED]** = user-stated, non-negotiable. **[PROPOSED]** = curated starter selection — trim or amend by ID.
-> **DRAFT v1.2 — two-tier split (Platform Law / Family Grammar, §O) and white-label decisions incorporated.**
+> **DRAFT v1.3 — standard stack (Next.js), one standard styling, server-first pages, and design mirrors (A13/M7/M8) incorporated.**
 
 ---
 
 ## A. Visual Style & Design Language
 
-**A1. No cards UI.** [LOCKED — Family Grammar: defines the Fedites Classic family]
+**A1. No cards UI.** [LOCKED — Family Grammar: defines the Fedites Standard family]
 No rounded boxes, no drop shadows, no elevated surfaces. Content is organized by whitespace, 1px hairlines, and section headers. If a design "needs" a card, it needs a section instead.
-*Check: no `box-shadow` or `border-radius` in Classic-family component code; visual review per screen.*
+*Check: no `box-shadow` or `border-radius` in Standard-family component code; visual review per screen.*
 *White-label note: other Style Families (Minimalist, Editorial, later Material/Glassmorphism) may define their own surface treatment — they must pass the Platform Law gates (§O), not this rule.*
 
-**A4. Flat solids only.** [FAMILY GRAMMAR — Fedites Classic default]
+**A4. Flat solids only.** [FAMILY GRAMMAR — Fedites Standard default]
 No gradients, no glassmorphism, no blur, no textured depth. Colors are solid fills; hierarchy comes from weight, size, and position.
-*Check: no `gradient`/`backdrop-filter` in Classic-family code; other families may use elevation/blur only with performance fallbacks and law-gate passes.*
+*Check: no `gradient`/`backdrop-filter` in Standard-family code; other families may use elevation/blur only with performance fallbacks and law-gate passes.*
 
-**A5. Radius is a token — 0 is the signature.** [FAMILY GRAMMAR — Fedites Classic default]
-Sharp corners (radius 0) are the Classic visual fingerprint; radius moved from law to a theme token so other families can choose soft corners.
-*Check: all components use the `--radius` scale token; the Classic preset pins it to 0.*
+**A5. Radius is a token — 0 is the signature.** [FAMILY GRAMMAR — Fedites Standard default]
+Sharp corners (radius 0) are the Standard visual fingerprint; radius moved from law to a theme token so other families can choose soft corners.
+*Check: all components use the `--radius` scale token; the Standard preset pins it to 0.*
 
 **A6. Monochrome base + one accent.** [PROPOSED]
 Ink-on-paper scheme: near-black on near-white (and inverse for dark), plus exactly one school-derived accent. If a second accent is ever needed, it's a mistake.
@@ -39,6 +39,10 @@ All spacing from the 4/8px scale — margins, padding, gaps, heights. No 13px, n
 **A12. Photos are content, never decoration.** [PROPOSED]
 Photos appear in galleries, avatars, archives, and event walls only. No hero-image backgrounds, no photo headers.
 *Check: visual review; no `background-image` outside media components.*
+
+**A13. Mirror the standard.** [LOCKED — v7]
+Every page copies the industry-standard competitor pattern for its surface — chat = WhatsApp/Messenger/Telegram, job board = LinkedIn/Indeed, campaigns = GoFundMe, ledger = bank statement, events = Facebook Events/Eventbrite, directory = LinkedIn, wiki = Wikipedia, manage = Linear/Notion, settings = iOS Settings, menu sheet = Gmail/Instagram drawer (full table in [spec.md §3.1](spec.md)). **The Groups home is the one unique Fedites surface.** Pages look modern by default because they mirror the best product in each category.
+*Check: per-page design review against the reference app; the mirror table is the blueprint.*
 
 ## B. Typography
 
@@ -142,9 +146,9 @@ The Feed melt-into-group transition is the app's one recognizable move — polis
 Confetti on payment success and campaign goal completion — nowhere else.
 *Check: single confetti component, two call sites.*
 
-**F7. Skeletons, never spinners.** [PROPOSED]
-Loading states are layout-shaped skeletons. No spinners except inside buttons.
-*Check: loading components.*
+**F7. Pages ship complete; no loaders.** [LOCKED — v7 amendment of "skeletons, never spinners"]
+Every page renders server-side with its data (M7) — there is no page-loading state at all: no skeletons, no spinners, no blank screens. Skeletons may exist ONLY inside client-refresh regions after a user action, and never as a page gate. No spinners except inside buttons.
+*Check: no fetch-on-mount for page data; SSR tests assert data-in-HTML.*
 
 **F9. Reduced motion honored.** [PROPOSED]
 System reduced-motion preference disables all non-essential animation app-wide.
@@ -196,9 +200,9 @@ What happened + what to do next. One sentence each.
 
 ## I. Navigation & IA
 
-**I2. Tab order is law.** [PROPOSED]
-Groups / Feed / Chat / Events / Menu (+ Manage for role-holders). Never reorders, never grows beyond 6.
-*Check: nav component; spec is the source of truth.*
+**I2. Tab order is law.** [PROPOSED — amended v7]
+Groups / Feed / Chat / Events / Menu (+ Manage for role-holders). Never reorders, never grows beyond 6. The Menu entry is the mobile-only slide-out sheet trigger (nav items only) — there is no `/menu` page; desktop shows every item on the side rail with no menu.
+*Check: nav component; spec §3 is the source of truth.*
 
 **I4. Search in one gesture.** [PROPOSED]
 Universal search reachable from every page with one tap/keystroke; desktop gets Cmd+K.
@@ -269,12 +273,20 @@ Every send, reaction, and RSVP appears instantly and reconciles in background. N
 ## M. Engineering & Code
 
 **M1. Tokens only.** [PROPOSED]
-Zero hardcoded colors, spacing, sizes, radii, or durations in component code. Everything references design tokens.
+Zero hardcoded colors, spacing, sizes, radii, or durations in component code. Tokens are Tailwind CSS variables (the theme layer); ESLint bans raw color literals, px values outside token files, and ad-hoc z-index.
 *Check: lint rule.*
 
 **M2. Component library, no one-offs.** [PROPOSED]
-Every UI element comes from the internal library. Need something new? Build it into the library first.
+Every UI element comes from shadcn/ui (Radix primitives) themed to the Fedites Standard grammar, or from `packages/ui`. Need something new? Build it into the library first — never inline in a screen.
 *Check: review; duplicate-component lint.*
+
+**M7. Server-first pages.** [LOCKED — v7]
+Every page renders on the server (RSC/SSR) WITH its data; navigation is server-rendered document loads. Client components exist only for interactivity: WebSocket chat, forms, optimistic mutations. No client-side page-data fetching, no loaders (F7).
+*Check: SSR smoke test per route; no fetch-on-mount for page data.*
+
+**M8. One contracts source of truth.** [PROPOSED — v7]
+`packages/contracts` holds zod schemas for every endpoint; Fastify, Next.js, and Expo derive their types from it. Routes are typed (Next `typedRoutes`). No hand-written duplicate API types.
+*Check: contracts package imports audited; no parallel type definitions.*
 
 **M3. Flags on everything incomplete.** [PROPOSED]
 Partial features ship dark behind flags; staging demos can enable them, production cannot until done.
@@ -308,7 +320,7 @@ The app is a white-label template — each school configures its own instance. R
 Accessibility floors (WCAG AA, 44px targets, keyboard/screen-reader, focus visible) · performance budgets (L1) · press states (F1 — each family implements its own, e.g. ripple counts) · reduced motion (F9) · no emojis (D1) · copy rules (H1–H5) · navigation integrity (I2–I6) · attention rules (J2–J5) · privacy rules (K1–K5) · engineering rules (M1–M6) · product behavior (N1–N2) · API-enforced permissions, audit logs, archive-never-delete. The Studio cannot publish any family, variant, or theme that fails a law gate.
 
 **Family Grammar — per style family, configurable:**
-Surface treatment (hairlines vs cards vs glass), elevation, blur, radius, density, icon set, type pairing, motion personality. A1/A4/A5 define the **Fedites Classic** family — the default and signature look. Families ship as versioned packs; every variant must pass the law gates before release.
+Surface treatment (hairlines vs cards vs glass), elevation, blur, radius, density, icon set, type pairing, motion personality. A1/A4/A5 define the **Fedites Standard** family — the default and signature look, implemented on Tailwind + shadcn/ui. **MVP ships exactly one family and one variant per element (no switchers)**; the registry schema stays in config so later families scale without rewrites. Every variant must pass the law gates before release.
 
 ---
 
@@ -354,13 +366,15 @@ From the clarification sessions. These are **decided** — they override any con
 - Digital alumni ID: **in-app proof card** with QR linking to the public profile.
 - **No games and no leaderboards, ever** — struck by decision, not deferred (see K2).
 - **White-label template product:** one codebase, many instances; `instance_id` on every table; zero instance constants in code (extends M1).
-- **Style Families** define structure and style, **never color**: Fedites Classic (default), Minimalist, Editorial at MVP; Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism post-launch.
-- **Color Theme is its own layer** (independent of family) with curated school color presets; wine red + white is the default preset.
-- **Navigation geometry is configurable per device** (mobile: tab-bar, top-tabs, hybrid, drawer, floating dock; desktop: side-rail, top-nav, top+side, command-first); nav items stay fixed as a set, geometry moves.
-- **Every element has multiple style variants**, grouped into families, with per-element overrides; precedence: element > instance > theme > family > law.
-- **The Studio** ships in Phase 6: live preview, draft → preview → publish with versioning/rollback, validation gates, export/import of instance presets.
+- **One standard styling at MVP [v7]:** a single style family (Fedites Standard) and one standard variant per element; the config stack (element > instance > theme > family > law) and every registry remain so styling scales later purely by configuration.
+- **Style Families** define structure and style, **never color**: Fedites Standard (the only MVP family); Minimalist, Editorial, Brutalist Grid, Soft/Modern, Material-inspired, Glassmorphism post-launch.
+- **Color Theme is its own layer** (independent of family) with curated school color presets; wine red + white is the default preset. The theme layer stays active at MVP.
+- **Navigation geometry:** MVP ships **tab-bar + Menu sheet (mobile)** and **side-rail (desktop)** only; the pattern registry stays in config for later. Nav items stay fixed as a set; geometry moves.
+- **The Studio** is post-MVP; MVP ships **Instance settings** in Manage (config editor, versioned publish/rollback, validation gates).
+- **Design mirrors [v7]:** every page copies the industry-standard competitor pattern for its surface ([spec.md §3.1](spec.md)); the Groups home is the only unique surface.
+- **Server-first pages [v7]:** every page renders server-side with its data (M7); no loaders (F7); client components only for interactivity.
 - **Calls:** external meeting links (Google Meet / Zoom) — no native WebRTC calls in MVP.
-- **Stack:** React + Vite + Tailwind + Radix (web) · Expo React Native (mobile) · Node + TypeScript backend · PostgreSQL · Redis · WebSockets · monorepo (Turborepo + pnpm) with shared tokens/config/ui packages.
+- **Stack [v7 — supersedes the React+Vite lock]:** Next.js 15 App Router (React 19, RSC) + Tailwind CSS v4 + shadcn/ui (Radix) + TanStack Query + zod contracts (web) · Fastify (Node + TypeScript) API · Expo React Native (mobile) · PostgreSQL · Redis · WebSockets · MinIO media · monorepo (Turborepo + pnpm) with shared contracts/config/ui packages.
 
 ---
 
