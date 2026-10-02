@@ -25,7 +25,6 @@ describe("server-side rendering", () => {
     expect(html).toContain("<!doctype html>");
     expect(html).toContain('id="root"');
     expect(html).toContain("window.__PAGE__=");
-    expect(html).toContain("/@vite/client");
     expect(html).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
   });
 

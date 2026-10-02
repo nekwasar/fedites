@@ -17,10 +17,36 @@ const icons: Record<string, IconName> = {
   manage: "shield",
 };
 
-export function MobileTabBar({ items, route, onNavigate }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void }) {
+/** Mobile item split (I2): primary slots inline, the rest overflow into the
+ *  menu sheet. "menu" is the trigger itself — never a page link. */
+export function splitMobileNav(items: NavItemView[], primaryCount: number): { primary: NavItemView[]; overflow: NavItemView[] } {
+  const pages = items.filter((i) => i.item !== "menu");
+  const primary = pages.slice(0, Math.max(0, primaryCount));
+  return { primary, overflow: pages.slice(primary.length) };
+}
+
+function MenuTabTrigger({ label, onNavigate }: { label: string; onNavigate: (route: string) => void }): React.ReactElement {
+  return (
+    <button type="button" className="tabbar__item press" aria-haspopup="dialog" aria-label={label} onClick={() => onNavigate("__menu")}>
+      <Icon name="menu" size={22} />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function MenuTopTrigger({ label, onNavigate }: { label: string; onNavigate: (route: string) => void }): React.ReactElement {
+  return (
+    <button type="button" className="topbar__tab press" aria-haspopup="dialog" onClick={() => onNavigate("__menu")}>
+      {label}
+    </button>
+  );
+}
+
+export function MobileTabBar({ items, route, onNavigate, primaryCount = 4 }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void; primaryCount?: number }) {
+  const { primary } = splitMobileNav(items, primaryCount);
   return (
     <nav className="tabbar" aria-label="Primary">
-      {items.map((i) => (
+      {primary.map((i) => (
         <button
           key={i.item}
           type="button"
@@ -33,14 +59,16 @@ export function MobileTabBar({ items, route, onNavigate }: { items: NavItemView[
           <span>{i.label}</span>
         </button>
       ))}
+      <MenuTabTrigger label={items.find((i) => i.item === "menu")?.label ?? "Menu"} onNavigate={onNavigate} />
     </nav>
   );
 }
 
-export function MobileTopTabs({ items, route, onNavigate }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void }) {
+export function MobileTopTabs({ items, route, onNavigate, primaryCount = 4 }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void; primaryCount?: number }) {
+  const { primary } = splitMobileNav(items, primaryCount);
   return (
     <nav className="topbar" aria-label="Primary">
-      {items.map((i) => (
+      {primary.map((i) => (
         <button
           key={i.item}
           type="button"
@@ -51,16 +79,17 @@ export function MobileTopTabs({ items, route, onNavigate }: { items: NavItemView
           {i.label}
         </button>
       ))}
+      <MenuTopTrigger label={items.find((i) => i.item === "menu")?.label ?? "Menu"} onNavigate={onNavigate} />
     </nav>
   );
 }
 
 /** hybrid: top utility (search/news/notifications) + bottom tabs. */
-export function MobileHybrid({ items, route, onNavigate }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void }) {
+export function MobileHybrid({ items, route, onNavigate, primaryCount = 4 }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void; primaryCount?: number }) {
   return (
     <>
-      <MobileTopTabs items={items} route={route} onNavigate={onNavigate} />
-      <MobileTabBar items={items} route={route} onNavigate={onNavigate} />
+      <MobileTopTabs items={items} route={route} onNavigate={onNavigate} primaryCount={primaryCount} />
+      <MobileTabBar items={items} route={route} onNavigate={onNavigate} primaryCount={primaryCount} />
     </>
   );
 }
@@ -98,7 +127,7 @@ export function MobileDrawer({ items, route, onNavigate, open, onClose }: { item
             aria-label="Primary"
             onClick={(e) => e.stopPropagation()}
           >
-            {items.map((i) => (
+            {items.filter((i) => i.item !== "menu").map((i) => (
               <button
                 key={i.item}
                 type="button"
@@ -117,7 +146,8 @@ export function MobileDrawer({ items, route, onNavigate, open, onClose }: { item
   );
 }
 
-export function MobileFloatingDock({ items, route, onNavigate }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void }) {
+export function MobileFloatingDock({ items, route, onNavigate, primaryCount = 4 }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void; primaryCount?: number }) {
+  const { primary } = splitMobileNav(items, primaryCount);
   return (
     <nav
       aria-label="Primary"
@@ -134,7 +164,7 @@ export function MobileFloatingDock({ items, route, onNavigate }: { items: NavIte
         zIndex: 30,
       }}
     >
-      {items.map((i) => (
+      {primary.map((i) => (
         <span key={i.item} style={{ position: "relative", display: "flex" }}>
           {route === i.route && (
             <span aria-hidden="true" style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 3, background: "var(--c-accent)" }} />
@@ -152,6 +182,7 @@ export function MobileFloatingDock({ items, route, onNavigate }: { items: NavIte
           </button>
         </span>
       ))}
+      <MenuTabTrigger label={items.find((i) => i.item === "menu")?.label ?? "Menu"} onNavigate={onNavigate} />
     </nav>
   );
 }
@@ -160,7 +191,7 @@ export function MobileFloatingDock({ items, route, onNavigate }: { items: NavIte
 export function DesktopSideRail({ items, route, onNavigate }: { items: NavItemView[]; route: string; onNavigate: (route: string) => void }) {
   return (
     <nav className="siderail" aria-label="Primary">
-      {items.map((i) => (
+      {items.filter((i) => i.item !== "menu").map((i) => (
         <button
           key={i.item}
           type="button"
@@ -183,7 +214,7 @@ export function DesktopTopNav({ items, route, onNavigate }: { items: NavItemView
       aria-label="Primary"
       style={{ minHeight: 56, alignItems: "center", padding: "0 var(--space-6)" }}
     >
-      {items.map((i) => (
+      {items.filter((i) => i.item !== "menu").map((i) => (
         <button
           key={i.item}
           type="button"
@@ -240,7 +271,7 @@ export function DesktopCommandFirst({ items, route, onNavigate }: { items: NavIt
         <Icon name="search" size={16} /> Search <span className="tabular micro">Cmd K</span>
       </button>
       <nav aria-label="Primary" style={{ position: "fixed", bottom: "var(--space-3)", left: "var(--space-3)", display: "flex", flexDirection: "column", gap: "var(--space-1)", zIndex: 31 }}>
-        {items.map((i) => (
+        {items.filter((i) => i.item !== "menu").map((i) => (
           <button
             key={i.item}
             type="button"

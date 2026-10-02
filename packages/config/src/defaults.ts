@@ -67,6 +67,11 @@ export const defaultConfig: InstanceConfig = {
     jobCardVariant: "standard",
     filterChips: { enabled: true, options: ["remote", "full-time", "internship", "graduate"] },
   },
+  menuSheet: {
+    variant: "drawer",
+    animation: "slide",
+    primaryCount: 4,
+  },
   instance: {
     displayName: "Fedites",
     shortName: "Fedites",

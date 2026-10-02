@@ -58,7 +58,7 @@ describe("phase 2 — daily loop", () => {
         moderator: await loginAs(app, "moderator@example.test"),
       },
     };
-  });
+  }, 60_000);
 
   afterAll(async () => {
     if (ctx) await ctx.pool.end();

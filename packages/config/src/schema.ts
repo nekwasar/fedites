@@ -259,6 +259,19 @@ export const careersPageSchema = z.object({
 });
 export type CareersPageConfig = z.infer<typeof careersPageSchema>;
 
+/** Menu sheet (mobile only): a slide-out with navigation overflow items.
+ *  Desktop gets everything on its nav — the menu is never rendered there. */
+export const menuSheetVariantEnum = z.enum(["drawer", "sheet", "modal"]);
+export const menuAnimationEnum = z.enum(["slide", "rise", "scale", "instant"]);
+
+export const menuSheetSchema = z.object({
+  variant: menuSheetVariantEnum.default("drawer"),
+  animation: menuAnimationEnum.default("slide"),
+  /** Items shown directly in the mobile pattern; the rest overflow here. */
+  primaryCount: z.number().int().min(2).max(5).default(4),
+}).default({});
+export type MenuSheetConfig = z.infer<typeof menuSheetSchema>;
+
 export const instanceConfigSchema = z.object({
   /** Config document version — every publish bumps; rollback = republish older snapshot. */
   schemaVersion: z.number().int().positive(),
@@ -269,6 +282,7 @@ export const instanceConfigSchema = z.object({
   elementOverrides: elementOverridesSchema,
   chatPage: chatPageSchema.default({}),
   careersPage: careersPageSchema.default({}),
+  menuSheet: menuSheetSchema.default({}),
   instance: z.object({
     /** Zero school-specific constants in code — everything flows from here. */
     displayName: z.string().min(1),

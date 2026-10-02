@@ -44,6 +44,7 @@ import { SchoolBridgeScreen } from "./screens/SchoolBridge.js";
 import { CareerScreen } from "./screens/Career.js";
 import { useRealtime } from "./realtime.js";
 import { LandingScreen, AppChoiceSheet } from "./screens/Landing.js";
+import { MenuSheet } from "./shell/MenuSheet.js";
 import { Icon } from "@fedites/ui";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -160,6 +161,7 @@ export default function App({ boot, member, unread: initialUnread, routeData, ss
     typeof window !== "undefined" && window.localStorage.getItem("fedites.dark") === "1",
   );
   const [studioOpen, setStudioOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [device, setDevice] = useState<"mobile" | "desktop">(
     ssrDevice ?? (typeof window !== "undefined" && window.innerWidth < DESKTOP_MIN ? "mobile" : "desktop"),
   );
@@ -197,6 +199,7 @@ export default function App({ boot, member, unread: initialUnread, routeData, ss
   // renders the complete next page (data included). No client routing.
   const go = useCallback((to: string): void => {
     if (to === "__drawer") { setStudioOpen(true); return; }
+    if (to === "__menu") { setMenuOpen(true); return; }
     if (typeof window !== "undefined") window.location.assign(to);
   }, []);
 
@@ -325,10 +328,6 @@ export default function App({ boot, member, unread: initialUnread, routeData, ss
         return route.param !== undefined ? <MemberScreen id={route.param} ssrData={memberData} /> : <Empty title="Member not found" body="The link may be wrong." />;
       }
       case "/manage": return dutyRoles ? <ManageScreen member={member} onNavigate={go} ssrData={{ overview: (routeData.manage as { overview?: ManageOverview } | undefined)?.overview }} /> : <Empty title="Admins only" body="The Manage panel is for role-holders." />;
-      case "/menu": {
-        const profileData2 = routeData.profile as { status?: VerificationStatus; invites?: { invites: Invite[] }; recognition?: NonNullable<ProfileSsrData["recognition"]>; intents?: { intents: string[]; options: string[] }; prefs?: { prefs: { mentions: string; events: string; news: string } } } | undefined;
-        return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} ssrData={profileData2} />;
-      }
       case "/events": {
         const eventData = routeData.event as { event?: EventListItem; tasks?: { tasks: EventTask[]; budget: BudgetItem[] }; attendees?: { attendees: Array<{ memberId: string; name: string; response: string; checkedIn: boolean }> }; live?: { counts: { going: number; maybe: number; checkedIn: number }; checkInOpen: boolean } } | undefined;
         return route.param !== undefined && route.path === "/events"
@@ -354,12 +353,19 @@ export default function App({ boot, member, unread: initialUnread, routeData, ss
     );
   }
 
+  const menuConfig = boot.session.config.menuSheet;
+  const overflowItems = items.filter((i) => {
+    if (i.item === "menu") return false;
+    const pages = items.filter((p) => p.item !== "menu");
+    const index = pages.indexOf(i);
+    return index >= menuConfig.primaryCount;
+  });
   const patterns: Record<string, React.ReactElement> = {
-    "tab-bar": <MobileTabBar items={items} route={route.path} onNavigate={go} />,
-    "top-tabs": <MobileTopTabs items={items} route={route.path} onNavigate={go} />,
-    hybrid: <MobileHybrid items={items} route={route.path} onNavigate={go} />,
+    "tab-bar": <MobileTabBar items={items} route={route.path} onNavigate={go} primaryCount={menuConfig.primaryCount} />,
+    "top-tabs": <MobileTopTabs items={items} route={route.path} onNavigate={go} primaryCount={menuConfig.primaryCount} />,
+    hybrid: <MobileHybrid items={items} route={route.path} onNavigate={go} primaryCount={menuConfig.primaryCount} />,
     drawer: <MobileDrawer items={items} route={route.path} onNavigate={go} open={studioOpen} onClose={() => setStudioOpen(false)} />,
-    "floating-dock": <MobileFloatingDock items={items} route={route.path} onNavigate={go} />,
+    "floating-dock": <MobileFloatingDock items={items} route={route.path} onNavigate={go} primaryCount={menuConfig.primaryCount} />,
     "side-rail": <DesktopSideRail items={items} route={route.path} onNavigate={go} />,
     "top-nav": <DesktopTopNav items={items} route={route.path} onNavigate={go} />,
     "top+side": <DesktopTopSide items={items} route={route.path} onNavigate={go} />,
@@ -420,6 +426,16 @@ export default function App({ boot, member, unread: initialUnread, routeData, ss
         open={studioOpen}
         onClose={() => setStudioOpen((v) => !v)}
       />
+      {menuOpen && (
+        <MenuSheet
+          config={menuConfig}
+          items={overflowItems}
+          route={route.path}
+          onNavigate={(r) => { setMenuOpen(false); go(r); }}
+          onClose={() => setMenuOpen(false)}
+          title={items.find((i) => i.item === "menu")?.label ?? "Menu"}
+        />
+      )}
     </UiProvider>
   );
 }

@@ -479,3 +479,52 @@ select.field__input { background: var(--c-base); }
 /* Command header (linkedin): compact search + quick chips inline. */
 .command-head { display: flex; gap: var(--space-2); align-items: center; padding: var(--space-2) var(--density-pad-x); border-bottom: var(--hairline) solid var(--hairline-color); }
 .command-head .command-head__search { flex: 1; }
+
+/* ====================== MENU SHEET (mobile only) ================== */
+/* Config-driven: variant geometry (drawer/sheet/modal) + opening
+   animation (slide/rise/scale/instant) + content from the nav config.
+   Every value is a token reference (M1). */
+.menu-scrim { position: fixed; inset: 0; background: var(--c-scrim); z-index: 84; animation: menu-fade var(--motion-fast) var(--motion-ease); }
+.menu-panel {
+  position: fixed; z-index: 85; background: var(--c-base);
+  border: var(--hairline) solid var(--hairline-color);
+  color: var(--c-base-contrast); font-family: var(--font-ui);
+}
+.menu-panel--drawer { top: 0; bottom: 0; left: 0; width: min(82vw, 340px); border-right-width: 2px; border-right-color: var(--c-accent); }
+.menu-panel--sheet { left: 0; right: 0; bottom: 0; max-height: 72vh; overflow-y: auto; border-top: 2px solid var(--c-accent); }
+.menu-panel--modal { top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(88vw, 380px); }
+.menu-panel__title {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font: var(--weight-bold) var(--type-body) var(--font-ui); color: var(--c-base-contrast);
+}
+.menu-panel__list { display: grid; }
+.menu-item {
+  display: flex; gap: var(--space-3); align-items: center;
+  min-height: var(--tap); padding: 0 var(--space-4);
+  background: transparent; border: none; cursor: pointer;
+  font: var(--weight-medium) var(--type-body) var(--font-ui); color: var(--c-neutral-600);
+  text-align: left; width: 100%;
+}
+.menu-item[aria-current="page"] { color: var(--c-accent); }
+.menu-item:hover { background: var(--c-neutral-100); }
+.menu-panel--modal .menu-panel__list { padding-bottom: var(--space-2); }
+.menu-panel--modal .menu-item { border-bottom: var(--hairline) solid var(--hairline-color); }
+
+/* Opening animations — direction derives from the variant geometry. */
+.menu-panel[data-anim="slide"] { animation: menu-from-x var(--motion-base) var(--motion-ease); }
+.menu-panel[data-anim="rise"] { animation: menu-from-y var(--motion-base) var(--motion-ease); }
+.menu-panel[data-anim="scale"] { animation: menu-from-scale var(--motion-base) var(--motion-ease); }
+.menu-panel[data-anim="instant"] { animation: none; }
+@keyframes menu-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes menu-from-x { from { transform: translateX(-24px); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+@keyframes menu-from-y { from { transform: translateY(32px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+@keyframes menu-from-scale { from { transform: translate(-50%, -50%) scale(0.94); opacity: 0.7; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .menu-scrim, .menu-panel { animation: none !important; }
+}
+/* Modal stays centered during every animation (no end-state jump). */
+.menu-panel--modal[data-anim="slide"] { animation-name: menu-from-x-center; }
+.menu-panel--modal[data-anim="rise"] { animation-name: menu-from-y-center; }
+@keyframes menu-from-x-center { from { transform: translate(calc(-50% - 24px), -50%); opacity: 0.6; } to { transform: translate(-50%, -50%); opacity: 1; } }
+@keyframes menu-from-y-center { from { transform: translate(-50%, calc(-50% + 32px)); opacity: 0.6; } to { transform: translate(-50%, -50%); opacity: 1; } }

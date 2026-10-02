@@ -117,7 +117,7 @@ export async function registerSsr(
     "/", "/feed", "/news", "/chat", "/chats/:seg/:id", "/groups", "/groups/:id",
     "/events", "/events/:id", "/money/campaigns/:id", "/money/campaigns", "/money/ledger",
     "/memory", "/knowledge", "/nostalgia", "/bridge", "/careers", "/notifications",
-    "/me", "/menu", "/id", "/members/:id", "/manage", "/auth",
+    "/me", "/id", "/members/:id", "/manage", "/auth",
   ];
   for (const p of pagePaths) {
     app.get(p, async (request, reply) => renderPageTo(request, reply, request.url.split("?")[0] ?? "/"));

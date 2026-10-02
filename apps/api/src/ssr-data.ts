@@ -93,7 +93,7 @@ export async function assembleRouteData(
     case head === "notifications":
       await load("inbox", [["inbox", "/v1/notifications"]]);
       break;
-    case head === "me" || head === "menu":
+    case head === "me":
       await load("profile", [["status", "/v1/verification/status"], ["invites", "/v1/invites"], ["recognition", "/v1/recognition/me"], ["intents", "/v1/me/intents"], ["prefs", "/v1/me/notification-prefs"]]);
       break;
     case head === "id":
