@@ -56,6 +56,17 @@ export const defaultConfig: InstanceConfig = {
     },
   },
   elementOverrides: {},
+  chatPage: {
+    headerVariant: "standard",
+    itemVariant: "standard",
+    filterChips: { enabled: true, options: ["all", "unread", "groups", "favorites"] },
+    fab: { placement: "bottom-right" },
+  },
+  careersPage: {
+    headerVariant: "standard",
+    jobCardVariant: "standard",
+    filterChips: { enabled: true, options: ["remote", "full-time", "internship", "graduate"] },
+  },
   instance: {
     displayName: "Fedites",
     shortName: "Fedites",

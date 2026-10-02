@@ -116,8 +116,8 @@ export const Api = {
   markActivitySeen: (id: string): Promise<{ ok: boolean }> => post(`/v1/groups/${id}/activity/seen`),
   searchMembers: (q: string): Promise<{ members: MemberHit[] }> => call(`/v1/members/search?q=${encodeURIComponent(q)}`),
 
-  /* chat (2.3) */
   chatThreads: (): Promise<{ threads: ChatThread[] }> => call("/v1/chat/threads"),
+  chatPresence: (): Promise<{ online: string[] }> => call("/v1/chat/presence"),
   threadMessages: (type: "group" | "dm", id: string): Promise<{ messages: ChatMessage[] }> => call(`/v1/chat/${type}/${id}/messages`),
   sendGroupMessage: (groupId: string, b: { body?: string; mediaId?: string; replyToId?: string }): Promise<ChatMessage> => post(`/v1/chat/group/${groupId}/messages`, b),
   sendDm: (otherId: string, b: { body?: string; mediaId?: string; replyToId?: string }): Promise<ChatMessage> => post(`/v1/chat/dm/${otherId}/messages`, b),

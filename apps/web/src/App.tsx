@@ -25,7 +25,8 @@ import {
 } from "./shell/nav-patterns.js";
 import { GroupsHomeScreen } from "./screens/GroupsHomeScreen.js";
 import { GroupScreen } from "./screens/GroupScreen.js";
-import { ChatListScreen, ChatThreadScreen } from "./screens/ChatThread.js";
+import { ChatThreadScreen } from "./screens/ChatThread.js";
+import { ChatListScreen } from "./screens/ChatScreen.js";
 import { NewsScreen, FeedScreen } from "./screens/NewsFeed.js";
 import { EventsScreen, EventDetailScreen } from "./screens/EventsScreen.js";
 import { GivingSection, CampaignScreen, TransparentLedgerScreen } from "./screens/Giving.js";
@@ -296,7 +297,7 @@ export default function App(): React.ReactElement {
     switch (route.path) {
       case "/": return <GroupsHomeScreen onNavigate={go} />;
       case "/feed": return <FeedScreen onNavigate={go} />;
-      case "/chat": return <ChatListScreen onNavigate={go} />;
+      case "/chat": return <ChatListScreen config={boot.session.config.chatPage} onNavigate={go} />;
       case "/news": return <NewsScreen signedIn={authed} onNavigate={go} />;
       case "/groups":
         return route.param !== undefined
@@ -305,7 +306,7 @@ export default function App(): React.ReactElement {
       case "/chats":
         return route.param !== undefined && route.path === "/chats"
           ? <ChatThreadScreen type={(window.location.pathname.split("/")[2] === "dm" ? "dm" : "group")} id={route.param} onNavigate={go} />
-          : <ChatListScreen onNavigate={go} />;
+          : <ChatListScreen config={boot.session.config.chatPage} onNavigate={go} />;
       case "/groups/new": return <NewProposal onNavigate={go} />;
       case "/money/campaigns":
         return route.param !== undefined && route.path === "/money/campaigns"
@@ -317,7 +318,7 @@ export default function App(): React.ReactElement {
       case "/nostalgia": return <NostalgiaScreen />;
       case "/bridge":
         return <SchoolBridgeScreen isAdmin={member.roles.some((r) => ["president", "treasurer", "secretary", "moderator"].includes(r))} />;
-      case "/careers": return <CareerScreen />;
+      case "/careers": return <CareerScreen careersConfig={boot.session.config.careersPage} />;
       case "/notifications": return <InboxScreen onNavigate={go} />;
       case "/me": return <ProfileScreen member={member} onNavigate={go} dark={dark} onDark={setDark} />;
       case "/id": return <IdScreen />;

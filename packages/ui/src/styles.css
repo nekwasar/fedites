@@ -380,3 +380,102 @@ select.field__input { background: var(--c-base); }
   0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
   100% { transform: translate(var(--drift, 0px), 110vh) rotate(540deg); opacity: 0; }
 }
+
+/* ================== PAGE FACTORY SEMANTICS (chat/careers) ==================
+   Every value references root tokens; no page-specific constants.           */
+
+/* Filter chip bar: horizontally scrollable pills. */
+.chips {
+  display: flex; gap: var(--space-2);
+  padding: var(--space-2) var(--density-pad-x);
+  overflow-x: auto; border-bottom: var(--hairline) solid var(--hairline-color);
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  min-height: 36px; padding: 0 var(--space-3);
+  display: inline-flex; align-items: center; gap: 4px;
+  border: var(--hairline) solid var(--hairline-color);
+  background: var(--c-base); color: var(--c-neutral-600);
+  font: var(--weight-medium) var(--type-body2) var(--font-ui);
+  cursor: pointer; white-space: nowrap; border-radius: var(--radius-full);
+}
+.chip[aria-pressed="true"] { background: var(--c-accent); color: var(--c-accent-contrast); border-color: var(--c-accent); }
+.chip .chip__count { font-family: var(--font-mono); font-size: var(--type-micro); }
+
+/* Presence (online indicator over avatars). */
+.presence { position: relative; display: inline-flex; }
+.presence__dot {
+  position: absolute; right: -1px; bottom: -1px;
+  width: 10px; height: 10px; border-radius: var(--radius-full);
+  background: var(--c-success); border: 2px solid var(--c-base);
+}
+.presence--idle .presence__dot { background: var(--c-neutral-400); }
+
+/* Prominent integrated search (messenger/linkedin headers). */
+.searchbar { display: flex; align-items: center; gap: var(--space-2); }
+.searchbar .field__input { min-height: var(--tap); }
+.searchbar--prominent .field__input { min-height: 52px; }
+
+/* Segmented category tabs with counts (telegram header). */
+.seg-tabs { display: flex; gap: var(--space-2); padding: var(--space-2) var(--density-pad-x); overflow-x: auto; border-bottom: var(--hairline) solid var(--hairline-color); }
+.seg-tab {
+  min-height: var(--tap); padding: 0 var(--space-3);
+  display: inline-flex; align-items: center; gap: 6px;
+  border: var(--hairline) solid var(--hairline-color);
+  background: var(--c-base); cursor: pointer;
+  font: var(--weight-medium) var(--type-body2) var(--font-ui); color: var(--c-neutral-600);
+  border-radius: var(--radius-full); white-space: nowrap;
+}
+.seg-tab[aria-pressed="true"] { background: var(--c-accent); color: var(--c-accent-contrast); border-color: var(--c-accent); }
+.seg-tab .seg-tab__count {
+  font: var(--weight-semibold) var(--type-micro) var(--font-mono);
+  min-width: 18px; text-align: center;
+  background: var(--c-neutral-100); color: var(--c-neutral-700);
+  border-radius: var(--radius-full); padding: 0 4px;
+}
+.seg-tab[aria-pressed="true"] .seg-tab__count { background: var(--c-accent-contrast); color: var(--c-accent); }
+
+/* Card tile variant (structural name; surface comes from family tokens):
+   Classic family renders it flat with hairline border + no elevation.      */
+.tile {
+  background: var(--surface-raised);
+  border: var(--hairline) solid var(--hairline-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-card, none);
+  padding: var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.tile__top { display: flex; align-items: center; gap: var(--space-2); }
+.tile__top .tile__name { font: var(--weight-semibold) var(--type-body) var(--font-ui); color: var(--c-base-contrast); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile__mid { font-size: var(--type-body2); color: var(--c-neutral-600); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.tile__bottom { display: flex; align-items: center; gap: var(--space-2); font-size: var(--type-micro); color: var(--c-neutral-500); }
+.tile__bottom .tile__spacer { flex: 1; }
+
+/* Dense list variant: high data density. */
+.dense-row {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: 44px; padding: var(--space-1) var(--density-pad-x);
+  border-bottom: var(--hairline) solid var(--hairline-color);
+}
+.dense-row .dense-row__title { font: var(--weight-semibold) var(--type-body2) var(--font-ui); color: var(--c-base-contrast); }
+.dense-row .dense-row__snippet { font-size: var(--type-micro); color: var(--c-neutral-500); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.dense-row .dense-row__dot { width: 8px; height: 8px; background: var(--c-accent); border-radius: var(--radius-full); flex-shrink: 0; }
+
+/* Double stacked search (indeed header). */
+.double-search { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--density-pad-x); border-bottom: var(--hairline) solid var(--hairline-color); }
+
+/* Job tiles/cards: same structural token treatment as chat tiles. */
+.job-tile__title { font: var(--weight-bold) var(--type-body1) var(--font-ui); color: var(--c-base-contrast); }
+.job-tile__meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font-size: var(--type-micro); color: var(--c-neutral-500); }
+.job-tile__footer { display: flex; align-items: center; gap: var(--space-2); }
+.job-tile__footer .job-tile__spacer { flex: 1; }
+
+/* Compact job listing. */
+.compact-job { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: var(--space-1) var(--density-pad-x); border-bottom: var(--hairline) solid var(--hairline-color); }
+.compact-job .compact-job__title { font: var(--weight-semibold) var(--type-body2) var(--font-ui); color: var(--c-base-contrast); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.compact-job .compact-job__salary { font: var(--weight-medium) var(--type-micro) var(--font-mono); color: var(--c-neutral-600); }
+
+/* Command header (linkedin): compact search + quick chips inline. */
+.command-head { display: flex; gap: var(--space-2); align-items: center; padding: var(--space-2) var(--density-pad-x); border-bottom: var(--hairline) solid var(--hairline-color); }
+.command-head .command-head__search { flex: 1; }

@@ -223,6 +223,42 @@ export type CopyTable = Record<string, string>;
 /* The full instance config document (configuration.md §8)             */
 /* ------------------------------------------------------------------ */
 
+
+/* ------------------------------------------------------------------ */
+/* Page architecture configs (MODULE spec: chat + careers)             */
+/* ------------------------------------------------------------------ */
+
+export const chatHeaderVariantEnum = z.enum(["standard", "messenger", "telegram"]);
+export const chatItemVariantEnum = z.enum(["standard", "card", "dense"]);
+export const fabPlacementEnum = z.enum(["bottom-right", "bottom-center"]);
+export const chatFilterEnum = z.enum(["all", "unread", "groups", "favorites"]);
+
+export const chatPageSchema = z.object({
+  headerVariant: chatHeaderVariantEnum.default("standard"),
+  itemVariant: chatItemVariantEnum.default("standard"),
+  filterChips: z.object({
+    enabled: z.boolean().default(true),
+    options: z.array(chatFilterEnum).default(["all", "unread", "groups", "favorites"]),
+  }).default({}),
+  fab: z.object({
+    placement: fabPlacementEnum.default("bottom-right"),
+  }).default({}),
+});
+export type ChatPageConfig = z.infer<typeof chatPageSchema>;
+
+export const careersHeaderVariantEnum = z.enum(["standard", "indeed", "linkedin"]);
+export const jobCardVariantEnum = z.enum(["standard", "card", "compact"]);
+
+export const careersPageSchema = z.object({
+  headerVariant: careersHeaderVariantEnum.default("standard"),
+  jobCardVariant: jobCardVariantEnum.default("standard"),
+  filterChips: z.object({
+    enabled: z.boolean().default(true),
+    options: z.array(z.string()).default(["remote", "full-time", "internship", "graduate"]),
+  }).default({}),
+});
+export type CareersPageConfig = z.infer<typeof careersPageSchema>;
+
 export const instanceConfigSchema = z.object({
   /** Config document version — every publish bumps; rollback = republish older snapshot. */
   schemaVersion: z.number().int().positive(),
@@ -231,6 +267,8 @@ export const instanceConfigSchema = z.object({
   colorThemeId: z.string(),
   nav: navConfigSchema,
   elementOverrides: elementOverridesSchema,
+  chatPage: chatPageSchema.default({}),
+  careersPage: careersPageSchema.default({}),
   instance: z.object({
     /** Zero school-specific constants in code — everything flows from here. */
     displayName: z.string().min(1),

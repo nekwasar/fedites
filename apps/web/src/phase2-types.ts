@@ -40,7 +40,7 @@ export interface ActivityFeed { items: ActivityItem[]; groupStatus: string }
 export interface CommentItem { id: string; body: string; parentId: string | null; author: string; authorId: string; isMine: boolean; createdAt: string }
 
 export interface ChatThread {
-  type: "group" | "dm"; id: string; name: string;
+  type: "group" | "dm"; id: string; name: string; groupType?: string | null;
   lastAt: string | null; preview: string; unread: number; pinned: boolean;
 }
 

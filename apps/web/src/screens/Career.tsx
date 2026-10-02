@@ -8,7 +8,11 @@
 import React, { useEffect, useState } from "react";
 import { Api } from "../api.js";
 import { Empty, SkeletonList } from "./InboxScreen.js";
-import type { JobRow, BizRow, MentorRow, ReferralRow } from "../events-types.js";
+import type { BizRow, MentorRow, ReferralRow } from "../events-types.js";
+import { Button } from "@fedites/ui";
+import { defaultConfig, type CareersPageConfig } from "@fedites/config";
+import { useCareersPage, type CareersPageState } from "../hooks/useCareersPage.js";
+import { CareersHeaderRegistry, CareerFilterChips, JobCardRegistry } from "../careers/CareerRegistries.js";
 
 const inputStyle: React.CSSProperties = {
   width: "100%", minHeight: 44, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)",
@@ -16,26 +20,19 @@ const inputStyle: React.CSSProperties = {
 const fieldStyle: React.CSSProperties = {
   flex: 1, minWidth: 140, minHeight: 44, padding: "0 12px", border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "14px var(--font-ui)", color: "var(--c-base-contrast)",
 };
-const salary = (j: { salary: { minMinor: number; maxMinor: number | null; currency: string } | null }): string => {
-  if (j.salary === null) return "";
-  const fmt = (m: number): string => (m / 100).toLocaleString();
-  return j.salary.maxMinor !== null ? `${fmt(j.salary.minMinor)}–${fmt(j.salary.maxMinor)} ${j.salary.currency}/mo` : `${fmt(j.salary.minMinor)} ${j.salary.currency}/mo`;
-};
 
-export function CareerScreen(): React.ReactElement {
+export function CareerScreen({ careersConfig }: { careersConfig?: CareersPageConfig }): React.ReactElement {
+  const state = useCareersPage(careersConfig ?? defaultConfig.careersPage);
   const [tab, setTab] = useState<"jobs" | "business" | "mentors" | "referrals">("jobs");
   return (
-    <main style={{ paddingBottom: 96 }}>
-      <h1 className="screen-title">Careers</h1>
-      <div style={{ display: "flex", borderBottom: "1px solid var(--c-hairline)", overflowX: "auto" }}>
-        {([["jobs", "Job board"], ["business", "Business directory"], ["mentors", "Mentor hours"], ["referrals", "Referrals & endorsements"]] as const).map(([k, label]) => (
-          <button key={k} type="button" className="press" onClick={() => setTab(k)} aria-current={tab === k}
-            style={{ minHeight: 44, flex: 1, background: "transparent", border: "none", borderBottom: tab === k ? "2px solid var(--c-accent)" : "2px solid transparent", color: tab === k ? "var(--c-accent)" : "var(--c-neutral-600)", font: "600 12px var(--font-ui)", cursor: "pointer", whiteSpace: "nowrap", padding: "0 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            {label}
-          </button>
-        ))}
-      </div>
-      {tab === "jobs" && <Jobs />}
+    <main className="screen-pad">
+      <CareersHeaderRegistry
+        variant={state.config.headerVariant}
+        state={state}
+        tab={tab}
+        onTab={(k) => setTab(k as "jobs" | "business" | "mentors" | "referrals")}
+      />
+      {tab === "jobs" && <JobsView state={state} />}
       {tab === "business" && <Business />}
       {tab === "mentors" && <Mentors />}
       {tab === "referrals" && <Referrals />}
@@ -45,108 +42,56 @@ export function CareerScreen(): React.ReactElement {
 
 /* --------------------------------- jobs -------------------------------- */
 
-function Jobs(): React.ReactElement {
-  const [jobs, setJobs] = useState<JobRow[] | null>(null);
-  const [saved, setSaved] = useState<Array<{ id: string; title: string; company_name: string }> | null>(null);
-  const [apps, setApps] = useState<Array<{ id: string; title: string; companyName: string; status: string }> | null>(null);
-  const [text, setText] = useState("");
-  const [mode, setMode] = useState("");
-  const [type, setType] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [openJob, setOpenJob] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  const [coverNote, setCoverNote] = useState("");
-
-  const load = (): void => {
-    Api.jobs({ text: text || undefined, mode: mode || undefined, type: type || undefined }).then((r) => setJobs(r.jobs)).catch(() => undefined);
-    Api.savedJobs().then((r) => setSaved(r.jobs)).catch(() => undefined);
-    Api.myApplications().then((r) => setApps(r.applications)).catch(() => undefined);
-  };
-  useEffect(load, [text, mode, type]);
-
-  const apply = async (jobId: string): Promise<void> => {
-    try {
-      await Api.applyToJob(jobId, { coverNote: coverNote || undefined });
-      setNote("Application submitted — the posting alumnus will move it through the pipeline.");
-      setCoverNote(""); setOpenJob(null);
-      load();
-    } catch (e) { setNote((e as Error).message); }
-  };
-
-  const save = async (jobId: string, unsave: boolean): Promise<void> => {
-    if (unsave) await Api.unsaveJob(jobId).catch(() => undefined);
-    else await Api.saveJob(jobId).catch(() => undefined);
-    load();
-  };
-
+function JobsView({ state }: { state: CareersPageState }): React.ReactElement {
   return (
     <div>
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--c-hairline)" }}>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Search title, company, description…" aria-label="Search jobs" style={inputStyle} />
-        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={mode} onChange={(e) => setMode(e.target.value)} aria-label="Work mode" style={{ ...fieldStyle, maxWidth: 140, background: "var(--c-base)" }}>
-            <option value="">Any mode</option>
-            <option value="onsite">Onsite</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="remote">Remote</option>
-          </select>
-          <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Employment type" style={{ ...fieldStyle, maxWidth: 180, background: "var(--c-base)" }}>
-            <option value="">Any type</option>
-            <option value="full_time">Full time</option>
-            <option value="contract">Contract</option>
-            <option value="internship">Internship</option>
-            <option value="graduate_trainee">Graduate trainee</option>
-          </select>
-          {!posting && <button type="button" className="btn btn--filled press" style={{ minHeight: 44 }} onClick={() => setPosting(true)}>Post a job</button>}
-        </div>
-        {posting && <PostJob onDone={() => { setPosting(false); load(); }} />}
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--c-hairline)", display: "flex", gap: 8, alignItems: "center" }}>
+        <span className="micro" style={{ flex: 1 }}>
+          Fresh-graduate roles always surface first on this board.
+        </span>
+        {!state.posting && (
+          <button type="button" className="btn btn--filled press" style={{ minHeight: 44 }} onClick={() => state.setPosting(true)}>Post a job</button>
+        )}
       </div>
-      {note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{note}</p>}
-      {apps !== null && apps.length > 0 && (
+      <CareerFilterChips state={state} />
+      {state.posting && <PostJob onDone={() => { state.setPosting(false); state.reload(); }} />}
+      {state.note !== null && <p className="micro" style={{ padding: "8px 16px 0" }}>{state.note}</p>}
+      {state.apps.length > 0 && (
         <div style={{ padding: "8px 16px", borderBottom: "1px solid var(--c-hairline)" }}>
           <div className="micro" style={{ paddingBottom: 4 }}>My applications</div>
-          {apps.map((a) => (
+          {state.apps.map((a) => (
             <div key={a.id} style={{ font: "13px var(--font-ui)" }}>
               {a.title} at {a.companyName} — <b>{a.status.replace("_", " ")}</b>
             </div>
           ))}
         </div>
       )}
-      {jobs === null ? <SkeletonList /> : jobs.length === 0 ? (
+      {state.jobs === null ? <SkeletonList /> : state.jobs.length === 0 ? (
         <Empty title="No open roles" body="Alumni post openings and internships here — fresh graduates always prioritized." />
-      ) : jobs.map((j) => (
-        <div key={j.id} style={{ borderBottom: "1px solid var(--c-hairline)", padding: "12px 16px" }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
-            <span style={{ font: "700 15px var(--font-ui)" }}>{j.title}</span>
-            <span className="micro">{j.companyName}{j.city !== null ? ` · ${j.city}` : ""} · {j.workMode}</span>
-            <span className="micro tabular" style={{ marginLeft: "auto" }}>{salary(j)}</span>
-          </div>
-          <div className="micro" style={{ margin: "2px 0" }}>
-            {j.poster !== null ? `posted by ${j.poster}` : ""}{j.applyBy !== null ? ` · apply by ${new Date(j.applyBy).toLocaleDateString()}` : ""}
-            {(j.employmentType === "internship" || j.employmentType === "graduate_trainee") ? " · fresh-grad priority" : ""}
-          </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button type="button" className="btn btn--filled press" style={{ minHeight: 36 }} onClick={() => { setOpenJob(openJob === j.id ? null : j.id); setNote(null); }}>Apply</button>
-            <button type="button" className="btn btn--underline-link press" style={{ minHeight: 36 }} onClick={() => void save(j.id, false)}>Save</button>
-          </div>
-          {openJob === j.id && (
-            <div style={{ marginTop: 8 }}>
-              <textarea value={coverNote} onChange={(e) => setCoverNote(e.target.value)} placeholder="Short note to the posting alumnus (optional)" aria-label="Cover note"
-                style={{ ...inputStyle, minHeight: 64, resize: "vertical" }} />
-              <button type="button" className="btn btn--filled press" style={{ marginTop: 4 }} onClick={() => void apply(j.id)}>Send application</button>
-            </div>
-          )}
-        </div>
+      ) : state.jobs.map((j) => (
+        <JobCardRegistry key={j.id} variant={state.config.jobCardVariant} data={j} state={state} />
       ))}
-      {saved !== null && saved.length > 0 && (
+      {state.saved.length > 0 && (
         <div style={{ padding: 16 }}>
           <div className="micro" style={{ paddingBottom: 4 }}>Saved jobs</div>
-          {saved.map((s) => (
+          {state.saved.map((s) => (
             <div key={s.id} style={{ font: "13px var(--font-ui)", padding: "4px 0" }}>
               {s.title} at {s.company_name}
-              <button type="button" className="btn btn--underline-link press" style={{ minHeight: 24 }} onClick={() => void save(s.id, true)}>Remove</button>
+              <button type="button" className="btn btn--underline-link press" style={{ minHeight: 24 }} onClick={() => void state.toggleSave(s.id, true)}>Remove</button>
             </div>
           ))}
+        </div>
+      )}
+      {state.pendingApply !== null && (
+        <div className="overlay" onClick={() => state.setPendingApply(null)} style={{ alignItems: "flex-end" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", background: "var(--c-base)", borderTop: "2px solid var(--c-accent)", padding: "var(--space-4)" }}>
+            <div className="micro" style={{ paddingBottom: 8 }}>Cover note (optional)</div>
+            <textarea value={state.coverNote} onChange={(e) => state.setCoverNote(e.target.value)} placeholder="Short note to the posting alumnus" aria-label="Cover note"
+              style={{ width: "100%", minHeight: 64, border: "none", borderBottom: "1px solid var(--c-hairline)", background: "transparent", font: "15px var(--font-ui)", color: "var(--c-base-contrast)", resize: "vertical" }} />
+            <div style={{ marginTop: 8 }}>
+              <Button kind="filled" onClick={() => void state.confirmApply()}>Send application</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

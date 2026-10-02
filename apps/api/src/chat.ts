@@ -29,8 +29,8 @@ export async function chatRoutes(app: FastifyInstance, opts: { pool: Pool; loadC
   app.get("/v1/chat/threads", async (request, reply) => {
     const member = await requireMember(request, reply);
     if (member === null) return reply;
-    const groups = await pool.query<{ id: string; name: string; last_at: Date | null; last_body: string | null; last_kind: string | null; last_author: string | null }>(
-      `SELECT g.id, g.name,
+    const groups = await pool.query<{ id: string; name: string; group_type: string; last_at: Date | null; last_body: string | null; last_kind: string | null; last_author: string | null }>(
+      `SELECT g.id, g.name, g.type AS group_type,
               (SELECT max(m.created_at) FROM messages m WHERE m.group_id = g.id AND m.deleted_at IS NULL) AS last_at,
               (SELECT m.body FROM messages m WHERE m.group_id = g.id AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1) AS last_body,
               (SELECT m.kind FROM messages m WHERE m.group_id = g.id AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1) AS last_kind,
@@ -59,7 +59,7 @@ export async function chatRoutes(app: FastifyInstance, opts: { pool: Pool; loadC
     for (const g of groups.rows) {
       const unread = await groupThreadUnread(pool, member.id, g.id);
       threads.push({
-        type: "group", id: g.id, name: g.name,
+        type: "group", id: g.id, name: g.name, groupType: g.group_type,
         lastAt: g.last_at,
         preview: previewFor(g.last_kind, g.last_body, g.last_author, true),
         unread: unread.chatUnread,
@@ -239,6 +239,13 @@ export async function chatRoutes(app: FastifyInstance, opts: { pool: Pool; loadC
     const rooms = type === "group" ? [Hub.groupRoom(id)] : [Hub.dmRoom(member.id, id)];
     hub.broadcast(rooms, { type: "read", thread: type, threadId: id, memberId: member.id, at: new Date().toISOString() });
     return { ok: true };
+  });
+
+  /** Presence: members connected right now (WS hub). Used for online dots. */
+  app.get("/v1/chat/presence", async (request, reply) => {
+    const member = await requireMember(request, reply);
+    if (member === null) return reply;
+    return { online: opts.hub.connectedMembers(member.instanceId) };
   });
 
   /** Typing indicators: ephemeral, WS-only (never stored). */

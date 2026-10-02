@@ -80,6 +80,15 @@ export class Hub {
     return wss;
   }
 
+  /** Members of an instance currently connected (presence truth). */
+  connectedMembers(instanceId: string): string[] {
+    const ids = new Set<string>();
+    for (const c of this.clients) {
+      if (c.instanceId === instanceId && c.socket.readyState === c.socket.OPEN) ids.add(c.memberId);
+    }
+    return [...ids];
+  }
+
   /** Send one event to every connected client (e.g. F6 goal moment). */
   broadcastAll(event: Record<string, unknown>): void {
     const payload = JSON.stringify(event);
